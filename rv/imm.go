@@ -1,5 +1,7 @@
 package rv
 
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_immediate_encoding_variants
+
 // 31                    20                                       0
 // |a b b b b b b b b b b b|                                       | I-code
 // |a a a a a a a a a a a a a a a a a a a a a b b b b b b b b b b b| imm
