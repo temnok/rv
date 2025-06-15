@@ -2,18 +2,18 @@ package rv
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_immediate_encoding_variants
 
-// 31                    20                                       0
-// |a b b b b b b b b b b b|                                       | I-code
-// |a a a a a a a a a a a a a a a a a a a a a b b b b b b b b b b b| imm
+// 31                    20                11                     0
+// |a|                    b|                                       | I-code
+// |                                       -a|                    b| imm
 //
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_register_immediate_instructions
 func ImmFromI(code int32) int32 {
 	return code >> 20
 }
 
-// 31          25                                   7   5         0
-// |a b b b b b b|                         |c c c c c|             | S-code
-// |a a a a a a a a a a a a a a a a a a a a a b b b b b b|c c c c c| imm
+// 31          25                        12 11      7   5         0
+// |a|          b|                        x|        c|            x| S-code
+// |                                       -a|          b|        c| imm
 //
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#ldst
 func ImmFromS(code int32) int32 {
@@ -24,8 +24,8 @@ func ImmFromS(code int32) int32 {
 }
 
 // 31          25                        12 11    8 7   5       1 0
-// |a|b b b b b b|                         |c c c c|d|             | B-code
-// |a a a a a a a a a a a a a a a a a a a a|d|b b b b b b|c c c c|0| imm
+// |a|          b|                        x|      c|d|            x| B-code
+// |                                     -a|d|          b|      c|0| imm
 //
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_conditional_branches
 func ImmFromB(code int32) int32 {
@@ -38,8 +38,8 @@ func ImmFromB(code int32) int32 {
 }
 
 // 31                                    12                       0
-// |a b b b b b b b b b b b b b b b b b b b|                       | U-code
-// |a b b b b b b b b b b b b b b b b b b b|0 0 0 0 0 0 0 0 0 0 0 0| imm
+// |                                      a|                      x| U-code
+// |                                      a|                      0| imm
 //
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_register_immediate_instructions
 func ImmFromU(code int32) int32 {
@@ -47,8 +47,8 @@ func ImmFromU(code int32) int32 {
 }
 
 // 31                    20              12 11                  1 0
-// |a|b b b b b b b b b b|c|d d d d d d d d|                       | J-code
-// |a a a a a a a a a a a a|d d d d d d d d|c|b b b b b b b b b b|0| imm
+// |a|                  b|c|              d|                      x| J-code
+// |                     -a|              d|c|                  b|0| imm
 //
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_unconditional_jumps
 func ImmFromJ(code int32) int32 {
