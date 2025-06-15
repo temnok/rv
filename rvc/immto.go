@@ -1,61 +1,115 @@
 package rvc
 
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_immediate_encoding_variants
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_compressed_instruction_formats
 
-// 31                    20                                       0
-// |a a a a a a a a a a a a a a a a a a a a a b b b b b b b b b b b| imm
-// |a b b b b b b b b b b b|                                       | I-code
+// 31	                                 12           6 5     2   0
+// |  	                                 |a|         |b b b b b|   | CI-code
+// |a a a a a a a a a a a a a a a a a a a a a a a a a a a|b b b b b| imm
 //
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_register_immediate_instructions
-func immToI(imm int32) int32 {
-	return imm << 20
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_constant_generation_instructions
+func ImmFromCI(code int32) int32 {
+	a := (code >> 12) & 1
+	b := (code >> 2) & 0b_11111
+
+	return -a<<5 | b
 }
 
-// 31          25                                   7   5         0
-// |a a a a a a a a a a a a a a a a a a a a a b b b b b b|c c c c c| imm
-// |a b b b b b b|                         |c c c c c|             | S-code
+// 31                                    12           6 5 4   2   0
+// |  	                                 |a|         |b b b|c c|   | CI-code
+// |0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0|c c|a|b b b|0 0| imm
 //
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#ldst
-func immToS(imm int32) int32 {
-	ab := imm >> 5
-	c := imm & 0b_11111
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_stack_pointer_based_loads_and_stores
+func ImmFromCIx4(code int32) int32 {
+	a := (code >> 12) & 1
+	b := (code >> 4) & 0b_111
+	c := (code >> 2) & 0b_11
 
-	return ab<<25 | c<<7
+	return c<<6 | a<<5 | b<<2
 }
 
-// 31          25                        12 11    8 7   5       1 0
-// |a a a a a a a a a a a a a a a a a a a a|d|b b b b b b|c c c c|0| imm
-// |a|b b b b b b|                         |c c c c|d|             | B-code
+// 31                                    12     9   7 6 5 4 3 2   0
+// |  	                                 |a|         |b|c|d d|e|   | CI-code
+// |a a a a a a a a a a a a a a a a a a a a a a a|d d|c|e|b|0 0 0 0| imm
 //
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_conditional_branches
-func immToB(imm int32) int32 {
-	a := imm >> 12
-	b := (imm >> 5) & 0b_111111
-	c := (imm >> 1) & 0b_1111
-	d := (imm >> 11) & 1
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_register_immediate_operations
+func ImmFromCIx16(code int32) int32 {
+	a := (code >> 12) & 1
+	b := (code >> 6) & 1
+	c := (code >> 5) & 1
+	d := (code >> 3) & 0b_11
+	e := (code >> 2) & 1
 
-	return a<<31 | b<<25 | c<<8 | d<<7
+	return -a<<9 | d<<7 | c<<6 | e<<5 | b<<4
 }
 
-// 31                                    12                       0
-// |a b b b b b b b b b b b b b b b b b b b|0 0 0 0 0 0 0 0 0 0 0 0| imm
-// |a b b b b b b b b b b b b b b b b b b b|                       | U-code
+// 31                                    12     9   7 6       2   0
+// |  	                                 |a a a a|b b|             | CI-code
+// |0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0|b b|a a a a|0 0| imm
 //
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_register_immediate_instructions
-func immToU(imm int32) int32 {
-	return imm &^ 0b_111111111111
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_stack_pointer_based_loads_and_stores
+func ImmFromCSS(code int32) int32 {
+	a := (code >> 9) & 0b_1111
+	b := (code >> 7) & 0b_11
+
+	return b<<6 | a<<2
 }
 
-// 31                    20              12 11                  1 0
-// |a a a a a a a a a a a a|d d d d d d d d|c|b b b b b b b b b b|0| imm
-// |a|b b b b b b b b b b|c|d d d d d d d d|                       | J-code
+// 31                                      11       7 6 5 4 3 2   0
+// |  	                                 |a a|b b b b|c|d|         | CIW-code
+// |0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0|b b b b|a a|d|c|0 0| imm
 //
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_unconditional_jumps
-func immToJ(imm int32) int32 {
-	a := imm >> 20
-	b := (imm >> 1) & 0b_1111111111
-	c := (imm >> 11) & 1
-	d := (imm >> 12) & 0b_11111111
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_integer_register_immediate_operations
+func ImmFromCIW(code int32) int32 {
+	a := (code >> 11) & 0b_11
+	b := (code >> 7) & 0b_1111
+	c := (code >> 6) & 1
+	d := (code >> 5) & 1
 
-	return a<<31 | b<<21 | c<<20 | d<<12
+	return b<<6 | a<<4 | d<<3 | c<<2
+}
+
+// 31                                        10       6 5   3 2   0
+// |  	                                 |a a a|     |b|c|         | CL-code
+// |0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0|c|a a a|b|0 0| imm
+//
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_register_based_loads_and_stores
+func ImmFromCL(code int32) int32 {
+	a := (code >> 10) & 0b_111
+	b := (code >> 6) & 1
+	c := (code >> 5) & 1
+
+	return c<<6 | a<<3 | b<<2
+}
+
+// 31                                    12  10   8   6 5   3 2 1 0
+// |  	                                 |a|b b|     |c c|d d|e|   | CB-code
+// |a a a a a a a a a a a a a a a a a a a a a a a a|c c|e|b b|d d|0| imm
+//
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_control_transfer_instructions_2
+func ImmFromCB(code int32) int32 {
+	a := (code >> 12) & 1
+	b := (code >> 10) & 0b_11
+	c := (code >> 5) & 0b_11
+	d := (code >> 3) & 0b_11
+	e := (code >> 2) & 1
+
+	return -a<<8 | c<<6 | e<<5 | b<<3 | d<<1
+}
+
+// 31                                    12 11  9 8 7 6 5 4 3 2 1 0
+// |  	                                 |a|b|c c|d|e|f|g g g|h|   | CJ-code
+// |a a a a a a a a a a a a a a a a a a a a a|d|c c|f|e|h|b|g g g|0| imm
+//
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_control_transfer_instructions_2
+func ImmFromCJ(code int32) int32 {
+	a := (code >> 12) & 1
+	b := (code >> 11) & 1
+	c := (code >> 9) & 0b_11
+	d := (code >> 8) & 1
+	e := (code >> 7) & 1
+	f := (code >> 6) & 1
+	g := (code >> 3) & 0b_111
+	h := (code >> 2) & 1
+
+	return -a<<11 | d<<10 | c<<8 | f<<7 | e<<6 | h<<5 | b<<4 | g<<1
 }
