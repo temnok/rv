@@ -3,3 +3,14 @@
 |                    imm|      rs1|   f3|       rd|       op|1 1| I
 |          imm|      rs2|      rs1|   f3|      imm|       op|1 1| S/B
 |                                    imm|       rd|       op|1 1| U/J
+
+15    12  10     7   5     2   0
+|     f5|r r r r r|s s s s s| op| CR
+|   f3|i|r r r r r|i i i i i| op| CI
+|   f3|i i i i i i|s s s s s| op| CSS
+|   f3|i i i i i i i i| rd  | op| CIW
+|   f3|i i i|r r r|i i| rd  | op| CL
+|   f3|i i i|  rs1|i i|  rs2| op| CS
+|         f7|  rs1|f f|  rs2| op| CA
+|   f3|i i i|r r r|i i i i i| op| CB
+|   f3|                  imm| op| CJ

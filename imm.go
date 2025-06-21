@@ -11,7 +11,7 @@ func immS(opcode int32) int32 {
 }
 
 func immB(opcode int32) int32 {
-	a := -bit(opcode, 31)
+	a := signedBit(opcode, 31)
 	b := bits(opcode, 25, 6)
 	c := bits(opcode, 8, 4)
 	d := bit(opcode, 7)
@@ -23,17 +23,9 @@ func immU(opcode int32) int32 {
 }
 
 func immJ(opcode int32) int32 {
-	a := -bit(opcode, 31)
+	a := signedBit(opcode, 31)
 	b := bits(opcode, 21, 10)
 	c := bit(opcode, 20)
 	d := bits(opcode, 12, 8)
 	return a<<20 | d<<12 | c<<11 | b<<1
-}
-
-func bit(val, i int32) int32 {
-	return (val >> i) & 1
-}
-
-func bits(val, i, n int32) int32 {
-	return (val >> i) & (1<<n - 1)
 }

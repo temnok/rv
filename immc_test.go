@@ -1,11 +1,11 @@
-package rvc
+package rv
 
 import (
 	"testing"
 )
 
-func TestImmFromCI(t *testing.T) {
-	testImm(t, "ImmFromCI", ImmFromCI, immTests{
+func TestImmCI(t *testing.T) {
+	testImm(t, "immCI", immCI, immTests{
 		0b_1_00000_00000_00: 0b_11111111111111111111111111100000,
 		0b_0_00000_10000_00: 0b_00000000000000000000000000010000,
 		0b_0_00000_01000_00: 0b_00000000000000000000000000001000,
@@ -17,8 +17,8 @@ func TestImmFromCI(t *testing.T) {
 	})
 }
 
-func TestImmFromCIx4(t *testing.T) {
-	testImm(t, "ImmFromCIx4", ImmFromCIx4, immTests{
+func TestImmCIx4(t *testing.T) {
+	testImm(t, "immCIx4", immCIx4, immTests{
 		0b_1_00000_000_00_00: 0b_00100000,
 		0b_0_00000_100_00_00: 0b_00010000,
 		0b_0_00000_010_00_00: 0b_00001000,
@@ -30,8 +30,8 @@ func TestImmFromCIx4(t *testing.T) {
 	})
 }
 
-func TestImmFromCIx16(t *testing.T) {
-	testImm(t, "ImmFromCIx16", ImmFromCIx16, immTests{
+func TestImmCIx16(t *testing.T) {
+	testImm(t, "immCIx16", immCIx16, immTests{
 		0b_1_00000_0_0_00_0_00: 0b_11111111111111111111111000000000,
 		0b_0_00000_1_0_00_0_00: 0b_00000000000000000000000000010000,
 		0b_0_00000_0_1_00_0_00: 0b_00000000000000000000000001000000,
@@ -43,8 +43,8 @@ func TestImmFromCIx16(t *testing.T) {
 	})
 }
 
-func TestImmFromCSS(t *testing.T) {
-	testImm(t, "ImmFromCSS", ImmFromCSS, immTests{
+func TestImmCSS(t *testing.T) {
+	testImm(t, "immCSS", immCSS, immTests{
 		0b_1000_00_0000000: 0b_00100000,
 		0b_0100_00_0000000: 0b_00010000,
 		0b_0010_00_0000000: 0b_00001000,
@@ -56,8 +56,8 @@ func TestImmFromCSS(t *testing.T) {
 	})
 }
 
-func TestImmFromCIW(t *testing.T) {
-	testImm(t, "ImmFromCIW", ImmFromCIW, immTests{
+func TestImmCIW(t *testing.T) {
+	testImm(t, "immCIW", immCIW, immTests{
 		0b_10_0000_0_0_00000: 0b_0000100000,
 		0b_01_0000_0_0_00000: 0b_0000010000,
 		0b_00_1000_0_0_00000: 0b_1000000000,
@@ -72,7 +72,7 @@ func TestImmFromCIW(t *testing.T) {
 }
 
 func TestImmFromCL(t *testing.T) {
-	testImm(t, "ImmFromCL", ImmFromCL, immTests{
+	testImm(t, "immCL", immCL, immTests{
 		0b_100_000_00_00000: 0b_0100000,
 		0b_010_000_00_00000: 0b_0010000,
 		0b_001_000_00_00000: 0b_0001000,
@@ -83,8 +83,8 @@ func TestImmFromCL(t *testing.T) {
 	})
 }
 
-func TestImmFromCB(t *testing.T) {
-	testImm(t, "ImmFromCB", ImmFromCB, immTests{
+func TestImmCB(t *testing.T) {
+	testImm(t, "immCB", immCB, immTests{
 		0b_1_00_000_00_00_0_00: 0b_11111111111111111111111100000000,
 		0b_0_10_000_00_00_0_00: 0b_00000000000000000000000000010000,
 		0b_0_01_000_00_00_0_00: 0b_00000000000000000000000000001000,
@@ -98,8 +98,8 @@ func TestImmFromCB(t *testing.T) {
 	})
 }
 
-func TestImmFromCJ(t *testing.T) {
-	testImm(t, "ImmFromCJ", ImmFromCJ, immTests{
+func TestImmCJ(t *testing.T) {
+	testImm(t, "ImmFromCJ", immCJ, immTests{
 		0b_1_0_00_0_0_0_000_0_00: 0b_11111111111111111111100000000000,
 		0b_0_1_00_0_0_0_000_0_00: 0b_00000000000000000000000000010000,
 		0b_0_0_10_0_0_0_000_0_00: 0b_00000000000000000000001000000000,
@@ -114,16 +114,4 @@ func TestImmFromCJ(t *testing.T) {
 		0b_1_1_11_1_1_1_111_1_00: 0b_11111111111111111111111111111110,
 		0b_1_1_11_1_1_1_111_1_11: 0b_11111111111111111111111111111110,
 	})
-}
-
-type immTests map[uint32]uint32
-
-func testImm(t *testing.T, fnName string, fn func(int32) int32, tests immTests) {
-	tests[0] = 0 // include zero-to-zero test case
-
-	for arg, want := range tests {
-		if got := uint32(fn(int32(arg))); want != got {
-			t.Errorf("%v(0b_%032b):\nwant 0b_%032b\n got 0b_%032b", fnName, arg, want, got)
-		}
-	}
 }

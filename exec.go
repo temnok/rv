@@ -10,12 +10,13 @@ func (cpu *CPU) execInstr() {
 		return
 	}
 
-	if opcode&0b11 != 0b11 {
-		cpu.instrIllegal = true
-		return
-	}
+	if opcode&0b11 == 0b11 {
+		cpu.nextPC = cpu.pc + 4
+	} else {
+		cpu.nextPC = cpu.pc + 2
 
-	cpu.nextPC = cpu.pc + 4
+		opcode = decompress(opcode)
+	}
 
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
