@@ -1,5 +1,5 @@
 31          25        20        15    12         7         2   0
-|          fn7|      rs2|      rs1|  fn3|       rd|       op|1 1| R
-|                    imm|      rs1|  fn3|       rd|       op|1 1| I
-|          imm|      rs2|      rs1|  fn3|      imm|       op|1 1| S/B
+|           f7|      rs2|      rs1|   f3|       rd|       op|1 1| R
+|                    imm|      rs1|   f3|       rd|       op|1 1| I
+|          imm|      rs2|      rs1|   f3|      imm|       op|1 1| S/B
 |                                    imm|       rd|       op|1 1| U/J
