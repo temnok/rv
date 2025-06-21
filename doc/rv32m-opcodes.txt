@@ -1,0 +1,9 @@
+31          25        20        15    12         7         2   0
+|            1|      rs2|      rs1|    0|       rd|  1 1 0 0|1 1| R      mul     rd, rs1, rs2
+|            1|      rs2|      rs1|    1|       rd|  1 1 0 0|1 1| R      mulh    rd, rs1, rs2
+|            1|      rs2|      rs1|  1 0|       rd|  1 1 0 0|1 1| R      mulhsu  rd, rs1, rs2
+|            1|      rs2|      rs1|  1 1|       rd|  1 1 0 0|1 1| R      mulhu   rd, rs1, rs2
+|            1|      rs2|      rs1|1 0 0|       rd|  1 1 0 0|1 1| R      div     rd, rs1, rs2
+|            1|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1| R      divu    rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 0|       rd|  1 1 0 0|1 1| R      divu    rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 1|       rd|  1 1 0 0|1 1| R      remu    rd, rs1, rs2
