@@ -5,5 +5,5 @@
 |            1|      rs2|      rs1|  1 1|       rd|  1 1 0 0|1 1| R      mulhu   rd, rs1, rs2
 |            1|      rs2|      rs1|1 0 0|       rd|  1 1 0 0|1 1| R      div     rd, rs1, rs2
 |            1|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1| R      divu    rd, rs1, rs2
-|            1|      rs2|      rs1|1 1 0|       rd|  1 1 0 0|1 1| R      divu    rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 0|       rd|  1 1 0 0|1 1| R      rem     rd, rs1, rs2
 |            1|      rs2|      rs1|1 1 1|       rd|  1 1 0 0|1 1| R      remu    rd, rs1, rs2

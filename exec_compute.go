@@ -48,6 +48,11 @@ func (cpu *CPU) execInstrComputeI(imm, rs1, f3, rd int32) {
 }
 
 func (cpu *CPU) execInstrComputeR(f7, rs2, rs1, f3, rd int32) {
+	if f7 == 1 {
+		cpu.execInstrComputeMul(rs2, rs1, f3, rd)
+		return
+	}
+
 	switch f7<<3 | f3 {
 	case 0b_0000000_000: // add
 		cpu.x[rd] = cpu.x[rs1] + cpu.x[rs2]
