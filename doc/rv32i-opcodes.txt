@@ -1,56 +1,81 @@
-
 31          25        20        15    12         7         2   0
-|                    imm|      rs1|    0|       rd|        0|1 1|      lb      rd, imm(rs1)
-|                    imm|      rs1|    1|       rd|        0|1 1|      lh      rd, imm(rs1)
-|                    imm|      rs1|  1 0|       rd|        0|1 1|      lw      rd, imm(rs1)
-|                    imm|      rs1|1 0 0|       rd|        0|1 1|      lbu     rd, imm(rs1)
-|                    imm|      rs1|1 0 1|       rd|        0|1 1|      lhu     rd, imm(rs1)
+|          fn7|      rs2|      rs1|  fn3|       rd|       op|1 1| R
+|                    imm|      rs1|  fn3|       rd|       op|1 1| I
+|          imm|      rs2|      rs1|  fn3|      imm|       op|1 1| S/B
+|                                    imm|       rd|       op|1 1| U/J
 
-|      0|   pred|   succ|              0|        0|      1 1|1 1|      fence   pred, succ
-|                                      1|        0|      1 1|1 1|      fence.i
 
-|                    imm|      rs1|    0|       rd|    1 0 0|1 1|      addi    rd, rs1, imm
-|            0|     uimm|      rs1|    1|       rd|    1 0 0|1 1|      slli    rd, rs1, uimm
-|                    imm|      rs1|  1 0|       rd|    1 0 0|1 1|      slti    rd, rs1, imm
-|                    imm|      rs1|  1 1|       rd|    1 0 0|1 1|      sltiu   rd, rs1, imm
-|                    imm|      rs1|1 0 0|       rd|    1 0 0|1 1|      xori    rd, rs1, imm
-|  0|        0|     uimm|      rs1|1 0 1|       rd|    1 0 0|1 1|      srli    rd, rs1, uimm
-|  1|        0|     uimm|      rs1|1 0 1|       rd|    1 0 0|1 1|      srai    rd, rs1, uimm
-|                    imm|      rs1|1 1 0|       rd|    1 0 0|1 1|      ori     rd, rs1, imm
-|                    imm|      rs1|1 1 1|       rd|    1 0 0|1 1|      andi    rd, rs1, imm
-|                                   immU|       rd|    1 0 1|1 1|      aupc    rd, immU
+rv32i, rv32e:
+31    28    25        20        15    12         7         2   0
+|                    imm|      rs1|    0|       rd|        0|1 1| I      lb      rd, imm(rs1)
+|                    imm|      rs1|    1|       rd|        0|1 1| I      lh      rd, imm(rs1)
+|                    imm|      rs1|  1 0|       rd|        0|1 1| I      lw      rd, imm(rs1)
+|                    imm|      rs1|1 0 0|       rd|        0|1 1| I      lbu     rd, imm(rs1)
+|                    imm|      rs1|1 0 1|       rd|        0|1 1| I      lhu     rd, imm(rs1)
 
-|         immS|      rs2|      rs1|    0|     immS|  1 0 0 0|1 1|      sb      rs2, immS(rs1)
-|         immS|      rs2|      rs1|    1|     immS|  1 0 0 0|1 1|      sh      rs2, immS(rs1)
-|         immS|      rs2|      rs1|  1 0|     immS|  1 0 0 0|1 1|      sw      rs2, immS(rs1)
+|      0|   pred|   succ|        0|    0|        0|      1 1|1 1| I      fence   pred, succ
+|                      0|        0|    1|        0|      1 1|1 1| I      fence.i
 
-|  0|        0|      rs2|      rs1|    0|       rd|  1 1 0 0|1 1|      add     rd, rs1, rs2
-|  1|        0|      rs2|      rs1|    0|       rd|  1 1 0 0|1 1|      sub     rd, rs1, rs2
-|            0|      rs2|      rs1|    1|       rd|  1 1 0 0|1 1|      sll     rd, rs1, rs2
-|            0|      rs2|      rs1|  1 0|       rd|  1 1 0 0|1 1|      slt     rd, rs1, rs2
-|            0|      rs2|      rs1|  1 1|       rd|  1 1 0 0|1 1|      sltu    rd, rs1, rs2
-|            0|      rs2|      rs1|1 0 0|       rd|  1 1 0 0|1 1|      xor     rd, rs1, rs2
-|  0|        0|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1|      srl     rd, rs1, rs2
-|  1|        0|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1|      sra     rd, rs1, rs2
-|            0|      rs2|      rs1|1 1 0|       rd|  1 1 0 0|1 1|      or      rd, rs1, rs2
-|            0|      rs2|      rs1|1 1 1|       rd|  1 1 0 0|1 1|      and     rd, rs1, rs2
-|                                   immU|       rd|  1 1 0 1|1 1|      lui     rd, immU
+|                    imm|      rs1|    0|       rd|    1 0 0|1 1| I      addi    rd, rs1, imm
+|            0|     uimm|      rs1|    1|       rd|    1 0 0|1 1| I      slli    rd, rs1, uimm
+|                    imm|      rs1|  1 0|       rd|    1 0 0|1 1| I      slti    rd, rs1, imm
+|                    imm|      rs1|  1 1|       rd|    1 0 0|1 1| I      sltiu   rd, rs1, imm
+|                    imm|      rs1|1 0 0|       rd|    1 0 0|1 1| I      xori    rd, rs1, imm
+|            0|     uimm|      rs1|1 0 1|       rd|    1 0 0|1 1| I      srli    rd, rs1, uimm
+|  1|        0|     uimm|      rs1|1 0 1|       rd|    1 0 0|1 1| I      srai    rd, rs1, uimm
+|                    imm|      rs1|1 1 0|       rd|    1 0 0|1 1| I      ori     rd, rs1, imm
+|                    imm|      rs1|1 1 1|       rd|    1 0 0|1 1| I      andi    rd, rs1, imm
 
-|         immB|      rs2|      rs1|    0|     immB|1 1 0 0 0|1 1|      beq     rs1, rs2, immB
-|         immB|      rs2|      rs1|    1|     immB|1 1 0 0 0|1 1|      bne     rs1, rs2, immB
-|         immB|      rs2|      rs1|1 0 0|     immB|1 1 0 0 0|1 1|      blt     rs1, rs2, immB
-|         immB|      rs2|      rs1|1 0 1|     immB|1 1 0 0 0|1 1|      bge     rs1, rs2, immB
-|         immB|      rs2|      rs1|1 1 0|     immB|1 1 0 0 0|1 1|      bltu    rs1, rs2, immB
-|         immB|      rs2|      rs1|1 1 1|     immB|1 1 0 0 0|1 1|      bgeu    rs1, rs2, immB
+|                                   immU|       rd|    1 0 1|1 1| U      auipc   rd, immU
 
-|                    imm|      rs1|    0|       rd|1 1 0 0 1|1 1|      jalr    rd, rs1, imm
-|                                   immJ|       rd|1 1 0 0 1|1 1|      jal     rd, immJ
+|         immS|      rs2|      rs1|    0|     immS|  1 0 0 0|1 1| S      sb      rs2, immS(rs1)
+|         immS|      rs2|      rs1|    1|     immS|  1 0 0 0|1 1| S      sh      rs2, immS(rs1)
+|         immS|      rs2|      rs1|  1 0|     immS|  1 0 0 0|1 1| S      sw      rs2, immS(rs1)
 
-|                      0|                        0|1 1 1 0 0|1 1|      ecall
-|                      1|                        0|1 1 1 0 0|1 1|      ebreak
-|                    csr|      rs1|    1|       rd|1 1 1 0 0|1 1|      csrrw   rd, csr, rs1
-|                    csr|      rs1|  1 0|       rd|1 1 1 0 0|1 1|      csrrs   rd, csr, rs1
-|                    csr|      rs1|  1 1|       rd|1 1 1 0 0|1 1|      csrrc   rd, csr, rs1
-|                    csr|     uimm|1 0 1|       rd|1 1 1 0 0|1 1|      csrrwi  rd, csr, uimm
-|                    csr|     uimm|1 1 0|       rd|1 1 1 0 0|1 1|      csrrsi  rd, csr, uimm
-|                    csr|     uimm|1 1 1|       rd|1 1 1 0 0|1 1|      csrrci  rd, csr, uimm
+|            0|      rs2|      rs1|    0|       rd|  1 1 0 0|1 1| R      add     rd, rs1, rs2
+|  1|        0|      rs2|      rs1|    0|       rd|  1 1 0 0|1 1| R      sub     rd, rs1, rs2
+|            0|      rs2|      rs1|    1|       rd|  1 1 0 0|1 1| R      sll     rd, rs1, rs2
+|            0|      rs2|      rs1|  1 0|       rd|  1 1 0 0|1 1| R      slt     rd, rs1, rs2
+|            0|      rs2|      rs1|  1 1|       rd|  1 1 0 0|1 1| R      sltu    rd, rs1, rs2
+|            0|      rs2|      rs1|1 0 0|       rd|  1 1 0 0|1 1| R      xor     rd, rs1, rs2
+|            0|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1| R      srl     rd, rs1, rs2
+|  1|        0|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1| R      sra     rd, rs1, rs2
+|            0|      rs2|      rs1|1 1 0|       rd|  1 1 0 0|1 1| R      or      rd, rs1, rs2
+|            0|      rs2|      rs1|1 1 1|       rd|  1 1 0 0|1 1| R      and     rd, rs1, rs2
+
+|                                   immU|       rd|  1 1 0 1|1 1| U      lui     rd, immU
+
+|         immB|      rs2|      rs1|    0|     immB|1 1 0 0 0|1 1| B      beq     rs1, rs2, immB
+|         immB|      rs2|      rs1|    1|     immB|1 1 0 0 0|1 1| B      bne     rs1, rs2, immB
+|         immB|      rs2|      rs1|1 0 0|     immB|1 1 0 0 0|1 1| B      blt     rs1, rs2, immB
+|         immB|      rs2|      rs1|1 0 1|     immB|1 1 0 0 0|1 1| B      bge     rs1, rs2, immB
+|         immB|      rs2|      rs1|1 1 0|     immB|1 1 0 0 0|1 1| B      bltu    rs1, rs2, immB
+|         immB|      rs2|      rs1|1 1 1|     immB|1 1 0 0 0|1 1| B      bgeu    rs1, rs2, immB
+
+|                    imm|      rs1|    0|       rd|1 1 0 0 1|1 1| I      jalr    rd, rs1, imm
+|                                   immJ|       rd|1 1 0 1 1|1 1| J      jal     rd, immJ
+
+|            0|        0|        0|    0|        0|1 1 1 0 0|1 1| I      ecall
+|            0|        1|        0|    0|        0|1 1 1 0 0|1 1| I      ebreak
+|            0|      1 0|        0|    0|        0|1 1 1 0 0|1 1| I      uret
+|      1|    0|      1 0|        0|    0|        0|1 1 1 0 0|1 1| I      sret
+|    1 1|    0|      1 0|        0|    0|        0|1 1 1 0 0|1 1| I      mret
+|      1|    0|    1 0 1|        0|    0|        0|1 1 1 0 0|1 1| I      wfi
+|      1|    1|      rs2|      rs1|    0|        0|1 1 1 0 0|1 1| I      sfence.vma rs1,rs2
+|                    csr|      rs1|    1|       rd|1 1 1 0 0|1 1| I      csrrw   rd, csr, rs1
+|                    csr|      rs1|  1 0|       rd|1 1 1 0 0|1 1| I      csrrs   rd, csr, rs1
+|                    csr|      rs1|  1 1|       rd|1 1 1 0 0|1 1| I      csrrc   rd, csr, rs1
+|                    csr|     uimm|1 0 1|       rd|1 1 1 0 0|1 1| I      csrrwi  rd, csr, uimm
+|                    csr|     uimm|1 1 0|       rd|1 1 1 0 0|1 1| I      csrrsi  rd, csr, uimm
+|                    csr|     uimm|1 1 1|       rd|1 1 1 0 0|1 1| I      csrrci  rd, csr, uimm
+
+
+rv32m:
+|            1|      rs2|      rs1|    0|       rd|  1 1 0 0|1 1| R M    mul     rd, rs1, rs2
+|            1|      rs2|      rs1|    1|       rd|  1 1 0 0|1 1| R M    mulh    rd, rs1, rs2
+|            1|      rs2|      rs1|  1 0|       rd|  1 1 0 0|1 1| R M    mulhsu  rd, rs1, rs2
+|            1|      rs2|      rs1|  1 1|       rd|  1 1 0 0|1 1| R M    mulhu   rd, rs1, rs2
+|            1|      rs2|      rs1|1 0 0|       rd|  1 1 0 0|1 1| R M    div     rd, rs1, rs2
+|            1|      rs2|      rs1|1 0 1|       rd|  1 1 0 0|1 1| R M    divu    rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 0|       rd|  1 1 0 0|1 1| R M    divu    rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 1|       rd|  1 1 0 0|1 1| R M    remu    rd, rs1, rs2
