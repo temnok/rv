@@ -1,12 +1,11 @@
 package rv
 
 func (cpu *CPU) execInstr() {
-	if cpu.faulted() {
-		return
-	}
+	cpu.trapped = false
 
-	opcode := cpu.memRead(cpu.pc, 4)
-	if cpu.faulted() {
+	var opcode int32
+	if !cpu.memRead(cpu.pc, 4, &opcode) {
+		cpu.trap(ExceptionInstructionAccessFault)
 		return
 	}
 
@@ -62,12 +61,9 @@ func (cpu *CPU) execInstr() {
 		cpu.execInstrSystem(immI(opcode), rs1, f3, rd)
 
 	default:
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 	}
 
 	cpu.x[0] = 0
-
-	if !cpu.faulted() {
-		cpu.pc = cpu.nextPC
-	}
+	cpu.pc = cpu.nextPC
 }

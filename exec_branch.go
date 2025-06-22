@@ -23,7 +23,7 @@ func (cpu *CPU) execInstrBranch(imm, rs2, rs1, f3 int32) {
 		cond = uint32(cpu.x[rs1]) >= uint32(cpu.x[rs2])
 
 	default:
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 	}
 
 	if cond {

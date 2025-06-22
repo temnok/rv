@@ -12,19 +12,19 @@ func (cpu *CPU) execInstrSystem(imm, rs1, f3, rd int32) {
 
 func (cpu *CPU) execInstrSystemSpecial(imm, rd int32) {
 	if rd != 0 {
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
 
 	switch imm {
 	case 0b_0000_000_00000: // ecall
-		cpu.eCall = true
+		cpu.trap(ExceptionEnvironmentCallFromMMode)
 
 	case 0b_0011_000_00010: // mret
 		cpu.nextPC = cpu.csr.mepc
 
 	default:
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 	}
 }
 
@@ -59,6 +59,6 @@ func (cpu *CPU) execInstrSystemCSR(imm, rs1, f3, rd int32) {
 		}
 
 	default:
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 	}
 }

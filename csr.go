@@ -1,8 +1,9 @@
 package rv
 
 type CSR struct {
-	satp                                                       int32
-	mstatus, misa, medeleg, mideleg, mie, mtvec, mepc, mhartid int32
+	satp                                                             int32
+	mstatus, misa, medeleg, mideleg, mie, mtvec, mepc, mcause, mtval int32
+	mhartid                                                          int32
 
 	// TODO: remove
 	pmpcfg0, pmpaddr0, mnstatus int32
@@ -28,6 +29,10 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 		return &csr.mtvec
 	case 0x341:
 		return &csr.mepc
+	case 0x342:
+		return &csr.mcause
+	case 0x343:
+		return &csr.mtval
 	case 0xf14:
 		return &csr.mhartid
 
@@ -40,7 +45,7 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 		return &csr.mnstatus
 
 	default:
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 		return nil
 	}
 }
@@ -57,7 +62,7 @@ func (cpu *CPU) csrRead(i int32, val *int32) bool {
 
 func (cpu *CPU) csrWrite(i, val int32) bool {
 	if readOnly := bits(i, 10, 2) == 0b_11; readOnly {
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 		return false
 	}
 

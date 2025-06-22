@@ -30,18 +30,22 @@ func TestInstructions(t *testing.T) {
 
 		copy(cpu.mem, program)
 
-		count := 0
-		for !cpu.faulted() {
+		for count := 1; ; count++ {
 			cpu.execInstr()
-			count++
-		}
 
-		if !(cpu.eCall && cpu.x[3] == 1 && cpu.x[10] == 0) {
-			t.Fatalf("Test %v: count=%v, instrIllegal=%v, memAccessFault=%v, pc=%08x, x3=%08x, x10=%08x\n",
-				testName, count, cpu.instrIllegal, cpu.memAccessFault,
-				uint32(cpu.pc), uint32(cpu.x[3]), uint32(cpu.x[10]))
-		}
+			if cpu.trapped && (cpu.csr.mcause == ExceptionEnvironmentCallFromUMode ||
+				cpu.csr.mcause == ExceptionEnvironmentCallFromSMode ||
+				cpu.csr.mcause == ExceptionEnvironmentCallFromMMode) {
 
-		fmt.Printf("%v: OK, count=%v\n", testName, count)
+				if cpu.x[3] == 1 && cpu.x[10] == 0 {
+					fmt.Printf("%v: OK, count=%v\n", testName, count)
+					break
+				} else {
+					t.Errorf("Test %v: count=%v, cause=%v, pc=%08x, x3=%08x, x10=%08x\n",
+						testName, count, cpu.csr.mcause,
+						uint32(cpu.pc), uint32(cpu.x[3]), uint32(cpu.x[10]))
+				}
+			}
+		}
 	}
 }

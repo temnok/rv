@@ -42,7 +42,7 @@ func (cpu *CPU) execInstrComputeI(imm, rs1, f3, rd int32) {
 			cpu.x[rd] = cpu.x[rs1] >> shamt
 
 		default:
-			cpu.instrIllegal = true
+			cpu.trap(ExceptionIllegalIstruction)
 		}
 	}
 }
@@ -96,6 +96,6 @@ func (cpu *CPU) execInstrComputeR(f7, rs2, rs1, f3, rd int32) {
 		cpu.x[rd] = cpu.x[rs1] & cpu.x[rs2]
 
 	default:
-		cpu.instrIllegal = true
+		cpu.trap(ExceptionIllegalIstruction)
 	}
 }
