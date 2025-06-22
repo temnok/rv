@@ -11,16 +11,10 @@ func (cpu *CPU) memAccess(addr, width int32) []byte {
 }
 
 func (cpu *CPU) memFetch(addr int32) int32 {
-	mem := cpu.memAccess(addr, 4)
-	if mem == nil {
+	val := cpu.memRead(addr, 4)
+
+	if cpu.trapped {
 		cpu.trap(ExceptionInstructionAccessFault)
-		return 0
-	}
-
-	val := int32(0)
-
-	for i, b := range mem {
-		val |= int32(b) << (i << 3)
 	}
 
 	return val

@@ -10,6 +10,8 @@ type CPU struct {
 
 	reserved        bool
 	reservedAddress int32
+
+	priv int32
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -28,7 +30,19 @@ const (
 	ExceptionInstructionPageFault         = 12
 	ExceptionLoadPageFault                = 13
 	ExceptionStoreAMOPageFault            = 15
+
+	PrivU = 0
+	PrivS = 1
+	PrivM = 3
 )
+
+func (cpu *CPU) init(ramSize int) {
+	*cpu = CPU{
+		pc:   ramBaseAddr,
+		mem:  make([]byte, ramSize),
+		priv: PrivM,
+	}
+}
 
 func (cpu *CPU) step() {
 	cpu.trapped = false

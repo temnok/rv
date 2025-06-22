@@ -30,10 +30,8 @@ func runTest(t *testing.T, file string) {
 		t.Fatal(err)
 	}
 
-	cpu := &CPU{
-		mem: make([]byte, 0x10000),
-		pc:  ramBaseAddr,
-	}
+	cpu := &CPU{}
+	cpu.init(64 * 1024)
 
 	copy(cpu.mem, program)
 

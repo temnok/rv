@@ -7,6 +7,11 @@ type CSR struct {
 }
 
 func (cpu *CPU) csrAccess(i int32) *int32 {
+	if priv := bits(i, 8, 2); cpu.priv < priv {
+		cpu.trap(ExceptionIllegalIstruction)
+		return nil
+	}
+
 	csr := &cpu.csr
 
 	switch i {

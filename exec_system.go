@@ -38,24 +38,18 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int32) {
 
 	switch f3 & 0b_11 {
 	case 0b_01: // csrrw
-		if rd == 0 || cpu.csrRead(imm, &val) {
-			if cpu.csrWrite(imm, s) {
-				cpu.x[rd] = val
-			}
+		if (rd == 0 || cpu.csrRead(imm, &val)) && cpu.csrWrite(imm, s) {
+			cpu.x[rd] = val
 		}
 
 	case 0b_10: // csrrs
-		if cpu.csrRead(imm, &val) {
-			if s == 0 || cpu.csrWrite(imm, val|s) {
-				cpu.x[rd] = val
-			}
+		if cpu.csrRead(imm, &val) && (s == 0 || cpu.csrWrite(imm, val|s)) {
+			cpu.x[rd] = val
 		}
 
 	case 0b_11: // csrrc
-		if cpu.csrRead(imm, &val) {
-			if s == 0 || cpu.csrWrite(imm, val&^s) {
-				cpu.x[rd] = val
-			}
+		if cpu.csrRead(imm, &val) && (s == 0 || cpu.csrWrite(imm, val&^s)) {
+			cpu.x[rd] = val
 		}
 
 	default:
