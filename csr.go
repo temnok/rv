@@ -1,9 +1,13 @@
 package rv
 
+// https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
+
 type CSR struct {
-	satp                                                             int32
-	mstatus, misa, medeleg, mideleg, mie, mtvec, mepc, mcause, mtval int32
-	mhartid                                                          int32
+	cycle, mtime, cycleh, mtimeh int32
+
+	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh int32
+	mscratch, mepc, mcause, mtval, mip                                          int32
+	mvendorid, marchid, mimpid, mhartid, mconfigptr                             int32
 }
 
 func (cpu *CPU) csrAccess(i int32) *int32 {
@@ -15,8 +19,6 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 	csr := &cpu.csr
 
 	switch i {
-	case 0x180:
-		return &csr.satp
 	case 0x300:
 		return &csr.mstatus
 	case 0x301:
@@ -29,14 +31,47 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 		return &csr.mie
 	case 0x305:
 		return &csr.mtvec
+	case 0x306:
+		return &csr.mcounteren
+	case 0x310:
+		return &csr.mstatush
+	case 0x312:
+		return &csr.medelegh
+
+	case 0x340:
+		return &csr.mscratch
 	case 0x341:
 		return &csr.mepc
 	case 0x342:
 		return &csr.mcause
 	case 0x343:
 		return &csr.mtval
-	case 0xf14:
+	case 0x344:
+		return &csr.mip
+
+	case 0xC00:
+		return &cpu.csr.cycle
+	case 0xC01:
+		return &cpu.csr.mtime
+	case 0xC02:
+		return &cpu.csr.cycle
+	case 0xC80:
+		return &cpu.csr.cycleh
+	case 0xC81:
+		return &cpu.csr.mtimeh
+	case 0xC82:
+		return &cpu.csr.cycleh
+
+	case 0xF11:
+		return &csr.mvendorid
+	case 0xF12:
+		return &csr.marchid
+	case 0xF13:
+		return &csr.mimpid
+	case 0xF14:
 		return &csr.mhartid
+	case 0xF15:
+		return &csr.mconfigptr
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

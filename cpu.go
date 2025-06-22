@@ -37,10 +37,15 @@ const (
 )
 
 func (cpu *CPU) init(ramSize int) {
+	const xlen32bit = 0b_01
+
 	*cpu = CPU{
 		pc:   ramBaseAddr,
 		mem:  make([]byte, ramSize),
 		priv: PrivM,
+		csr: CSR{
+			misa: xlen32bit<<30 | 1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a'),
+		},
 	}
 }
 
