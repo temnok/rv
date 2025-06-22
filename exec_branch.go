@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execInstrBranch(imm, rs2, rs1, f3 int32) {
+func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int32) {
 	cond := false
 
 	switch f3 {

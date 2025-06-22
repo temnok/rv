@@ -43,21 +43,20 @@ func runTest(t *testing.T, file string) {
 			return
 		}
 
-		cpu.execInstr()
+		cpu.step()
 
 		if cpu.trapped && (cpu.csr.mcause == ExceptionEnvironmentCallFromUMode ||
 			cpu.csr.mcause == ExceptionEnvironmentCallFromSMode ||
 			cpu.csr.mcause == ExceptionEnvironmentCallFromMMode) {
 
 			if cpu.x[3] == 1 && cpu.x[10] == 0 {
-				fmt.Printf("count=%v\n", count)
+				fmt.Printf("instructions: %v\n", count)
 			} else {
-				t.Errorf("count=%v, cause=%v, pc=%08x, x3=%08x, x10=%08x\n",
+				t.Errorf("instructions: %v, cause: %v, pc: %08x, x3: %08x, x10: %08x\n",
 					count, cpu.csr.mcause, uint32(cpu.pc), uint32(cpu.x[3]), uint32(cpu.x[10]))
 			}
 
-			return
+			break
 		}
 	}
-
 }

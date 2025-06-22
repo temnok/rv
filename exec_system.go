@@ -1,16 +1,16 @@
 package rv
 
-func (cpu *CPU) execInstrSystem(imm, rs1, f3, rd int32) {
+func (cpu *CPU) execSystem(imm, rs1, f3, rd int32) {
 	imm = bits(imm, 0, 12)
 
 	if f3 == 0 {
-		cpu.execInstrSystemSpecial(imm, rd)
+		cpu.execSystemSpecial(imm, rd)
 	} else {
-		cpu.execInstrSystemCSR(imm, rs1, f3, rd)
+		cpu.execSystemCSR(imm, rs1, f3, rd)
 	}
 }
 
-func (cpu *CPU) execInstrSystemSpecial(imm, rd int32) {
+func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 	if rd != 0 {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
@@ -28,7 +28,7 @@ func (cpu *CPU) execInstrSystemSpecial(imm, rd int32) {
 	}
 }
 
-func (cpu *CPU) execInstrSystemCSR(imm, rs1, f3, rd int32) {
+func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int32) {
 	s := rs1
 	if (f3 & 0b_100) == 0 {
 		s = cpu.x[s]

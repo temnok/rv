@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execInstrComputeI(imm, rs1, f3, rd int32) {
+func (cpu *CPU) execComputeI(imm, rs1, f3, rd int32) {
 	switch f3 {
 	case 0b_000: // addi
 		cpu.x[rd] = cpu.x[rs1] + imm
@@ -47,9 +47,9 @@ func (cpu *CPU) execInstrComputeI(imm, rs1, f3, rd int32) {
 	}
 }
 
-func (cpu *CPU) execInstrComputeR(f7, rs2, rs1, f3, rd int32) {
+func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int32) {
 	if f7 == 1 {
-		cpu.execInstrComputeMul(rs2, rs1, f3, rd)
+		cpu.execComputeM(rs2, rs1, f3, rd)
 		return
 	}
 

@@ -7,6 +7,9 @@ type CPU struct {
 	mem        []byte
 
 	trapped bool
+
+	reservationValid   bool
+	reservationAddress int32
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -27,12 +30,29 @@ const (
 	ExceptionStoreAMOPageFault            = 15
 )
 
+func (cpu *CPU) step() {
+	cpu.trapped = false
+
+	if opcode := cpu.memFetch(cpu.pc); !cpu.trapped {
+		if compressed := opcode&0b11 != 0b11; compressed {
+			opcode = decompress(opcode)
+			cpu.nextPC = cpu.pc + 2
+		} else {
+			cpu.nextPC = cpu.pc + 4
+		}
+
+		cpu.exec(opcode)
+	}
+
+	cpu.pc = cpu.nextPC
+}
+
 func (cpu *CPU) trap(cause int32) {
+	cpu.trapped = true
+
 	cpu.csr.mepc = cpu.pc
 	cpu.csr.mcause = cause
 	cpu.csr.mtval = 0
-	cpu.nextPC = cpu.csr.mtvec &^ 0b_11
-	cpu.pc = cpu.nextPC
 
-	cpu.trapped = true
+	cpu.nextPC = cpu.csr.mtvec &^ 0b_11
 }

@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execInstrComputeMul(rs2, rs1, f3, rd int32) {
+func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int32) {
 	a, b := cpu.x[rs1], cpu.x[rs2]
 	var c int32
 
