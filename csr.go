@@ -4,9 +4,6 @@ type CSR struct {
 	satp                                                             int32
 	mstatus, misa, medeleg, mideleg, mie, mtvec, mepc, mcause, mtval int32
 	mhartid                                                          int32
-
-	// TODO: remove
-	pmpcfg0, pmpaddr0, mnstatus int32
 }
 
 func (cpu *CPU) csrAccess(i int32) *int32 {
@@ -35,14 +32,6 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 		return &csr.mtval
 	case 0xf14:
 		return &csr.mhartid
-
-	// TODO: remove
-	case 0x3A0:
-		return &csr.pmpcfg0
-	case 0x3B0:
-		return &csr.pmpaddr0
-	case 0x744:
-		return &csr.mnstatus
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
