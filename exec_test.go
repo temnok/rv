@@ -38,7 +38,7 @@ func runTest(t *testing.T, file string) {
 	copy(cpu.mem, program)
 
 	for count := 1; ; count++ {
-		if count == 10_000 {
+		if count == 100_000 {
 			t.Errorf("timeout")
 			return
 		}

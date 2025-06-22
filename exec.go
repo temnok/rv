@@ -23,6 +23,9 @@ func (cpu *CPU) exec(opcode int32) {
 	case 0b_01000:
 		cpu.execStore(immS(opcode), rs2, rs1, f3)
 
+	case 0b_01011:
+		cpu.execAtomic(f7, rs2, rs1, f3, rd)
+
 	case 0b_01100:
 		cpu.execComputeR(f7, rs2, rs1, f3, rd)
 

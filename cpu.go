@@ -8,8 +8,8 @@ type CPU struct {
 
 	trapped bool
 
-	reservationValid   bool
-	reservationAddress int32
+	reserved        bool
+	reservedAddress int32
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses

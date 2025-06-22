@@ -1,0 +1,12 @@
+31      27  25        20        15    12         7         2   0
+|        0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amoadd.w   rd, rs2, (rs1)
+|        1|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amoswap.w  rd, rs2, (rs1)
+|      1 0|   |        0|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    lr.w       rd, (rs1)
+|      1 1|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    sc.w       rd, rs2, (rs1)
+|    1 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amoxor.w   rd, rs2, (rs1)
+|  1 0 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amoor.w    rd, rs2, (rs1)
+|  1 1 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amoand.w   rd, rs2, (rs1)
+|1 0 0 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amomin.w   rd, rs2, (rs1)
+|1 0 1 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amomax.w   rd, rs2, (rs1)
+|1 1 0 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amominu.w  rd, rs2, (rs1)
+|1 1 1 0 0|   |      rs2|      rs1|  1 0|       rd|  1 0 1 1|1 1| R    amomaxu.w  rd, rs2, (rs1)
