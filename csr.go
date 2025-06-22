@@ -2,8 +2,26 @@ package rv
 
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
+const (
+	satp = 0x180
+
+	mstatusSIE  = 1
+	mstatusSPIE = 5
+	mstatusSPP  = 8
+
+	mstatusMIE  = 3
+	mstatusMPIE = 7
+	mstatusMPP  = 11
+
+	mstatusMPRV = 17
+	mstatusTVM  = 20
+	mstatusTSR  = 22
+)
+
 type CSR struct {
 	cycle, mtime, cycleh, mtimeh int32
+
+	stvec, scounteren, sscratch, sepc, scause, stval, sip, satp int32
 
 	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh int32
 	mscratch, mepc, mcause, mtval, mip                                          int32
@@ -19,6 +37,23 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 	csr := &cpu.csr
 
 	switch i {
+	case 0x105:
+		return &cpu.csr.stvec
+	case 0x106:
+		return &cpu.csr.scounteren
+	case 0x140:
+		return &cpu.csr.sscratch
+	case 0x141:
+		return &cpu.csr.sepc
+	case 0x142:
+		return &cpu.csr.scause
+	case 0x143:
+		return &cpu.csr.stval
+	case 0x144:
+		return &cpu.csr.sip
+	case satp:
+		return &csr.satp
+
 	case 0x300:
 		return &csr.mstatus
 	case 0x301:
@@ -98,6 +133,16 @@ func (cpu *CPU) csrWrite(i, val int32) bool {
 	ptr := cpu.csrAccess(i)
 	if ptr == nil {
 		return false
+	}
+
+	switch i {
+	case satp:
+		if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
+			cpu.trap(ExceptionIllegalIstruction)
+			return false
+		}
+
+		val &^= -1 << 31 // TODO: do not enable virtual memory for now
 	}
 
 	*ptr = val

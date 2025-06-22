@@ -44,7 +44,9 @@ func (cpu *CPU) init(ramSize int) {
 		mem:  make([]byte, ramSize),
 		priv: PrivM,
 		csr: CSR{
-			misa: xlen32bit<<30 | 1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a'),
+			misa: xlen32bit<<30 |
+				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+				1<<('u'-'a') | 1<<('s'-'a'),
 		},
 	}
 }
@@ -69,9 +71,80 @@ func (cpu *CPU) step() {
 func (cpu *CPU) trap(cause int32) {
 	cpu.trapped = true
 
-	cpu.csr.mepc = cpu.pc
-	cpu.csr.mcause = cause
-	cpu.csr.mtval = 0
+	isInterrupt := bit(cause, 31) != 0
+	causeID := cause &^ (-1 << 31)
 
-	cpu.nextPC = cpu.csr.mtvec &^ 0b_11
+	deleg := cpu.csr.medeleg
+	if isInterrupt {
+		deleg = cpu.csr.mideleg
+	}
+
+	priv := int32(PrivM)
+	if cpu.priv < PrivM && bit(deleg, causeID) != 0 {
+		priv = PrivS
+	}
+
+	var tvec int32
+
+	switch priv {
+	case PrivM:
+		mie := bit(cpu.csr.mstatus, mstatusMIE)
+		cpu.csr.mstatus &^= 0b_11<<mstatusMPP | 1<<mstatusMPIE | 1<<mstatusMIE
+		cpu.csr.mstatus |= cpu.priv<<mstatusMPP | mie<<mstatusMPIE
+
+		cpu.csr.mepc = cpu.pc
+		cpu.csr.mcause = cause
+		cpu.csr.mtval = 0
+		tvec = cpu.csr.mtvec
+
+	case PrivS:
+		sie := bit(cpu.csr.mstatus, mstatusSIE)
+		cpu.csr.mstatus &^= 1<<mstatusSPP | 1<<mstatusSPIE | 1<<mstatusSIE
+		cpu.csr.mstatus |= cpu.priv<<mstatusSPP | sie<<mstatusSPIE
+
+		cpu.csr.sepc = cpu.pc
+		cpu.csr.scause = cause
+		cpu.csr.stval = 0
+		tvec = cpu.csr.stvec
+	}
+
+	cpu.nextPC = tvec &^ 0b_11
+	if bit(tvec, 0) != 0 && isInterrupt {
+		cpu.nextPC += causeID * 4
+	}
+
+	cpu.priv = priv
+}
+
+// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
+func (cpu *CPU) ret(priv int32) {
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
+	trapSRET := priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) != 0
+
+	if priv != cpu.priv || trapSRET {
+		cpu.trap(ExceptionIllegalIstruction)
+		return
+	}
+
+	switch priv {
+	case PrivM:
+		cpu.nextPC = cpu.csr.mepc
+		cpu.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
+
+		mie := bit(cpu.csr.mstatus, mstatusMPIE)
+		cpu.csr.mstatus |= 1<<mstatusMPIE | mie<<mstatusMIE
+		cpu.csr.mstatus &^= 0b_11 << mstatusMPP
+
+	case PrivS:
+		cpu.nextPC = cpu.csr.sepc
+		cpu.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
+
+		sie := bit(cpu.csr.mstatus, mstatusSPIE)
+		cpu.csr.mstatus |= 1<<mstatusSPIE | sie<<mstatusSIE
+		cpu.csr.mstatus &^= 1 << mstatusSPP
+	}
+
+	if cpu.priv != PrivM {
+		cpu.csr.mstatus &^= 1 << mstatusMPRV
+	}
 }

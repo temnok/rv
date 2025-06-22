@@ -50,8 +50,9 @@ func runTest(t *testing.T, file string) {
 			if cpu.x[3] == 1 && cpu.x[10] == 0 {
 				fmt.Printf("instructions: %v\n", count)
 			} else {
-				t.Errorf("instructions: %v, cause: %v, pc: %08x, x3: %08x, x10: %08x\n",
-					count, cpu.csr.mcause, uint32(cpu.pc), uint32(cpu.x[3]), uint32(cpu.x[10]))
+				t.Errorf("instructions: %v, cause: %v, pc: %08x, mepc: %08x, x3: %08x, x10: %08x\n",
+					count, cpu.csr.mcause, uint32(cpu.pc), uint32(cpu.csr.mepc),
+					uint32(cpu.x[3]), uint32(cpu.x[10]))
 			}
 
 			break

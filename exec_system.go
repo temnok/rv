@@ -20,8 +20,11 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 	case 0b_0000_000_00000: // ecall
 		cpu.trap(ExceptionEnvironmentCallFromMMode)
 
+	case 0b_0001_000_00010: // sret
+		cpu.ret(PrivS)
+
 	case 0b_0011_000_00010: // mret
-		cpu.nextPC = cpu.csr.mepc
+		cpu.ret(PrivM)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
