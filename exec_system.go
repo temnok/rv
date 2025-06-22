@@ -16,7 +16,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 
 	switch imm {
 	case 0b_0000_000_00000: // ecall
-		cpu.trap(ExceptionEnvironmentCallFromMMode)
+		cpu.trap(ExceptionEnvironmentCallFromUMode + cpu.priv)
 
 	case 0b_0000_000_00001: // ebreak
 		cpu.trap(ExceptionBreakpoint)
@@ -24,11 +24,21 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 	case 0b_0001_000_00010: // sret
 		cpu.ret(PrivS)
 
+	case 0b_0001_000_00101: // wfi
+
 	case 0b_0011_000_00010: // mret
 		cpu.ret(PrivM)
 
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		switch bits(imm, 5, 7) {
+		case 0b_0001_001: // sfence.vma
+			if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
+				cpu.trap(ExceptionIllegalIstruction)
+			}
+
+		default:
+			cpu.trap(ExceptionIllegalIstruction)
+		}
 	}
 }
 

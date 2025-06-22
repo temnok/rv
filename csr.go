@@ -34,6 +34,11 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 		return nil
 	}
 
+	if i == satp && cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
+		cpu.trap(ExceptionIllegalIstruction)
+		return nil
+	}
+
 	csr := &cpu.csr
 
 	switch i {
@@ -133,16 +138,6 @@ func (cpu *CPU) csrWrite(i, val int32) bool {
 	ptr := cpu.csrAccess(i)
 	if ptr == nil {
 		return false
-	}
-
-	switch i {
-	case satp:
-		if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
-			cpu.trap(ExceptionIllegalIstruction)
-			return false
-		}
-
-		val &^= -1 << 31 // TODO: do not enable virtual memory for now
 	}
 
 	*ptr = val
