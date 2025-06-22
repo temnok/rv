@@ -16,22 +16,22 @@ type CPU struct {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
 const (
-	ExceptionInstructionAddressMisaligned = 0
-	ExceptionInstructionAccessFault       = 1
-	ExceptionIllegalIstruction            = 2
-	ExceptionBreakpoint                   = 3
-	ExceptionLoadAddressMisaligned        = 4
-	ExceptionLoadAccessFault              = 5
-	ExceptionStoreAMOAddressMisaligned    = 6
-	ExceptionStoreAMOAccessFault          = 7
-	ExceptionEnvironmentCallFromUMode     = 8
-	ExceptionEnvironmentCallFromSMode     = 9
-	ExceptionEnvironmentCallFromMMode     = 11
-	ExceptionInstructionPageFault         = 12
-	ExceptionLoadPageFault                = 13
-	ExceptionStoreAMOPageFault            = 15
+	// ExceptionInstructionAddressMisaligned = 0
+	ExceptionInstructionAccessFault = 1
+	ExceptionIllegalIstruction      = 2
+	ExceptionBreakpoint             = 3
+	// ExceptionLoadAddressMisaligned        = 4
+	ExceptionLoadAccessFault = 5
+	// ExceptionStoreAMOAddressMisaligned = 6
+	ExceptionStoreAMOAccessFault      = 7
+	ExceptionEnvironmentCallFromUMode = 8
+	ExceptionEnvironmentCallFromSMode = 9
+	ExceptionEnvironmentCallFromMMode = 11
+	// ExceptionInstructionPageFault         = 12
+	// ExceptionLoadPageFault                = 13
+	// ExceptionStoreAMOPageFault            = 15
 
-	PrivU = 0
+	// PrivU = 0
 	PrivS = 1
 	PrivM = 3
 )
@@ -68,25 +68,36 @@ func (cpu *CPU) step() {
 	cpu.pc = cpu.nextPC
 }
 
+func (cpu *CPU) trapCause() int32 {
+	switch cpu.priv {
+	case PrivM:
+		return cpu.csr.mcause
+	case PrivS:
+		return cpu.csr.scause
+	default:
+		return -1
+	}
+}
+
 func (cpu *CPU) trap(cause int32) {
 	cpu.trapped = true
 
 	isInterrupt := bit(cause, 31) != 0
-	causeID := cause &^ (-1 << 31)
+	causeID := bits(cause, 0, 5)
 
 	deleg := cpu.csr.medeleg
 	if isInterrupt {
 		deleg = cpu.csr.mideleg
 	}
 
-	priv := int32(PrivM)
+	effectivePriv := int32(PrivM)
 	if cpu.priv < PrivM && bit(deleg, causeID) != 0 {
-		priv = PrivS
+		effectivePriv = PrivS
 	}
 
 	var tvec int32
 
-	switch priv {
+	switch effectivePriv {
 	case PrivM:
 		mie := bit(cpu.csr.mstatus, mstatusMIE)
 		cpu.csr.mstatus &^= 0b_11<<mstatusMPP | 1<<mstatusMPIE | 1<<mstatusMIE
@@ -113,15 +124,16 @@ func (cpu *CPU) trap(cause int32) {
 		cpu.nextPC += causeID * 4
 	}
 
-	cpu.priv = priv
+	cpu.priv = effectivePriv
 }
 
+// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func (cpu *CPU) ret(priv int32) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
-	trapSRET := priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) != 0
+	trapSRET := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) != 0
 
-	if priv != cpu.priv || trapSRET {
+	if priv > cpu.priv || trapSRET {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}

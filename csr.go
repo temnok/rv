@@ -5,13 +5,14 @@ package rv
 const (
 	satp = 0x180
 
-	mstatusSIE  = 1
-	mstatusSPIE = 5
-	mstatusSPP  = 8
+	mstatusSIE = 1
+	mstatusMIE = 3
 
-	mstatusMIE  = 3
+	mstatusSPIE = 5
 	mstatusMPIE = 7
-	mstatusMPP  = 11
+
+	mstatusSPP = 8
+	mstatusMPP = 11
 
 	mstatusMPRV = 17
 	mstatusTVM  = 20
