@@ -3,39 +3,10 @@ package rv
 func (cpu *CPU) execInstrSystem(imm, rs1, f3, rd int32) {
 	imm = bits(imm, 0, 12)
 
-	switch f3 {
-	case 0b_000:
+	if f3 == 0 {
 		cpu.execInstrSystemSpecial(imm, rd)
-
-	case 0b_001: // csrrw
-		saved := cpu.csr[imm]
-		cpu.csr[imm] = cpu.x[rs1]
-		cpu.x[rd] = saved
-
-	case 0b_010: // csrrs
-		saved := cpu.csr[imm]
-		cpu.csr[imm] |= cpu.x[rs1]
-		cpu.x[rd] = saved
-
-	case 0b_011: // csrrc
-		saved := cpu.csr[imm]
-		cpu.csr[imm] &^= cpu.x[rs1]
-		cpu.x[rd] = saved
-
-	case 0b_101: // csrrwi
-		cpu.x[rd] = cpu.csr[imm]
-		cpu.csr[imm] = rs1
-
-	case 0b_110: // csrrsi
-		cpu.x[rd] = cpu.csr[imm]
-		cpu.csr[imm] |= rs1
-
-	case 0b_111: // csrrci
-		cpu.x[rd] = cpu.csr[imm]
-		cpu.csr[imm] &^= rs1
-
-	default:
-		cpu.instrIllegal = true
+	} else {
+		cpu.execInstrSystemCSR(imm, rs1, f3, rd)
 	}
 }
 
@@ -50,7 +21,42 @@ func (cpu *CPU) execInstrSystemSpecial(imm, rd int32) {
 		cpu.eCall = true
 
 	case 0b_0011_000_00010: // mret
-		cpu.nextPC = cpu.csr[mepc]
+		cpu.nextPC = cpu.csr.mepc
+
+	default:
+		cpu.instrIllegal = true
+	}
+}
+
+func (cpu *CPU) execInstrSystemCSR(imm, rs1, f3, rd int32) {
+	s := rs1
+	if (f3 & 0b_100) == 0 {
+		s = cpu.x[s]
+	}
+
+	var val int32
+
+	switch f3 & 0b_11 {
+	case 0b_01: // csrrw
+		if rd == 0 || cpu.csrRead(imm, &val) {
+			if cpu.csrWrite(imm, s) {
+				cpu.x[rd] = val
+			}
+		}
+
+	case 0b_10: // csrrs
+		if cpu.csrRead(imm, &val) {
+			if s == 0 || cpu.csrWrite(imm, val|s) {
+				cpu.x[rd] = val
+			}
+		}
+
+	case 0b_11: // csrrc
+		if cpu.csrRead(imm, &val) {
+			if s == 0 || cpu.csrWrite(imm, val&^s) {
+				cpu.x[rd] = val
+			}
+		}
 
 	default:
 		cpu.instrIllegal = true
