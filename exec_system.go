@@ -24,7 +24,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 	case 0b_0001_000_00010: // sret
 		cpu.ret(PrivS)
 
-	case 0b_0001_000_00101: // wfi
+	case 0b_0001_000_00101: // wfi, https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#wfi
 
 	case 0b_0011_000_00010: // mret
 		cpu.ret(PrivM)
