@@ -22,7 +22,7 @@ const (
 type CSR struct {
 	cycle, mtime, cycleh, mtimeh int32
 
-	stvec, scounteren, sscratch, sepc, scause, stval, sip, satp int32
+	sie, stvec, scounteren, sscratch, sepc, scause, stval, sip, satp int32
 
 	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh int32
 	mscratch, mepc, mcause, mtval, mip                                          int32
@@ -46,7 +46,7 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 	case 0x100:
 		return &cpu.csr.mstatus
 	case 0x104:
-		return &cpu.csr.mie
+		return &cpu.csr.sie
 	case 0x105:
 		return &cpu.csr.stvec
 	case 0x106:

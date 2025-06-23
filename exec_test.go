@@ -72,7 +72,7 @@ func runTest(t *testing.T, file string) {
 			}
 
 			t.Errorf("timeout: priv=%v, mcause=%08x, x31=%08x\n"+
-				"last PCs: %x\nlast lastTraps: %x\nloop at addresses: %x\n",
+				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
 				cpu.priv, cpu.csr.mcause, uint32(cpu.x[31]), lastPCs, lastTraps, addresses)
 			break
 		}

@@ -54,7 +54,13 @@ func (cpu *CPU) init(ramSize int) {
 func (cpu *CPU) step() {
 	cpu.trapped = false
 
+	if cpu.trapOnPendingInterrupts(); cpu.trapped {
+		cpu.pc = cpu.nextPC
+		return
+	}
+
 	if opcode := cpu.memFetch(cpu.pc); !cpu.trapped {
+
 		if compressed := opcode&0b11 != 0b11; compressed {
 			opcode = decompress(opcode)
 			cpu.nextPC = cpu.pc + 2
@@ -76,6 +82,31 @@ func (cpu *CPU) trapCause() int32 {
 		return cpu.csr.scause
 	default:
 		return -1
+	}
+}
+
+// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
+func (cpu *CPU) trapOnPendingInterrupts() {
+	mi := cpu.csr.mip & cpu.csr.mie
+
+	if cpu.trapped || mi == 0 {
+		return
+	}
+
+	for i := int32(12); i > 0; i-- {
+		if bit(mi, i) == 0 {
+			continue
+		}
+
+		priv := int32(PrivM)
+		if bit(cpu.csr.mideleg, i) != 0 {
+			priv = PrivS
+		}
+
+		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
+			cpu.trap(-1<<31 | i)
+			return
+		}
 	}
 }
 
