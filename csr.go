@@ -3,18 +3,20 @@ package rv
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
 const (
-	satp = 0x180
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
+	satp     = 0x180
+	satpMODE = 31
 
-	mstatusSIE = 1
-	mstatusMIE = 3
-
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
+	mstatusSIE  = 1
+	mstatusMIE  = 3
 	mstatusSPIE = 5
 	mstatusMPIE = 7
-
-	mstatusSPP = 8
-	mstatusMPP = 11
-
+	mstatusSPP  = 8
+	mstatusMPP  = 11
 	mstatusMPRV = 17
+	mstatusSUM  = 18
+	mstatusMXR  = 19
 	mstatusTVM  = 20
 	mstatusTSR  = 22
 )

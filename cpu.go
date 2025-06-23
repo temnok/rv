@@ -27,13 +27,28 @@ const (
 	ExceptionEnvironmentCallFromUMode = 8
 	ExceptionEnvironmentCallFromSMode = 9
 	ExceptionEnvironmentCallFromMMode = 11
-	// ExceptionInstructionPageFault         = 12
-	// ExceptionLoadPageFault                = 13
-	// ExceptionStoreAMOPageFault            = 15
+	ExceptionInstructionPageFault     = 12
+	ExceptionLoadPageFault            = 13
+	ExceptionStoreAMOPageFault        = 15
 
-	// PrivU = 0
+	PrivU = 0
 	PrivS = 1
 	PrivM = 3
+
+	AccessExecute = 0
+	AccessRead    = 1
+	AccessWrite   = 3
+
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#translation
+	PteV = 0
+	PteR = 1
+	PteW = 2
+	PteX = 3
+	PteU = 4
+	PteG = 5
+	PteA = 6
+	PteD = 7
+	//PteRSW = 8
 )
 
 func (cpu *CPU) init(ramSize int) {
@@ -111,6 +126,10 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 }
 
 func (cpu *CPU) trap(cause int32) {
+	if cpu.trapped {
+		panic("double trap")
+	}
+
 	cpu.trapped = true
 
 	isInterrupt := bit(cause, 31) != 0
@@ -190,4 +209,63 @@ func (cpu *CPU) ret(priv int32) {
 	if cpu.priv != PrivM {
 		cpu.csr.mstatus &^= 1 << mstatusMPRV
 	}
+}
+
+func (cpu *CPU) translateSv32(addr, access int32) int32 {
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
+	epriv := cpu.priv
+	if bit(cpu.csr.mstatus, mstatusMPRV) != 0 && access != AccessExecute {
+		epriv = bits(cpu.csr.mstatus, mstatusMPP, 2)
+	}
+
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
+	if bit(cpu.csr.satp, satpMODE) == 0 || epriv == PrivM {
+		return addr
+	}
+
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
+	pteAddr := bits(cpu.csr.satp, 0, 22)<<12 | bits(addr, 22, 10)
+	pte := cpu.physMemRead(pteAddr, 4)
+	if cpu.trapped {
+		return 0
+	}
+
+	pageSize := int32(1 << 22) // 4MB
+	pteR, pteW, pteX := bit(pte, PteR), bit(pte, PteW), bit(pte, PteX)
+	isLeaf := pteR != 0 || pteX != 0
+
+	pteInvalid := bit(pte, PteV) == 0 || // valid bit not set
+		pteR == 0 && pteW == 1 || // reserved
+		isLeaf && bits(pte, 10, 10) != 0 // misaligned superpage
+
+	if !pteInvalid && !isLeaf {
+		pageSize = 1 << 12 // 4KB
+
+		pteAddr = bits(pte, 10, 22)<<12 | bits(addr, 12, 10)
+		pte = cpu.physMemRead(pteAddr, 4)
+		if cpu.trapped {
+			return 0
+		}
+
+		pteR, pteW, pteX = bit(pte, PteR), bit(pte, PteW), bit(pte, PteX)
+		pteInvalid = bit(pte, PteV) == 0 ||
+			pteR == 0 && !(pteW == 0 && pteX == 1)
+	}
+
+	pteU, pteD, pteA := bit(pte, PteU), bit(pte, PteD), bit(pte, PteA)
+	sum, mxr := bit(cpu.csr.mstatus, mstatusSUM), bit(cpu.csr.mstatus, mstatusMXR)
+
+	if pteInvalid ||
+		epriv == PrivU && pteU == 0 ||
+		epriv == PrivS && pteU == 1 && !(sum == 1 && access != AccessExecute) ||
+		access == AccessExecute && pteX == 0 ||
+		access == AccessRead && pteR == 0 && !(mxr == 1 && pteX == 1) ||
+		access == AccessWrite && (pteW == 0 || pteD == 0) ||
+		pteA == 0 {
+
+		cpu.trap(ExceptionInstructionPageFault + access)
+		return 0
+	}
+
+	return (pte<<2)&^(pageSize-1) | addr&(pageSize-1)
 }
