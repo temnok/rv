@@ -4,7 +4,7 @@ type CPU struct {
 	x          [32]int32
 	pc, nextPC int32
 	csr        CSR
-	mem        []byte
+	bus        Bus
 
 	trapped bool
 
@@ -16,20 +16,20 @@ type CPU struct {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
 const (
-	// ExceptionInstructionAddressMisaligned = 0
-	ExceptionInstructionAccessFault = 1
-	ExceptionIllegalIstruction      = 2
-	ExceptionBreakpoint             = 3
-	// ExceptionLoadAddressMisaligned        = 4
-	ExceptionLoadAccessFault = 5
-	// ExceptionStoreAMOAddressMisaligned = 6
-	ExceptionStoreAMOAccessFault      = 7
-	ExceptionEnvironmentCallFromUMode = 8
-	ExceptionEnvironmentCallFromSMode = 9
-	ExceptionEnvironmentCallFromMMode = 11
-	ExceptionInstructionPageFault     = 12
-	ExceptionLoadPageFault            = 13
-	ExceptionStoreAMOPageFault        = 15
+	ExceptionInstructionAddressMisaligned = 0
+	ExceptionInstructionAccessFault       = 1
+	ExceptionIllegalIstruction            = 2
+	ExceptionBreakpoint                   = 3
+	ExceptionLoadAddressMisaligned        = 4
+	ExceptionLoadAccessFault              = 5
+	ExceptionStoreAMOAddressMisaligned    = 6
+	ExceptionStoreAMOAccessFault          = 7
+	ExceptionEnvironmentCallFromUMode     = 8
+	ExceptionEnvironmentCallFromSMode     = 9
+	ExceptionEnvironmentCallFromMMode     = 11
+	ExceptionInstructionPageFault         = 12
+	ExceptionLoadPageFault                = 13
+	ExceptionStoreAMOPageFault            = 15
 
 	PrivU = 0
 	PrivS = 1
@@ -48,7 +48,6 @@ const (
 	PteG = 5
 	PteA = 6
 	PteD = 7
-	//PteRSW = 8
 )
 
 func (cpu *CPU) init(ramSize int) {
@@ -56,7 +55,6 @@ func (cpu *CPU) init(ramSize int) {
 
 	*cpu = CPU{
 		pc:   ramBaseAddr,
-		mem:  make([]byte, ramSize),
 		priv: PrivM,
 		csr: CSR{
 			misa: xlen32bit<<30 |
@@ -64,6 +62,8 @@ func (cpu *CPU) init(ramSize int) {
 				1<<('u'-'a') | 1<<('s'-'a'),
 		},
 	}
+
+	cpu.bus.init(ramSize)
 }
 
 func (cpu *CPU) step() {
@@ -74,8 +74,7 @@ func (cpu *CPU) step() {
 		return
 	}
 
-	if opcode := cpu.memFetch(cpu.pc); !cpu.trapped {
-
+	if opcode := int32(0); cpu.memFetch(cpu.pc, &opcode) {
 		if compressed := opcode&0b11 != 0b11; compressed {
 			opcode = decompress(opcode)
 			cpu.nextPC = cpu.pc + 2
@@ -211,7 +210,9 @@ func (cpu *CPU) ret(priv int32) {
 	}
 }
 
-func (cpu *CPU) translateSv32(addr, access int32) int32 {
+func (cpu *CPU) translateSv32(addr *int32, access int32) bool {
+	virtAddr := *addr
+
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
 	if bit(cpu.csr.mstatus, mstatusMPRV) != 0 && access != AccessExecute {
@@ -220,14 +221,14 @@ func (cpu *CPU) translateSv32(addr, access int32) int32 {
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
 	if bit(cpu.csr.satp, satpMODE) == 0 || epriv == PrivM {
-		return addr
+		return true
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-	pteAddr := bits(cpu.csr.satp, 0, 22)<<12 | bits(addr, 22, 10)
-	pte := cpu.physMemRead(pteAddr, 4)
-	if cpu.trapped {
-		return 0
+	var pte int32
+	if !cpu.bus.read(bits(cpu.csr.satp, 0, 22)<<12|bits(virtAddr, 22, 10), 4, &pte) {
+		cpu.trap(ExceptionLoadAccessFault)
+		return false
 	}
 
 	pageSize := int32(1 << 22) // 4MB
@@ -241,10 +242,9 @@ func (cpu *CPU) translateSv32(addr, access int32) int32 {
 	if !pteInvalid && !isLeaf {
 		pageSize = 1 << 12 // 4KB
 
-		pteAddr = bits(pte, 10, 22)<<12 | bits(addr, 12, 10)
-		pte = cpu.physMemRead(pteAddr, 4)
-		if cpu.trapped {
-			return 0
+		if !cpu.bus.read(bits(pte, 10, 22)<<12|bits(virtAddr, 12, 10), 4, &pte) {
+			cpu.trap(ExceptionLoadAccessFault)
+			return false
 		}
 
 		pteR, pteW, pteX = bit(pte, PteR), bit(pte, PteW), bit(pte, PteX)
@@ -264,8 +264,9 @@ func (cpu *CPU) translateSv32(addr, access int32) int32 {
 		pteA == 0 {
 
 		cpu.trap(ExceptionInstructionPageFault + access)
-		return 0
+		return false
 	}
 
-	return (pte<<2)&^(pageSize-1) | addr&(pageSize-1)
+	*addr = (pte<<2)&^(pageSize-1) | virtAddr&(pageSize-1)
+	return true
 }

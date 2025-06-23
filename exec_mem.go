@@ -1,29 +1,31 @@
 package rv
 
 func (cpu *CPU) execLoad(imm, rs1, f3, rd int32) {
+	var val int32
+
 	switch f3 {
 	case 0b_000: // lb
-		if val := cpu.memRead(cpu.x[rs1]+imm, 1); !cpu.trapped {
+		if cpu.memRead(cpu.x[rs1]+imm, 1, &val) {
 			cpu.x[rd] = int32(int8(val))
 		}
 
 	case 0b_001: // lh
-		if val := cpu.memRead(cpu.x[rs1]+imm, 2); !cpu.trapped {
+		if cpu.memRead(cpu.x[rs1]+imm, 2, &val) {
 			cpu.x[rd] = int32(int16(val))
 		}
 
 	case 0b_010: // lw
-		if val := cpu.memRead(cpu.x[rs1]+imm, 4); !cpu.trapped {
+		if cpu.memRead(cpu.x[rs1]+imm, 4, &val) {
 			cpu.x[rd] = val
 		}
 
 	case 0b_100: // lbu
-		if val := cpu.memRead(cpu.x[rs1]+imm, 1); !cpu.trapped {
+		if cpu.memRead(cpu.x[rs1]+imm, 1, &val) {
 			cpu.x[rd] = int32(uint8(val))
 		}
 
 	case 0b_101: // lhu
-		if val := cpu.memRead(cpu.x[rs1]+imm, 2); !cpu.trapped {
+		if cpu.memRead(cpu.x[rs1]+imm, 2, &val) {
 			cpu.x[rd] = int32(uint16(val))
 		}
 
