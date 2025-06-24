@@ -37,10 +37,10 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int32) {
 func (cpu *CPU) execStore(imm, rs2, rs1, f3 int32) {
 	switch f3 {
 	case 0b_000: // sb
-		cpu.memWrite(cpu.x[rs1]+imm, 1, cpu.x[rs2])
+		cpu.memWrite(cpu.x[rs1]+imm, 1, int32(uint8(cpu.x[rs2])))
 
 	case 0b_001: // sh
-		cpu.memWrite(cpu.x[rs1]+imm, 2, cpu.x[rs2])
+		cpu.memWrite(cpu.x[rs1]+imm, 2, int32(uint16(cpu.x[rs2])))
 
 	case 0b_010: // sw
 		cpu.memWrite(cpu.x[rs1]+imm, 4, cpu.x[rs2])
