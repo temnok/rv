@@ -33,7 +33,9 @@ func runTest(t *testing.T, file string) {
 	cpu := &CPU{}
 	cpu.init(64 * 1024)
 
-	copy(cpu.bus.ram, program)
+	for i, b := range program {
+		cpu.bus.ram[i>>2] |= int32(b) << ((i & 3) << 3)
+	}
 
 	instrCounts := make([]int32, len(program))
 	var lastPCs []uint32

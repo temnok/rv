@@ -1,16 +1,17 @@
 package rv
 
-func (cpu *CPU) memFetch(addr int32, data *int32) bool {
-	if !cpu.translateSv32(&addr, AccessExecute) {
+func (cpu *CPU) memFetch(virtAddr int32, data *int32) bool {
+	var physAddr int32
+	if !cpu.translateSv32(virtAddr, &physAddr, AccessExecute) {
 		return false
 	}
 
-	if !cpu.bus.read(addr&^3, 4, data) {
+	if !cpu.bus.read(physAddr, data) {
 		cpu.trap(ExceptionInstructionAccessFault)
 		return false
 	}
 
-	if isWordAligned := addr&3 == 0; isWordAligned {
+	if isWordAligned := virtAddr&3 == 0; isWordAligned {
 		return true
 	}
 
@@ -20,7 +21,7 @@ func (cpu *CPU) memFetch(addr int32, data *int32) bool {
 	}
 
 	var hi int32
-	if !cpu.bus.read(addr+2, 4, &hi) {
+	if !cpu.bus.read(physAddr+1, &hi) {
 		cpu.trap(ExceptionInstructionAccessFault)
 		return false
 	}
@@ -29,42 +30,43 @@ func (cpu *CPU) memFetch(addr int32, data *int32) bool {
 	return true
 }
 
-func (cpu *CPU) memRead(addr, width int32, data *int32) bool {
-	if addr&(width-1) != 0 {
+func (cpu *CPU) memRead(virtAddr, width int32, data *int32) bool {
+	if virtAddr&(width-1) != 0 {
 		cpu.trap(ExceptionLoadAddressMisaligned)
 		return false
 	}
 
-	if !cpu.translateSv32(&addr, AccessRead) {
+	var physAddr int32
+	if !cpu.translateSv32(virtAddr, &physAddr, AccessRead) {
 		return false
 	}
 
 	var word int32
-	if !cpu.bus.read(addr&^3, 4, &word) {
+	if !cpu.bus.read(physAddr, &word) {
 		cpu.trap(ExceptionLoadAccessFault)
 		return false
 	}
 
-	*data = word >> ((addr & 3) << 3)
+	*data = word >> ((virtAddr & 3) << 3)
 	return true
 }
 
-func (cpu *CPU) memWrite(addr, width, data int32) bool {
-	if addr&(width-1) != 0 {
+func (cpu *CPU) memWrite(virtAddr, width, data int32) bool {
+	if virtAddr&(width-1) != 0 {
 		cpu.trap(ExceptionStoreAMOAddressMisaligned)
 		return false
 	}
 
-	if !cpu.translateSv32(&addr, AccessWrite) {
+	var physAddr int32
+	if !cpu.translateSv32(virtAddr, &physAddr, AccessWrite) {
 		return false
 	}
 
 	if width < 4 {
-		shift := (addr & 3) << 3
-		addr &= ^3
+		shift := (virtAddr & 3) << 3
 
 		var old int32
-		if !cpu.bus.read(addr, 4, &old) {
+		if !cpu.bus.read(physAddr, &old) {
 			cpu.trap(ExceptionStoreAMOAccessFault)
 			return false
 		}
@@ -76,7 +78,7 @@ func (cpu *CPU) memWrite(addr, width, data int32) bool {
 		}
 	}
 
-	if !cpu.bus.write(addr, 4, data) {
+	if !cpu.bus.write(physAddr, data) {
 		cpu.trap(ExceptionStoreAMOAccessFault)
 		return false
 	}

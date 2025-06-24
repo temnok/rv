@@ -16,20 +16,20 @@ type CPU struct {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
 const (
-	ExceptionInstructionAddressMisaligned = 0
-	ExceptionInstructionAccessFault       = 1
-	ExceptionIllegalIstruction            = 2
-	ExceptionBreakpoint                   = 3
-	ExceptionLoadAddressMisaligned        = 4
-	ExceptionLoadAccessFault              = 5
-	ExceptionStoreAMOAddressMisaligned    = 6
-	ExceptionStoreAMOAccessFault          = 7
-	ExceptionEnvironmentCallFromUMode     = 8
-	ExceptionEnvironmentCallFromSMode     = 9
-	ExceptionEnvironmentCallFromMMode     = 11
-	ExceptionInstructionPageFault         = 12
-	ExceptionLoadPageFault                = 13
-	ExceptionStoreAMOPageFault            = 15
+	//ExceptionInstructionAddressMisaligned = 0
+	ExceptionInstructionAccessFault    = 1
+	ExceptionIllegalIstruction         = 2
+	ExceptionBreakpoint                = 3
+	ExceptionLoadAddressMisaligned     = 4
+	ExceptionLoadAccessFault           = 5
+	ExceptionStoreAMOAddressMisaligned = 6
+	ExceptionStoreAMOAccessFault       = 7
+	ExceptionEnvironmentCallFromUMode  = 8
+	ExceptionEnvironmentCallFromSMode  = 9
+	ExceptionEnvironmentCallFromMMode  = 11
+	ExceptionInstructionPageFault      = 12
+	//ExceptionLoadPageFault                = 13
+	//ExceptionStoreAMOPageFault            = 15
 
 	PrivU = 0
 	PrivS = 1
@@ -45,7 +45,7 @@ const (
 	PteW = 2
 	PteX = 3
 	PteU = 4
-	PteG = 5
+	//PteG = 5
 	PteA = 6
 	PteD = 7
 )
@@ -210,9 +210,7 @@ func (cpu *CPU) ret(priv int32) {
 	}
 }
 
-func (cpu *CPU) translateSv32(addr *int32, access int32) bool {
-	virtAddr := *addr
-
+func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) bool {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
 	if bit(cpu.csr.mstatus, mstatusMPRV) != 0 && access != AccessExecute {
@@ -221,17 +219,19 @@ func (cpu *CPU) translateSv32(addr *int32, access int32) bool {
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
 	if bit(cpu.csr.satp, satpMODE) == 0 || epriv == PrivM {
+		*physAddr = int32(uint32(virtAddr) >> 2)
 		return true
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
 	var pte int32
-	if !cpu.bus.read(bits(cpu.csr.satp, 0, 22)<<12|bits(virtAddr, 22, 10), 4, &pte) {
+	pteAddr := bits(cpu.csr.satp, 0, 22)<<10 | bits(virtAddr, 22, 10)
+	if !cpu.bus.read(pteAddr, &pte) {
 		cpu.trap(ExceptionLoadAccessFault)
 		return false
 	}
 
-	pageSize := int32(1 << 22) // 4MB
+	lowAddrBits := bits(virtAddr, 2, 20)
 	pteR, pteW, pteX := bit(pte, PteR), bit(pte, PteW), bit(pte, PteX)
 	isLeaf := pteR != 0 || pteX != 0
 
@@ -240,12 +240,13 @@ func (cpu *CPU) translateSv32(addr *int32, access int32) bool {
 		isLeaf && bits(pte, 10, 10) != 0 // misaligned superpage
 
 	if !pteInvalid && !isLeaf {
-		pageSize = 1 << 12 // 4KB
-
-		if !cpu.bus.read(bits(pte, 10, 22)<<12|bits(virtAddr, 12, 10), 4, &pte) {
+		pteAddr = bits(pte, 10, 22)<<10 | bits(virtAddr, 12, 10)
+		if !cpu.bus.read(pteAddr, &pte) {
 			cpu.trap(ExceptionLoadAccessFault)
 			return false
 		}
+
+		lowAddrBits = bits(virtAddr, 2, 10)
 
 		pteR, pteW, pteX = bit(pte, PteR), bit(pte, PteW), bit(pte, PteX)
 		pteInvalid = bit(pte, PteV) == 0 ||
@@ -267,6 +268,6 @@ func (cpu *CPU) translateSv32(addr *int32, access int32) bool {
 		return false
 	}
 
-	*addr = (pte<<2)&^(pageSize-1) | virtAddr&(pageSize-1)
+	*physAddr = pte&^0x3FF | lowAddrBits
 	return true
 }
