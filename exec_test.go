@@ -35,8 +35,9 @@ func runTest(t *testing.T, file string) {
 
 	const ramBaseAddr = -1 << 31
 
-	cpu.Init(ramBaseAddr, Bus{ram})
-	ram.Init(ramBaseAddr, 64*1024, program)
+	cpu.Init(Bus{ram}, ramBaseAddr, nil)
+	ram.Init(ramBaseAddr, 64*1024)
+	ram.Load(ramBaseAddr, program)
 
 	instrCounts := make([]int32, len(program))
 	var lastPCs []uint32

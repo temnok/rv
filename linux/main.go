@@ -3,15 +3,11 @@ package main
 import (
 	rv "github.com/temnok/gorv"
 	"golang.org/x/crypto/ssh/terminal"
-	"log"
 	"os"
 )
 
 func main() {
-	state, err := terminal.MakeRaw(0)
-	if err != nil {
-		log.Fatalln("Could not make stdin a raw terminal: ", err.Error())
-	}
+	state := check1(terminal.MakeRaw(0))
 	defer terminal.Restore(0, state)
 
 	var (
@@ -22,20 +18,45 @@ func main() {
 		uart  rv.UART
 	)
 
-	const ramBaseAddr = -1 << 31
-	cpu.Init(ramBaseAddr, rv.Bus{&ram, &clint, &plic, &uart})
-	ram.Init(ramBaseAddr, 128*1024*1024, nil)
+	const (
+		ramBaseAddr = -1 << 31
+		dtbAddr     = ramBaseAddr + 0x200_0000
+	)
+
+	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, []int32{
+		11: dtbAddr,
+	})
+
+	ram.Init(ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x200_0000)
 	plic.Init(&cpu, 0xC00_0000)
 	uart.Init(&plic, 0x300_0000, terminalCallback)
-	
+
+	ram.Load(ramBaseAddr, check1(os.ReadFile("linux/tmp/fw_payload.bin")))
+	ram.Load(dtbAddr, check1(os.ReadFile("linux/tmp/rv.dtb")))
+
+	for {
+		cpu.Step()
+	}
 }
 
 func terminalCallback(ch *byte, write bool) bool {
 	if write {
 		buf := []byte{*ch}
 		os.Stdout.Write(buf)
+		return true
 	}
 
-	return true
+	return false
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func check1[A any](a A, err error) A {
+	check(err)
+	return a
 }

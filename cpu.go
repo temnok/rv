@@ -3,6 +3,8 @@ package rv
 import "time"
 
 type CPU struct {
+	bus Bus
+
 	x          [32]int32
 	pc, nextPC int32
 	csr        CSR
@@ -15,8 +17,6 @@ type CPU struct {
 	priv int32
 
 	startNanoseconds int64
-
-	bus Bus
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -55,7 +55,7 @@ const (
 	PteD = 7
 )
 
-func (cpu *CPU) Init(startAddr int32, bus Bus) {
+func (cpu *CPU) Init(bus Bus, startAddr int32, regs []int32) {
 	const xlen32bit = 0b_01
 
 	*cpu = CPU{
@@ -70,6 +70,8 @@ func (cpu *CPU) Init(startAddr int32, bus Bus) {
 
 		bus: bus,
 	}
+
+	copy(cpu.x[:], regs)
 }
 
 func (cpu *CPU) Step() {
