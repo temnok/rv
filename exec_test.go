@@ -33,8 +33,10 @@ func runTest(t *testing.T, file string) {
 	cpu := &CPU{}
 	ram := &RAM{}
 
-	cpu.init(Bus{ram})
-	ram.init(64*1024, program)
+	const ramBaseAddr = -1 << 31
+
+	cpu.init(ramBaseAddr, Bus{ram})
+	ram.init(0x2000_0000, 16*1024, program)
 
 	instrCounts := make([]int32, len(program))
 	var lastPCs []uint32

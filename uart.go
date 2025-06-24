@@ -1,7 +1,9 @@
 package rv
 
 type UART struct {
-	baseAddr                         int32
+	plic     *PLIC
+	baseAddr int32
+
 	rx, tx                           UARTfifo
 	txctrl, rxctrl, ip, ie, div, clk int32
 	callback                         func(ch *byte, write bool) bool
@@ -12,8 +14,9 @@ type UARTfifo struct {
 	size int32
 }
 
-func (uart *UART) init(callback func(ch *byte, write bool) bool) {
+func (uart *UART) init(plic *PLIC, callback func(ch *byte, write bool) bool) {
 	*uart = UART{
+		plic:     plic,
 		div:      3,
 		callback: callback,
 	}
@@ -72,7 +75,7 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 	return true
 }
 
-func (uart *UART) update() bool {
+func (uart *UART) notifyInterrupts() bool {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
 		if bit(uart.txctrl, 1) == 1 && uart.tx.size > 0 && uart.callback(&ch, true) {
@@ -98,7 +101,12 @@ func (uart *UART) update() bool {
 		uart.ip &^= 2
 	}
 
-	return uart.ip != 0
+	if uart.ip != 0 && uart.plic != nil {
+		uart.plic.triggerInterrupt(1)
+		return true
+	}
+
+	return false
 }
 
 func (fifo *UARTfifo) put(ch int32) {

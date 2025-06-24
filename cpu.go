@@ -55,11 +55,11 @@ const (
 	PteD = 7
 )
 
-func (cpu *CPU) init(bus Bus) {
+func (cpu *CPU) init(startAddr int32, bus Bus) {
 	const xlen32bit = 0b_01
 
 	*cpu = CPU{
-		pc:   ramBaseAddr,
+		pc:   startAddr,
 		priv: PrivM,
 		csr: CSR{
 			misa: xlen32bit<<30 |

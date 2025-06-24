@@ -1,16 +1,14 @@
 package rv
 
 type RAM struct {
-	words []int32
+	baseAddr int32
+	words    []int32
 }
 
-const (
-	ramBaseAddr = -1 << 31
-)
-
-func (ram *RAM) init(size int, program []byte) {
+func (ram *RAM) init(baseAddr int32, size int, program []byte) {
 	*ram = RAM{
-		words: make([]int32, (size+3)/4),
+		baseAddr: baseAddr,
+		words:    make([]int32, size),
 	}
 
 	for i, b := range program[:min(len(program), size)] {
@@ -19,9 +17,7 @@ func (ram *RAM) init(size int, program []byte) {
 }
 
 func (ram *RAM) access(addr int32, data *int32, write bool) bool {
-	ramBase := int32(ramBaseAddr)
-
-	if addr -= int32(uint32(ramBase) >> 2); addr < 0 || addr >= int32(len(ram.words)) {
+	if addr -= ram.baseAddr; addr < 0 || addr >= int32(len(ram.words)) {
 		return false
 	}
 
