@@ -31,17 +31,14 @@ func runTest(t *testing.T, file string) {
 	}
 
 	cpu := &CPU{}
-	cpu.init(64 * 1024)
-
-	for i, b := range program {
-		cpu.bus.ram[i>>2] |= int32(b) << ((i & 3) << 3)
-	}
+	cpu.init(&Bus{ram: &RAM{}})
+	cpu.bus.ram.init(64*1024, program)
 
 	instrCounts := make([]int32, len(program))
 	var lastPCs []uint32
 	var lastTraps [][2]uint32
 
-	for count := 1; ; count++ {
+	for {
 		instrCounts[cpu.pc-ramBaseAddr]++
 
 		lastPCs = append(lastPCs, uint32(cpu.pc))
@@ -54,14 +51,14 @@ func runTest(t *testing.T, file string) {
 		cpu.step()
 
 		if cpu.trapped {
-			lastTraps = append(lastTraps, [2]uint32{uint32(prevPC), uint32(cpu.trapCause())})
+			lastTraps = append(lastTraps, [2]uint32{uint32(prevPC), uint32(cpu.csr.mcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
 			}
 		}
 
-		if count == 100_000 {
+		if cpu.csr.cycle == 100_000 {
 			var addresses []uint32
 			for i, c := range instrCounts {
 				if c > 10_000 {
@@ -80,17 +77,17 @@ func runTest(t *testing.T, file string) {
 		}
 
 		if cpu.trapped {
-			if cause := cpu.trapCause(); cause == ExceptionEnvironmentCallFromUMode ||
+			if cause := cpu.csr.mcause; cause == ExceptionEnvironmentCallFromUMode ||
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {
 
 				if cpu.x[3] == 1 && cpu.x[10] == 0 {
-					fmt.Printf("instructions: %v\n", count)
+					fmt.Printf("cycles: %v\n", cpu.csr.cycle)
 				} else {
-					t.Errorf("instructions: %v\nlast PCs: %x\nlast traps: %x\n"+
+					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, cause=%v,  mepc=%08x, "+
 						"gp=%08x, a0=%08x, t0=%08x, t6=%08x\n",
-						count, lastPCs, lastTraps,
+						cpu.csr.cycle, lastPCs, lastTraps,
 						cpu.priv, cause, uint32(cpu.csr.mepc),
 						uint32(cpu.x[3]), uint32(cpu.x[10]), uint32(cpu.x[5]), uint32(cpu.x[31]))
 				}

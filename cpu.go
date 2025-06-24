@@ -1,10 +1,11 @@
 package rv
 
+import "time"
+
 type CPU struct {
 	x          [32]int32
 	pc, nextPC int32
 	csr        CSR
-	bus        Bus
 
 	trapped bool
 
@@ -12,6 +13,10 @@ type CPU struct {
 	reservedAddress int32
 
 	priv int32
+
+	startNanoseconds int64
+
+	bus *Bus
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -50,7 +55,7 @@ const (
 	PteD = 7
 )
 
-func (cpu *CPU) init(ramSize int) {
+func (cpu *CPU) init(bus *Bus) {
 	const xlen32bit = 0b_01
 
 	*cpu = CPU{
@@ -61,15 +66,21 @@ func (cpu *CPU) init(ramSize int) {
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 		},
-	}
+		startNanoseconds: time.Now().UnixNano(),
 
-	cpu.bus.init(ramSize)
+		bus: bus,
+	}
 }
 
 func (cpu *CPU) step() {
 	cpu.trapped = false
 
-	if cpu.trapOnPendingInterrupts(); cpu.trapped {
+	cpu.updateTimers()
+	if cpu.bus.clint != nil {
+		cpu.bus.clint.setPendingIterrupts()
+	}
+
+	if cpu.trapOnPendingInterrupts() {
 		cpu.pc = cpu.nextPC
 		return
 	}
@@ -88,23 +99,22 @@ func (cpu *CPU) step() {
 	cpu.pc = cpu.nextPC
 }
 
-func (cpu *CPU) trapCause() int32 {
-	switch cpu.priv {
-	case PrivM:
-		return cpu.csr.mcause
-	case PrivS:
-		return cpu.csr.scause
-	default:
-		return -1
+func (cpu *CPU) updateTimers() {
+	if cpu.csr.cycle++; cpu.csr.cycle == 0 {
+		cpu.csr.cycleh++
 	}
+
+	ticks := (int64(time.Now().Nanosecond()) - cpu.startNanoseconds) / 10
+	cpu.csr.mtime = int32(ticks)
+	cpu.csr.mtimeh = int32(ticks >> 32)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) trapOnPendingInterrupts() {
+func (cpu *CPU) trapOnPendingInterrupts() bool {
 	mi := cpu.csr.mip & cpu.csr.mie
 
-	if cpu.trapped || mi == 0 {
-		return
+	if mi == 0 {
+		return false
 	}
 
 	for i := int32(12); i > 0; i-- {
@@ -118,10 +128,12 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 		}
 
 		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
-			cpu.trap(-1<<31 | i)
-			return
+			cpu.trap(-1<<mcauseI | i)
+			return true
 		}
 	}
+
+	return false
 }
 
 func (cpu *CPU) trap(cause int32) {
@@ -131,7 +143,7 @@ func (cpu *CPU) trap(cause int32) {
 
 	cpu.trapped = true
 
-	isInterrupt := bit(cause, 31) != 0
+	isInterrupt := bit(cause, mcauseI) != 0
 	causeID := bits(cause, 0, 5)
 
 	deleg := cpu.csr.medeleg

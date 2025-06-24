@@ -19,6 +19,12 @@ const (
 	mstatusMXR  = 19
 	mstatusTVM  = 20
 	mstatusTSR  = 22
+
+	mcauseI = 31
+
+	mipMSI = 3
+	mipMTI = 7
+	mipSEI = 9
 )
 
 type CSR struct {
