@@ -137,6 +137,13 @@ func (cpu *CPU) trapOnPendingInterrupts() bool {
 }
 
 func (cpu *CPU) trap(cause int32) {
+	cpu.trapWithTval(cause, 0)
+}
+
+func (cpu *CPU) trapWithTval(cause, tval int32) {
+
+	tval = 0 // TODO investigate why kernel hangs
+
 	if cpu.trapped {
 		panic("double trap")
 	}
@@ -166,7 +173,7 @@ func (cpu *CPU) trap(cause int32) {
 
 		cpu.csr.mepc = cpu.pc
 		cpu.csr.mcause = cause
-		cpu.csr.mtval = 0
+		cpu.csr.mtval = tval
 		tvec = cpu.csr.mtvec
 
 	case PrivS:
@@ -176,7 +183,7 @@ func (cpu *CPU) trap(cause int32) {
 
 		cpu.csr.sepc = cpu.pc
 		cpu.csr.scause = cause
-		cpu.csr.stval = 0
+		cpu.csr.stval = tval
 		tvec = cpu.csr.stvec
 	}
 
@@ -239,7 +246,7 @@ func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) boo
 	var pte int32
 	pteAddr := bits(cpu.csr.satp, 0, 22)<<10 | bits(virtAddr, 22, 10)
 	if !cpu.bus.read(pteAddr, &pte) {
-		cpu.trap(ExceptionLoadAccessFault)
+		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return false
 	}
 
@@ -254,7 +261,7 @@ func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) boo
 	if !pteInvalid && !isLeaf {
 		pteAddr = bits(pte, 10, 22)<<10 | bits(virtAddr, 12, 10)
 		if !cpu.bus.read(pteAddr, &pte) {
-			cpu.trap(ExceptionLoadAccessFault)
+			cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 			return false
 		}
 
@@ -276,7 +283,7 @@ func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) boo
 		access == AccessWrite && (pteW == 0 || pteD == 0) ||
 		pteA == 0 {
 
-		cpu.trap(ExceptionInstructionPageFault + access)
+		cpu.trapWithTval(ExceptionInstructionPageFault+access, virtAddr)
 		return false
 	}
 

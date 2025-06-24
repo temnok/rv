@@ -19,7 +19,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 		cpu.trap(ExceptionEnvironmentCallFromUMode + cpu.priv)
 
 	case 0b_0000_000_00001: // ebreak
-		cpu.trap(ExceptionBreakpoint)
+		cpu.trapWithTval(ExceptionBreakpoint, cpu.pc)
 
 	case 0b_0001_000_00010: // sret
 		cpu.ret(PrivS)

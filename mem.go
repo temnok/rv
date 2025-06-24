@@ -1,38 +1,46 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int32, data *int32) bool {
-	var physAddr int32
+	var physAddr, word int32
 	if !cpu.translateSv32(virtAddr, &physAddr, AccessExecute) {
 		return false
 	}
 
-	if !cpu.bus.read(physAddr, data) {
-		cpu.trap(ExceptionInstructionAccessFault)
+	if !cpu.bus.read(physAddr, &word) {
+		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return false
 	}
 
 	if isWordAligned := virtAddr&3 == 0; isWordAligned {
+		*data = word
 		return true
 	}
 
-	*data = int32(uint32(*data) >> 16)
-	if isCompressedInstruction := *data&3 != 3; isCompressedInstruction {
+	word = int32(uint32(word) >> 16)
+
+	if isCompressedInstruction := word&3 != 3; isCompressedInstruction {
+		*data = word
 		return true
 	}
 
-	var hi int32
-	if !cpu.bus.read(physAddr+1, &hi) {
-		cpu.trap(ExceptionInstructionAccessFault)
+	virtAddr += 2
+	if !cpu.translateSv32(virtAddr, &physAddr, AccessExecute) {
 		return false
 	}
 
-	*data |= hi << 16
+	var hi int32
+	if !cpu.bus.read(physAddr, &hi) {
+		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
+		return false
+	}
+
+	*data = hi<<16 | word
 	return true
 }
 
 func (cpu *CPU) memRead(virtAddr, width int32, data *int32) bool {
 	if virtAddr&(width-1) != 0 {
-		cpu.trap(ExceptionLoadAddressMisaligned)
+		cpu.trapWithTval(ExceptionLoadAddressMisaligned, virtAddr)
 		return false
 	}
 
@@ -43,7 +51,7 @@ func (cpu *CPU) memRead(virtAddr, width int32, data *int32) bool {
 
 	var word int32
 	if !cpu.bus.read(physAddr, &word) {
-		cpu.trap(ExceptionLoadAccessFault)
+		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return false
 	}
 
@@ -53,7 +61,7 @@ func (cpu *CPU) memRead(virtAddr, width int32, data *int32) bool {
 
 func (cpu *CPU) memWrite(virtAddr, width, data int32) bool {
 	if virtAddr&(width-1) != 0 {
-		cpu.trap(ExceptionStoreAMOAddressMisaligned)
+		cpu.trapWithTval(ExceptionStoreAMOAddressMisaligned, virtAddr)
 		return false
 	}
 
@@ -67,7 +75,7 @@ func (cpu *CPU) memWrite(virtAddr, width, data int32) bool {
 
 		var old int32
 		if !cpu.bus.read(physAddr, &old) {
-			cpu.trap(ExceptionStoreAMOAccessFault)
+			cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
 			return false
 		}
 
@@ -79,7 +87,7 @@ func (cpu *CPU) memWrite(virtAddr, width, data int32) bool {
 	}
 
 	if !cpu.bus.write(physAddr, data) {
-		cpu.trap(ExceptionStoreAMOAccessFault)
+		cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
 		return false
 	}
 
