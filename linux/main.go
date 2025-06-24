@@ -19,7 +19,7 @@ func main() {
 	)
 
 	const (
-		ramBaseAddr = -1 << 31
+		ramBaseAddr = int32(-1 << 31)
 		dtbAddr     = ramBaseAddr + 0x200_0000
 	)
 
@@ -35,8 +35,17 @@ func main() {
 	ram.Load(ramBaseAddr, check1(os.ReadFile("linux/tmp/fw_payload.bin")))
 	ram.Load(dtbAddr, check1(os.ReadFile("linux/tmp/rv.dtb")))
 
-	for {
+	for cycle := 0; ; cycle++ {
 		cpu.Step()
+
+		//if cycle%10_000_000 == 0 {
+		//	fmt.Printf("Cycles: %vM, CLINT: %v, PLIC %v, UART: %v\r\n",
+		//		cycle/1_000_000,
+		//		clint.AccessCount,
+		//		plic.AccessCount,
+		//		uart.AccessCount,
+		//	)
+		//}
 	}
 }
 

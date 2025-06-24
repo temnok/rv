@@ -7,6 +7,8 @@ type UART struct {
 	rx, tx                           UARTfifo
 	txctrl, rxctrl, ip, ie, div, clk int32
 	callback                         func(ch *byte, write bool) bool
+
+	AccessCount int
 }
 
 type UARTfifo struct {
@@ -73,32 +75,33 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 		}
 	}
 
+	if write {
+		uart.AccessCount++
+	}
 	return true
 }
 
 func (uart *UART) notifyInterrupts() bool {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
-		if bit(uart.txctrl, 1) == 1 && uart.tx.size > 0 &&
-			uart.callback != nil && uart.callback(&ch, true) {
+		if bit(uart.txctrl, 0) == 1 && uart.tx.size > 0 && uart.callback(&ch, true) {
 			uart.tx.get()
 		}
 
-		if bit(uart.rxctrl, 1) == 1 && uart.rx.size < 8 &&
-			uart.callback != nil && uart.callback(&ch, false) {
+		if bit(uart.rxctrl, 0) == 1 && uart.rx.size < 8 && uart.callback(&ch, false) {
 			uart.rx.put(int32(ch))
 		}
 
 		uart.clk = 0
 	}
 
-	if (uart.txctrl>>16) > uart.tx.size && bit(uart.ie, 1) == 1 {
+	if (uart.txctrl>>16) > uart.tx.size && bit(uart.ie, 0) == 1 {
 		uart.ip |= 1
 	} else {
 		uart.ip &^= 1
 	}
 
-	if (uart.rxctrl>>16) > uart.rx.size && bit(uart.ie, 2) == 1 {
+	if (uart.rxctrl>>16) > uart.rx.size && bit(uart.ie, 1) == 1 {
 		uart.ip |= 2
 	} else {
 		uart.ip &^= 2

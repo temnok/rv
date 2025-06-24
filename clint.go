@@ -5,6 +5,8 @@ type CLINT struct {
 	baseAddr int32
 
 	mswi, mtimecmp, mtimecmph int32
+
+	AccessCount int
 }
 
 func (clint *CLINT) Init(cpu *CPU, baseAddr int32) {
@@ -46,6 +48,7 @@ func (clint *CLINT) access(addr int32, data *int32, write bool) bool {
 		}
 	}
 
+	clint.AccessCount++
 	return true
 }
 

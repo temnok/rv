@@ -10,6 +10,8 @@ type PLIC struct {
 	threshold int32
 	claim     int32
 	claiming  int32
+
+	AccessCount int
 }
 
 func (plic *PLIC) Init(cpu *CPU, baseAddr int32) {
@@ -69,6 +71,7 @@ func (plic *PLIC) access(addr int32, data *int32, write bool) bool {
 		}
 	}
 
+	plic.AccessCount++
 	return true
 }
 
