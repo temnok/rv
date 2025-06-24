@@ -14,9 +14,10 @@ type UARTfifo struct {
 	size int32
 }
 
-func (uart *UART) init(plic *PLIC, callback func(ch *byte, write bool) bool) {
+func (uart *UART) Init(plic *PLIC, baseAddr int32, callback func(ch *byte, write bool) bool) {
 	*uart = UART{
 		plic:     plic,
+		baseAddr: int32(uint32(baseAddr) >> 2),
 		div:      3,
 		callback: callback,
 	}
@@ -78,11 +79,13 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 func (uart *UART) notifyInterrupts() bool {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
-		if bit(uart.txctrl, 1) == 1 && uart.tx.size > 0 && uart.callback(&ch, true) {
+		if bit(uart.txctrl, 1) == 1 && uart.tx.size > 0 &&
+			uart.callback != nil && uart.callback(&ch, true) {
 			uart.tx.get()
 		}
 
-		if bit(uart.rxctrl, 1) == 1 && uart.rx.size < 8 && uart.callback(&ch, false) {
+		if bit(uart.rxctrl, 1) == 1 && uart.rx.size < 8 &&
+			uart.callback != nil && uart.callback(&ch, false) {
 			uart.rx.put(int32(ch))
 		}
 

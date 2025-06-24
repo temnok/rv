@@ -12,7 +12,7 @@ type PLIC struct {
 	claiming  int32
 }
 
-func (plic *PLIC) init(cpu *CPU, baseAddr int32) {
+func (plic *PLIC) Init(cpu *CPU, baseAddr int32) {
 	*plic = PLIC{
 		cpu:      cpu,
 		baseAddr: int32(uint32(baseAddr) >> 2),

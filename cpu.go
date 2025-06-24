@@ -55,7 +55,7 @@ const (
 	PteD = 7
 )
 
-func (cpu *CPU) init(startAddr int32, bus Bus) {
+func (cpu *CPU) Init(startAddr int32, bus Bus) {
 	const xlen32bit = 0b_01
 
 	*cpu = CPU{
@@ -72,7 +72,7 @@ func (cpu *CPU) init(startAddr int32, bus Bus) {
 	}
 }
 
-func (cpu *CPU) step() {
+func (cpu *CPU) Step() {
 	cpu.trapped = false
 
 	cpu.updateTimers()

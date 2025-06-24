@@ -35,8 +35,8 @@ func runTest(t *testing.T, file string) {
 
 	const ramBaseAddr = -1 << 31
 
-	cpu.init(ramBaseAddr, Bus{ram})
-	ram.init(0x2000_0000, 16*1024, program)
+	cpu.Init(ramBaseAddr, Bus{ram})
+	ram.Init(ramBaseAddr, 64*1024, program)
 
 	instrCounts := make([]int32, len(program))
 	var lastPCs []uint32
@@ -52,7 +52,7 @@ func runTest(t *testing.T, file string) {
 		}
 
 		prevPC := cpu.pc
-		cpu.step()
+		cpu.Step()
 
 		if cpu.trapped {
 			lastTraps = append(lastTraps, [2]uint32{uint32(prevPC), uint32(cpu.csr.mcause)})

@@ -7,7 +7,7 @@ type CLINT struct {
 	mswi, mtimecmp, mtimecmph int32
 }
 
-func (clint *CLINT) init(cpu *CPU, baseAddr int32) {
+func (clint *CLINT) Init(cpu *CPU, baseAddr int32) {
 	*clint = CLINT{
 		cpu:      cpu,
 		baseAddr: int32(uint32(baseAddr) >> 2),

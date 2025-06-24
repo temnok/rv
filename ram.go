@@ -5,13 +5,13 @@ type RAM struct {
 	words    []int32
 }
 
-func (ram *RAM) init(baseAddr int32, size int, program []byte) {
+func (ram *RAM) Init(baseAddr int32, size int, program []byte) {
 	*ram = RAM{
-		baseAddr: baseAddr,
-		words:    make([]int32, size),
+		baseAddr: int32(uint32(baseAddr) >> 2),
+		words:    make([]int32, size/4),
 	}
 
-	for i, b := range program[:min(len(program), size)] {
+	for i, b := range program {
 		ram.words[i>>2] |= int32(b) << ((i & 3) << 3)
 	}
 }
