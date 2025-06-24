@@ -77,7 +77,7 @@ func (cpu *CPU) step() {
 
 	cpu.updateTimers()
 
-	cpu.bus.setPendingInterrupts(cpu)
+	cpu.bus.notifyInterrupts()
 	if cpu.trapOnPendingInterrupts() {
 		cpu.pc = cpu.nextPC
 		return

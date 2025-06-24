@@ -49,16 +49,18 @@ func (clint *CLINT) access(addr int32, data *int32, write bool) bool {
 	return true
 }
 
-func (clint *CLINT) setPendingIterrupts(cpu *CPU) bool {
+func (clint *CLINT) notifyInterrupts() bool {
+	csr := &clint.cpu.csr
+
 	if bit(clint.mswi, 1) == 1 {
-		cpu.csr.mip |= 1 << mipMSI
+		csr.mip |= 1 << mipMSI
 		return true
 	}
 
-	if cpu.csr.mtimeh > clint.mtimecmph ||
-		cpu.csr.mtimeh == clint.mtimecmph && cpu.csr.mtime >= clint.mtimecmp {
+	if csr.mtimeh > clint.mtimecmph ||
+		csr.mtimeh == clint.mtimecmph && csr.mtime >= clint.mtimecmp {
 
-		cpu.csr.mip |= 1 << mipMTI
+		csr.mip |= 1 << mipMTI
 		return true
 	}
 

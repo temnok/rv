@@ -72,7 +72,13 @@ func (plic *PLIC) access(addr int32, data *int32, write bool) bool {
 	return true
 }
 
-func (plic *PLIC) setPendingIterrupts(cpu *CPU) bool {
+func (plic *PLIC) triggerInterrupt(source int32) {
+	if source > 0 && source < 32 {
+		plic.pending |= 1 << source
+	}
+}
+
+func (plic *PLIC) notifyInterrupts() bool {
 	maxPriority := int32(0)
 	irq := int32(0)
 	for i := int32(1); i < 32; i++ {
@@ -91,7 +97,7 @@ func (plic *PLIC) setPendingIterrupts(cpu *CPU) bool {
 	plic.claim = irq
 
 	if irq > 0 {
-		cpu.csr.mip |= 1 << mipSEI
+		plic.cpu.csr.mip |= 1 << mipSEI
 		return true
 	}
 

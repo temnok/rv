@@ -22,10 +22,10 @@ func (bus Bus) access(addr int32, data *int32, write bool) bool {
 	return false
 }
 
-func (bus Bus) setPendingInterrupts(cpu *CPU) bool {
+func (bus Bus) notifyInterrupts() bool {
 	for _, device := range bus {
-		if target, ok := device.(interface{ setPendingInterrupts(cpu *CPU) bool }); ok {
-			if target.setPendingInterrupts(cpu) {
+		if target, ok := device.(interface{ notifyInterrupts() bool }); ok {
+			if target.notifyInterrupts() {
 				return true
 			}
 		}
