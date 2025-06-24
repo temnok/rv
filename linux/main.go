@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	rv "github.com/temnok/gorv"
 	"golang.org/x/crypto/ssh/terminal"
+	"io"
 	"os"
 )
 
@@ -32,8 +35,8 @@ func main() {
 	plic.Init(&cpu, 0xC00_0000)
 	uart.Init(&plic, 0x300_0000, terminalCallback)
 
-	ram.Load(ramBaseAddr, check1(os.ReadFile("linux/tmp/fw_payload.bin")))
-	ram.Load(dtbAddr, check1(os.ReadFile("linux/tmp/rv.dtb")))
+	ram.Load(ramBaseAddr, ungzip(check1(os.ReadFile("linux/bin/fw_payload.bin.gz"))))
+	ram.Load(dtbAddr, check1(os.ReadFile("linux/bin/rv.dtb")))
 
 	for cycle := 0; ; cycle++ {
 		cpu.Step()
@@ -57,6 +60,11 @@ func terminalCallback(ch *byte, write bool) bool {
 	}
 
 	return false
+}
+
+func ungzip(data []byte) []byte {
+	r := check1(gzip.NewReader(bytes.NewReader(data)))
+	return check1(io.ReadAll(r))
 }
 
 func check(err error) {
