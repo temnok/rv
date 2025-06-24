@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	rv "github.com/temnok/gorv"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
@@ -38,17 +39,19 @@ func main() {
 	ram.Load(ramBaseAddr, ungzip(check1(os.ReadFile("linux/bin/fw_payload.bin.gz"))))
 	ram.Load(dtbAddr, check1(os.ReadFile("linux/bin/rv.dtb")))
 
-	for cycle := 0; ; cycle++ {
+	for step := 0; ; step++ {
 		cpu.Step()
 
-		//if cycle%10_000_000 == 0 {
-		//	fmt.Printf("Cycles: %vM, CLINT: %v, PLIC %v, UART: %v\r\n",
-		//		cycle/1_000_000,
-		//		clint.AccessCount,
-		//		plic.AccessCount,
-		//		uart.AccessCount,
-		//	)
-		//}
+		if step%10_000_000 == 0 {
+			fmt.Printf("*** Steps:%vM, irq:%v, traps:%v, CLINT:%v, PLIC:%v, UART:%v\r\n",
+				step/1_000_000,
+				cpu.InterruptCount,
+				cpu.TrapCount,
+				clint.AccessCount,
+				plic.AccessCount,
+				uart.AccessCount,
+			)
+		}
 	}
 }
 

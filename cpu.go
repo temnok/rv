@@ -17,6 +17,8 @@ type CPU struct {
 	priv int32
 
 	startNanoseconds int64
+
+	InterruptCount, TrapCount int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -82,6 +84,9 @@ func (cpu *CPU) Step() {
 	cpu.bus.notifyInterrupts()
 	if cpu.trapOnPendingInterrupts() {
 		cpu.pc = cpu.nextPC
+
+		cpu.InterruptCount++
+
 		return
 	}
 
@@ -94,6 +99,10 @@ func (cpu *CPU) Step() {
 		}
 
 		cpu.exec(opcode)
+	}
+
+	if cpu.trapped {
+		cpu.TrapCount++
 	}
 
 	cpu.pc = cpu.nextPC
@@ -142,7 +151,7 @@ func (cpu *CPU) trap(cause int32) {
 
 func (cpu *CPU) trapWithTval(cause, tval int32) {
 
-	tval = 0 // TODO investigate why kernel hangs
+	//tval = 0 // TODO investigate why kernel hangs
 
 	if cpu.trapped {
 		panic("double trap")

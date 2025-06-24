@@ -1,25 +1,25 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int32, data *int32) bool {
-	var physAddr, word int32
+	var physAddr, lo int32
 	if !cpu.translateSv32(virtAddr, &physAddr, AccessExecute) {
 		return false
 	}
 
-	if !cpu.bus.read(physAddr, &word) {
+	if !cpu.bus.read(physAddr, &lo) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return false
 	}
 
 	if isWordAligned := virtAddr&3 == 0; isWordAligned {
-		*data = word
+		*data = lo
 		return true
 	}
 
-	word = int32(uint32(word) >> 16)
+	lo = int32(uint32(lo) >> 16)
 
-	if isCompressedInstruction := word&3 != 3; isCompressedInstruction {
-		*data = word
+	if isCompressedInstruction := bits(lo, 0, 2) != 0b_11; isCompressedInstruction {
+		*data = lo
 		return true
 	}
 
@@ -34,18 +34,18 @@ func (cpu *CPU) memFetch(virtAddr int32, data *int32) bool {
 		return false
 	}
 
-	*data = hi<<16 | word
+	*data = hi<<16 | lo
 	return true
 }
 
 func (cpu *CPU) memRead(virtAddr, width int32, data *int32) bool {
-	if virtAddr&(width-1) != 0 {
-		cpu.trapWithTval(ExceptionLoadAddressMisaligned, virtAddr)
+	var physAddr int32
+	if !cpu.translateSv32(virtAddr, &physAddr, AccessRead) {
 		return false
 	}
 
-	var physAddr int32
-	if !cpu.translateSv32(virtAddr, &physAddr, AccessRead) {
+	if virtAddr&(width-1) != 0 {
+		cpu.trapWithTval(ExceptionLoadAddressMisaligned, virtAddr)
 		return false
 	}
 
@@ -55,23 +55,23 @@ func (cpu *CPU) memRead(virtAddr, width int32, data *int32) bool {
 		return false
 	}
 
-	*data = word >> ((virtAddr & 3) << 3)
+	*data = word >> ((virtAddr & 3) * 8)
 	return true
 }
 
 func (cpu *CPU) memWrite(virtAddr, width, data int32) bool {
-	if virtAddr&(width-1) != 0 {
-		cpu.trapWithTval(ExceptionStoreAMOAddressMisaligned, virtAddr)
-		return false
-	}
-
 	var physAddr int32
 	if !cpu.translateSv32(virtAddr, &physAddr, AccessWrite) {
 		return false
 	}
 
+	if virtAddr&(width-1) != 0 {
+		cpu.trapWithTval(ExceptionStoreAMOAddressMisaligned, virtAddr)
+		return false
+	}
+
 	if width < 4 {
-		shift := (virtAddr & 3) << 3
+		shift := (virtAddr & 3) * 8
 
 		var old int32
 		if !cpu.bus.read(physAddr, &old) {
