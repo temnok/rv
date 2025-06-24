@@ -1,8 +1,7 @@
 package rv
 
 type PLIC struct {
-	cpu *CPU
-
+	cpu      *CPU
 	baseAddr int32
 
 	priority  [32]int32
@@ -16,7 +15,7 @@ type PLIC struct {
 func (plic *PLIC) init(cpu *CPU, baseAddr int32) {
 	*plic = PLIC{
 		cpu:      cpu,
-		baseAddr: baseAddr,
+		baseAddr: int32(uint32(baseAddr) >> 2),
 	}
 }
 
@@ -73,9 +72,7 @@ func (plic *PLIC) access(addr int32, data *int32, write bool) bool {
 	return true
 }
 
-func (plic *PLIC) setPendingIterrupts(pending int32) {
-	plic.pending |= pending
-
+func (plic *PLIC) setPendingIterrupts(cpu *CPU) bool {
 	maxPriority := int32(0)
 	irq := int32(0)
 	for i := int32(1); i < 32; i++ {
@@ -94,6 +91,9 @@ func (plic *PLIC) setPendingIterrupts(pending int32) {
 	plic.claim = irq
 
 	if irq > 0 {
-		plic.cpu.csr.mip |= 1 << mipSEI
+		cpu.csr.mip |= 1 << mipSEI
+		return true
 	}
+
+	return false
 }

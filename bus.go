@@ -1,19 +1,35 @@
 package rv
 
-type Bus struct {
-	ram   *RAM
-	clint *CLINT
+type Bus []interface {
+	access(addr int32, data *int32, write bool) bool
 }
 
-func (bus *Bus) read(addr int32, data *int32) bool {
+func (bus Bus) read(addr int32, data *int32) bool {
 	return bus.access(addr, data, false)
 }
 
-func (bus *Bus) write(addr int32, data int32) bool {
+func (bus Bus) write(addr int32, data int32) bool {
 	return bus.access(addr, &data, true)
 }
 
-func (bus *Bus) access(addr int32, data *int32, write bool) bool {
-	return bus.ram != nil && bus.ram.access(addr, data, write) ||
-		bus.clint != nil && bus.clint.access(addr, data, write)
+func (bus Bus) access(addr int32, data *int32, write bool) bool {
+	for _, device := range bus {
+		if device.access(addr, data, write) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (bus Bus) setPendingInterrupts(cpu *CPU) bool {
+	for _, device := range bus {
+		if target, ok := device.(interface{ setPendingInterrupts(cpu *CPU) bool }); ok {
+			if target.setPendingInterrupts(cpu) {
+				return true
+			}
+		}
+	}
+
+	return false
 }

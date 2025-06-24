@@ -16,7 +16,7 @@ type CPU struct {
 
 	startNanoseconds int64
 
-	bus *Bus
+	bus Bus
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -55,7 +55,7 @@ const (
 	PteD = 7
 )
 
-func (cpu *CPU) init(bus *Bus) {
+func (cpu *CPU) init(bus Bus) {
 	const xlen32bit = 0b_01
 
 	*cpu = CPU{
@@ -76,10 +76,8 @@ func (cpu *CPU) step() {
 	cpu.trapped = false
 
 	cpu.updateTimers()
-	if cpu.bus.clint != nil {
-		cpu.bus.clint.setPendingIterrupts()
-	}
 
+	cpu.bus.setPendingInterrupts(cpu)
 	if cpu.trapOnPendingInterrupts() {
 		cpu.pc = cpu.nextPC
 		return

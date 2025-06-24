@@ -31,8 +31,10 @@ func runTest(t *testing.T, file string) {
 	}
 
 	cpu := &CPU{}
-	cpu.init(&Bus{ram: &RAM{}})
-	cpu.bus.ram.init(64*1024, program)
+	ram := &RAM{}
+
+	cpu.init(Bus{ram})
+	ram.init(64*1024, program)
 
 	instrCounts := make([]int32, len(program))
 	var lastPCs []uint32

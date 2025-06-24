@@ -1,17 +1,24 @@
 package rv
 
 type CLINT struct {
-	cpu                       *CPU
+	cpu      *CPU
+	baseAddr int32
+
 	mswi, mtimecmp, mtimecmph int32
 }
 
-func (clint *CLINT) init(cpu *CPU) {
+func (clint *CLINT) init(cpu *CPU, baseAddr int32) {
 	*clint = CLINT{
-		cpu: cpu,
+		cpu:      cpu,
+		baseAddr: int32(uint32(baseAddr) >> 2),
 	}
 }
 
 func (clint *CLINT) access(addr int32, data *int32, write bool) bool {
+	if addr -= clint.baseAddr; addr < 0 || addr >= 0x10000/4 {
+		return false
+	}
+
 	var reg *int32
 
 	switch addr * 4 {
@@ -25,26 +32,35 @@ func (clint *CLINT) access(addr int32, data *int32, write bool) bool {
 		reg = &clint.cpu.csr.mtime
 	case 0x4000 + 0x7FF8 + 4: // mtimeh
 		reg = &clint.cpu.csr.mtimeh
-	default:
-		return false
 	}
 
 	if write {
-		*reg = *data
+		if reg != nil {
+			*reg = *data
+		}
 	} else {
-		*data = *reg
+		if reg != nil {
+			*data = *reg
+		} else {
+			*data = 0
+		}
 	}
 
 	return true
 }
 
-func (clint *CLINT) setPendingIterrupts() {
-	csr := &clint.cpu.csr
-	csr.mip |= bit(clint.mswi, 1) << mipMSI
-
-	if csr.mtimeh > clint.mtimecmph ||
-		csr.mtimeh == clint.mtimecmph && csr.mtime >= clint.mtimecmp {
-
-		csr.mip |= 1 << mipMTI
+func (clint *CLINT) setPendingIterrupts(cpu *CPU) bool {
+	if bit(clint.mswi, 1) == 1 {
+		cpu.csr.mip |= 1 << mipMSI
+		return true
 	}
+
+	if cpu.csr.mtimeh > clint.mtimecmph ||
+		cpu.csr.mtimeh == clint.mtimecmph && cpu.csr.mtime >= clint.mtimecmp {
+
+		cpu.csr.mip |= 1 << mipMTI
+		return true
+	}
+
+	return false
 }
