@@ -5,27 +5,27 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int32) {
 
 	switch f3 {
 	case 0b_000: // lb
-		if cpu.memRead(cpu.x[rs1]+imm, 1, &val) {
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 1); !cpu.isTrapped {
 			cpu.x[rd] = int32(int8(val))
 		}
 
 	case 0b_001: // lh
-		if cpu.memRead(cpu.x[rs1]+imm, 2, &val) {
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 2); !cpu.isTrapped {
 			cpu.x[rd] = int32(int16(val))
 		}
 
 	case 0b_010: // lw
-		if cpu.memRead(cpu.x[rs1]+imm, 4, &val) {
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 4); !cpu.isTrapped {
 			cpu.x[rd] = val
 		}
 
 	case 0b_100: // lbu
-		if cpu.memRead(cpu.x[rs1]+imm, 1, &val) {
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 1); !cpu.isTrapped {
 			cpu.x[rd] = int32(uint8(val))
 		}
 
 	case 0b_101: // lhu
-		if cpu.memRead(cpu.x[rs1]+imm, 2, &val) {
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 2); !cpu.isTrapped {
 			cpu.x[rd] = int32(uint16(val))
 		}
 
@@ -37,13 +37,13 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int32) {
 func (cpu *CPU) execStore(imm, rs2, rs1, f3 int32) {
 	switch f3 {
 	case 0b_000: // sb
-		cpu.memWrite(cpu.x[rs1]+imm, 1, int32(uint8(cpu.x[rs2])))
+		cpu.memWrite(cpu.x[rs1]+imm, int32(uint8(cpu.x[rs2])), 1)
 
 	case 0b_001: // sh
-		cpu.memWrite(cpu.x[rs1]+imm, 2, int32(uint16(cpu.x[rs2])))
+		cpu.memWrite(cpu.x[rs1]+imm, int32(uint16(cpu.x[rs2])), 2)
 
 	case 0b_010: // sw
-		cpu.memWrite(cpu.x[rs1]+imm, 4, cpu.x[rs2])
+		cpu.memWrite(cpu.x[rs1]+imm, cpu.x[rs2], 4)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

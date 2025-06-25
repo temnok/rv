@@ -53,7 +53,7 @@ func (cpu *CPU) exec(opcode int32) bool {
 
 	cpu.x[0] = 0
 
-	if cpu.trapped {
+	if cpu.isTrapped {
 		return false
 	}
 

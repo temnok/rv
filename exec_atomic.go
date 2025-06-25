@@ -13,7 +13,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int32) {
 
 	var old int32
 	if f5 != 0b_00011 { // for all except sc
-		if !cpu.memRead(addr, 4, &old) {
+		if cpu.memRead(addr, &old, 4); cpu.isTrapped {
 			return
 		}
 	}
@@ -74,7 +74,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int32) {
 	}
 
 	if write {
-		if !cpu.memWrite(addr, 4, val) {
+		if cpu.memWrite(addr, val, 4); cpu.isTrapped {
 			return
 		}
 	}
