@@ -11,7 +11,7 @@ type PLIC struct {
 	claim     int32
 	claiming  int32
 
-	AccessCount int
+	AccessCount, InterruptCount int
 }
 
 func (plic *PLIC) Init(cpu *CPU, baseAddr int32) {
@@ -76,8 +76,10 @@ func (plic *PLIC) access(addr int32, data *int32, write bool) bool {
 }
 
 func (plic *PLIC) triggerInterrupt(source int32) {
-	if source > 0 && source < 32 && bit(plic.claiming, source) == 0 {
+	if source > 0 && source < 32 && bit(plic.claiming, source) == 0 && bit(plic.pending, source) == 0 {
 		plic.pending |= 1 << source
+
+		plic.InterruptCount++
 	}
 }
 

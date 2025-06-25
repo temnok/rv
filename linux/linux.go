@@ -6,14 +6,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	rv "github.com/temnok/gorv"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 	"io"
 	"os"
 )
 
 func main() {
-	state := check1(terminal.MakeRaw(0))
-	defer terminal.Restore(0, state)
+	state := check1(term.MakeRaw(0))
+	defer term.Restore(0, state)
 
 	var (
 		cpu          rv.CPU
@@ -35,7 +35,9 @@ func main() {
 	ram.Init(ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x200_0000)
 	plic.Init(&cpu, 0xC00_0000)
-	uart1.Init(&plic, 0x300_0000, 1, terminalCallback)
+
+	terminal := newTerminal()
+	uart1.Init(&plic, 0x300_0000, 1, terminal.callback)
 	uart2.Init(&plic, 0x600_0000, 2, nil)
 
 	kernel := ungzip(check1(os.ReadFile("linux/bin/fw_payload.bin.gz")))
@@ -46,31 +48,22 @@ func main() {
 	ram.Load(ramBaseAddr, kernel)
 	ram.Load(dtbAddr, check1(os.ReadFile("linux/bin/rv.dtb")))
 
-	for step := 0; ; step++ {
+	for step := 0; !terminal.Closed; step++ {
 		cpu.Step()
 
 		//if step%10_000_000 == 0 {
-		//	fmt.Printf("*** Steps:%vM, irq:%v, traps:%v, CLINT:%v, CLINTirq:%v, PLIC:%v, UART:%v\r\n",
+		//	fmt.Printf("*** Steps:%vM, irq:%v, traps:%v, CLINT:%v, CLINTirq:%v, PLIC:%v, PLICirq:%v, UART:%v\r\n",
 		//		step/1_000_000,
 		//		cpu.InterruptCount,
 		//		cpu.TrapCount,
 		//		clint.AccessCount,
 		//		clint.InterruptCount,
 		//		plic.AccessCount,
-		//		uart.AccessCount,
+		//		plic.InterruptCount,
+		//		uart1.AccessCount,
 		//	)
 		//}
 	}
-}
-
-func terminalCallback(ch *byte, write bool) bool {
-	if write {
-		buf := []byte{*ch}
-		os.Stdout.Write(buf)
-		return true
-	}
-
-	return false
 }
 
 func ungzip(data []byte) []byte {
@@ -83,13 +76,13 @@ func sha256sum(data []byte) string {
 	return hex.EncodeToString(sha[:])
 }
 
+func check1[A any](a A, err error) A {
+	check(err)
+	return a
+}
+
 func check(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func check1[A any](a A, err error) A {
-	check(err)
-	return a
 }

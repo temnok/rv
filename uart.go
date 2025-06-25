@@ -42,7 +42,8 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 		}
 	case 1: // rxdata
 		if !write {
-			*data = ((8-uart.rx.size)/8)<<31 | uart.rx.get()
+			size := uart.rx.size
+			*data = ((8-size)/8)<<31 | uart.rx.get()
 		}
 	case 2: // txctrl
 		if write {
@@ -78,9 +79,10 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 		}
 	}
 
-	if write {
+	if !write {
 		uart.AccessCount++
 	}
+
 	return true
 }
 
