@@ -1,9 +1,5 @@
 package rv
 
-import (
-	"time"
-)
-
 type CPU struct {
 	bus Bus
 
@@ -17,10 +13,6 @@ type CPU struct {
 	reservedAddress int32
 
 	priv int32
-
-	startNanoseconds int64
-
-	InterruptCount, TrapCount int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -70,7 +62,6 @@ func (cpu *CPU) Init(bus Bus, startAddr int32, regs []int32) {
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 		},
-		startNanoseconds: time.Now().UnixNano(),
 
 		bus: bus,
 	}
@@ -112,10 +103,6 @@ func (cpu *CPU) updateTimers() {
 			cpu.csr.mtimeh++
 		}
 	}
-
-	//ticks := (int64(time.Now().Nanosecond()) - cpu.startNanoseconds) / 10
-	//cpu.csr.mtime = int32(ticks)
-	//cpu.csr.mtimeh = int32(ticks >> 32)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
@@ -138,7 +125,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 
 		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
 			cpu.trap(-1<<mcauseI | i)
-			cpu.InterruptCount++
+
 			return
 		}
 	}
@@ -149,15 +136,11 @@ func (cpu *CPU) trap(cause int32) {
 }
 
 func (cpu *CPU) trapWithTval(cause, tval int32) {
-
-	//tval = 0 // TODO investigate why kernel hangs
-
 	if cpu.isTrapped {
 		panic("double trap")
 	}
 
 	cpu.isTrapped = true
-	cpu.TrapCount++
 
 	isInterrupt := bit(cause, mcauseI) != 0
 	causeID := bits(cause, 0, 5)

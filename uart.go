@@ -8,8 +8,6 @@ type UART struct {
 
 	rx, tx                           UARTfifo
 	txctrl, rxctrl, ip, ie, div, clk int32
-
-	AccessCount int
 }
 
 type UARTfifo struct {
@@ -77,10 +75,6 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 		if !write {
 			*data = 0
 		}
-	}
-
-	if !write {
-		uart.AccessCount++
 	}
 
 	return true
