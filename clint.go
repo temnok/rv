@@ -6,7 +6,7 @@ type CLINT struct {
 
 	mswi, mtimecmp, mtimecmph int32
 
-	AccessCount int
+	AccessCount, InterruptCount int
 }
 
 func (clint *CLINT) Init(cpu *CPU, baseAddr int32) {
@@ -49,23 +49,24 @@ func (clint *CLINT) access(addr int32, data *int32, write bool) bool {
 	}
 
 	clint.AccessCount++
+
 	return true
 }
 
-func (clint *CLINT) notifyInterrupts() bool {
+func (clint *CLINT) notifyInterrupts() {
 	csr := &clint.cpu.csr
 
 	if bit(clint.mswi, 1) == 1 {
 		csr.mip |= 1 << mipMSI
-		return true
 	}
 
-	if csr.mtimeh > clint.mtimecmph ||
-		csr.mtimeh == clint.mtimecmph && csr.mtime >= clint.mtimecmp {
+	if uint32(csr.mtimeh) > uint32(clint.mtimecmph) ||
+		csr.mtimeh == clint.mtimecmph && uint32(csr.mtime) >= uint32(clint.mtimecmp) {
+
+		if csr.mip&(1<<mipMTI) == 0 {
+			clint.InterruptCount++
+		}
 
 		csr.mip |= 1 << mipMTI
-		return true
 	}
-
-	return false
 }

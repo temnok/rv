@@ -81,7 +81,7 @@ func (plic *PLIC) triggerInterrupt(source int32) {
 	}
 }
 
-func (plic *PLIC) notifyInterrupts() bool {
+func (plic *PLIC) notifyInterrupts() {
 	maxPriority := int32(0)
 	irq := int32(0)
 	for i := int32(1); i < 32; i++ {
@@ -101,8 +101,5 @@ func (plic *PLIC) notifyInterrupts() bool {
 
 	if irq > 0 {
 		plic.cpu.csr.mip |= 1 << mipSEI
-		return true
 	}
-
-	return false
 }

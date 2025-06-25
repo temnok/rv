@@ -81,7 +81,7 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 	return true
 }
 
-func (uart *UART) notifyInterrupts() bool {
+func (uart *UART) notifyInterrupts() {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
 		if bit(uart.txctrl, 0) == 1 && uart.tx.size > 0 && uart.callback(&ch, true) {
@@ -109,10 +109,7 @@ func (uart *UART) notifyInterrupts() bool {
 
 	if uart.ip != 0 && uart.plic != nil {
 		uart.plic.triggerInterrupt(1)
-		return true
 	}
-
-	return false
 }
 
 func (fifo *UARTfifo) put(ch int32) {

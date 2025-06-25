@@ -1,6 +1,9 @@
 package rv
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type CPU struct {
 	bus Bus
@@ -81,8 +84,9 @@ func (cpu *CPU) Step() {
 
 	cpu.updateTimers()
 
+	cpu.csr.mip &^= 1<<mipSEI | 1<<mipMTI | 1<<mipMSI
 	cpu.bus.notifyInterrupts()
-	if cpu.trapOnPendingInterrupts() {
+	if cpu.trapOnPendingInterrupts(); cpu.isTrapped {
 		return
 	}
 
@@ -99,22 +103,32 @@ func (cpu *CPU) Step() {
 	cpu.exec(opcode)
 }
 
+func (cpu *CPU) Mtime() uint64 {
+	return uint64(uint32(cpu.csr.mtimeh))<<32 | uint64(uint32(cpu.csr.mtime))
+}
+
 func (cpu *CPU) updateTimers() {
 	if cpu.csr.cycle++; cpu.csr.cycle == 0 {
 		cpu.csr.cycleh++
 	}
 
-	ticks := (int64(time.Now().Nanosecond()) - cpu.startNanoseconds) / 10
-	cpu.csr.mtime = int32(ticks)
-	cpu.csr.mtimeh = int32(ticks >> 32)
+	if cpu.csr.cycle&0xFFF == 0 {
+		if cpu.csr.mtime++; cpu.csr.mtime == 0 {
+			cpu.csr.mtimeh++
+		}
+	}
+
+	//ticks := (int64(time.Now().Nanosecond()) - cpu.startNanoseconds) / 10
+	//cpu.csr.mtime = int32(ticks)
+	//cpu.csr.mtimeh = int32(ticks >> 32)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) trapOnPendingInterrupts() bool {
+func (cpu *CPU) trapOnPendingInterrupts() {
 	mi := cpu.csr.mip & cpu.csr.mie
 
 	if mi == 0 {
-		return false
+		return
 	}
 
 	for i := int32(12); i > 0; i-- {
@@ -130,11 +144,13 @@ func (cpu *CPU) trapOnPendingInterrupts() bool {
 		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
 			cpu.trap(-1<<mcauseI | i)
 			cpu.InterruptCount++
-			return true
+			return
 		}
 	}
+}
 
-	return false
+func (cpu *CPU) MiInfo() string {
+	return fmt.Sprintf("mtiP:%x mtiE:%x", uint32(cpu.csr.mip&(1<<mipMTI)), uint32(cpu.csr.mie&(1<<mipMTI)))
 }
 
 func (cpu *CPU) trap(cause int32) {
@@ -161,7 +177,7 @@ func (cpu *CPU) trapWithTval(cause, tval int32) {
 	}
 
 	effectivePriv := int32(PrivM)
-	if cpu.priv < PrivM && bit(deleg, causeID) != 0 {
+	if cpu.priv < PrivM && bit(deleg, causeID) == 1 {
 		effectivePriv = PrivS
 	}
 

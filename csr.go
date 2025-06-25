@@ -54,7 +54,7 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 	case 0x100:
 		return &cpu.csr.mstatus
 	case 0x104:
-		return &cpu.csr.sie
+		return &cpu.csr.mie
 	case 0x105:
 		return &cpu.csr.stvec
 	case 0x106:
