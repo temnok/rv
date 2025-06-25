@@ -1,12 +1,13 @@
 package rv
 
 type UART struct {
-	plic     *PLIC
-	baseAddr int32
+	plic        *PLIC
+	baseAddr    int32
+	interruptID int32
+	callback    func(ch *byte, write bool) bool
 
 	rx, tx                           UARTfifo
 	txctrl, rxctrl, ip, ie, div, clk int32
-	callback                         func(ch *byte, write bool) bool
 
 	AccessCount int
 }
@@ -16,17 +17,19 @@ type UARTfifo struct {
 	size int32
 }
 
-func (uart *UART) Init(plic *PLIC, baseAddr int32, callback func(ch *byte, write bool) bool) {
+func (uart *UART) Init(plic *PLIC, baseAddr int32, interuptID int32, callback func(ch *byte, write bool) bool) {
 	*uart = UART{
-		plic:     plic,
-		baseAddr: int32(uint32(baseAddr) >> 2),
-		div:      3,
-		callback: callback,
+		plic:        plic,
+		baseAddr:    int32(uint32(baseAddr) >> 2),
+		interruptID: interuptID,
+		callback:    callback,
+
+		div: 3,
 	}
 }
 
 func (uart *UART) access(addr int32, data *int32, write bool) bool {
-	if addr -= uart.baseAddr; addr < 0 || addr > 8 {
+	if addr -= uart.baseAddr; addr < 0 || addr >= 8 {
 		return false
 	}
 
@@ -84,12 +87,16 @@ func (uart *UART) access(addr int32, data *int32, write bool) bool {
 func (uart *UART) notifyInterrupts() {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
-		if bit(uart.txctrl, 0) == 1 && uart.tx.size > 0 && uart.callback(&ch, true) {
-			uart.tx.get()
+		if bit(uart.txctrl, 0) == 1 && uart.tx.size > 0 {
+			if uart.callback != nil && uart.callback(&ch, true) {
+				uart.tx.get()
+			}
 		}
 
-		if bit(uart.rxctrl, 0) == 1 && uart.rx.size < 8 && uart.callback(&ch, false) {
-			uart.rx.put(int32(ch))
+		if bit(uart.rxctrl, 0) == 1 && uart.rx.size < 8 {
+			if uart.callback != nil && uart.callback(&ch, false) {
+				uart.rx.put(int32(ch))
+			}
 		}
 
 		uart.clk = 0
@@ -101,14 +108,14 @@ func (uart *UART) notifyInterrupts() {
 		uart.ip &^= 1
 	}
 
-	if (uart.rxctrl>>16) > uart.rx.size && bit(uart.ie, 1) == 1 {
+	if (uart.rxctrl>>16) < uart.rx.size && bit(uart.ie, 1) == 1 {
 		uart.ip |= 2
 	} else {
 		uart.ip &^= 2
 	}
 
 	if uart.ip != 0 && uart.plic != nil {
-		uart.plic.triggerInterrupt(1)
+		uart.plic.triggerInterrupt(uart.interruptID)
 	}
 }
 

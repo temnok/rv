@@ -1,7 +1,6 @@
 package rv
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -103,10 +102,6 @@ func (cpu *CPU) Step() {
 	cpu.exec(opcode)
 }
 
-func (cpu *CPU) Mtime() uint64 {
-	return uint64(uint32(cpu.csr.mtimeh))<<32 | uint64(uint32(cpu.csr.mtime))
-}
-
 func (cpu *CPU) updateTimers() {
 	if cpu.csr.cycle++; cpu.csr.cycle == 0 {
 		cpu.csr.cycleh++
@@ -147,10 +142,6 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 			return
 		}
 	}
-}
-
-func (cpu *CPU) MiInfo() string {
-	return fmt.Sprintf("mtiP:%x mtiE:%x", uint32(cpu.csr.mip&(1<<mipMTI)), uint32(cpu.csr.mie&(1<<mipMTI)))
 }
 
 func (cpu *CPU) trap(cause int32) {

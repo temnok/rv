@@ -76,7 +76,7 @@ func (plic *PLIC) access(addr int32, data *int32, write bool) bool {
 }
 
 func (plic *PLIC) triggerInterrupt(source int32) {
-	if source > 0 && source < 32 {
+	if source > 0 && source < 32 && bit(plic.claiming, source) == 0 {
 		plic.pending |= 1 << source
 	}
 }
