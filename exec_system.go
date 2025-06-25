@@ -32,6 +32,8 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 	default:
 		switch bits(imm, 5, 7) {
 		case 0b_0001_001: // sfence.vma
+			cpu.tlb.flush()
+
 			if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
 				cpu.trap(ExceptionIllegalIstruction)
 			}

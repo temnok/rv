@@ -13,6 +13,8 @@ type CPU struct {
 	reservedAddress int32
 
 	priv int32
+
+	tlb TLB
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -39,16 +41,6 @@ const (
 	AccessExecute = 0
 	AccessRead    = 1
 	AccessWrite   = 3
-
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#translation
-	PteV = 0
-	PteR = 1
-	PteW = 2
-	PteX = 3
-	PteU = 4
-	//PteG = 5
-	PteA = 6
-	PteD = 7
 )
 
 func (cpu *CPU) Init(bus Bus, startAddr int32, regs []int32) {
