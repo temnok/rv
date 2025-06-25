@@ -83,29 +83,20 @@ func (cpu *CPU) Step() {
 
 	cpu.bus.notifyInterrupts()
 	if cpu.trapOnPendingInterrupts() {
-		cpu.pc = cpu.nextPC
-
-		cpu.InterruptCount++
-
 		return
 	}
 
-	if opcode := int32(0); cpu.memFetch(cpu.pc, &opcode) {
-		if compressed := opcode&0b11 != 0b11; compressed {
-			opcode = decompress(opcode)
-			cpu.nextPC = cpu.pc + 2
-		} else {
-			cpu.nextPC = cpu.pc + 4
-		}
-
-		cpu.exec(opcode)
+	var opcode int32
+	if !cpu.memFetch(cpu.pc, &opcode) {
+		return
 	}
 
-	if cpu.trapped {
-		cpu.TrapCount++
+	cpu.nextPC = cpu.pc + 4
+	if !cpu.decompress(&opcode) {
+		return
 	}
 
-	cpu.pc = cpu.nextPC
+	cpu.exec(opcode)
 }
 
 func (cpu *CPU) updateTimers() {
@@ -138,6 +129,7 @@ func (cpu *CPU) trapOnPendingInterrupts() bool {
 
 		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
 			cpu.trap(-1<<mcauseI | i)
+			cpu.InterruptCount++
 			return true
 		}
 	}
@@ -158,6 +150,7 @@ func (cpu *CPU) trapWithTval(cause, tval int32) {
 	}
 
 	cpu.trapped = true
+	cpu.TrapCount++
 
 	isInterrupt := bit(cause, mcauseI) != 0
 	causeID := bits(cause, 0, 5)
@@ -196,9 +189,9 @@ func (cpu *CPU) trapWithTval(cause, tval int32) {
 		tvec = cpu.csr.stvec
 	}
 
-	cpu.nextPC = tvec &^ 0b_11
+	cpu.pc = tvec &^ 0b_11
 	if bit(tvec, 0) != 0 && isInterrupt {
-		cpu.nextPC += causeID * 4
+		cpu.pc += causeID * 4
 	}
 
 	cpu.priv = effectivePriv

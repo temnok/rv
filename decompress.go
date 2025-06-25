@@ -1,5 +1,23 @@
 package rv
 
+func (cpu *CPU) decompress(opcodePtr *int32) bool {
+	opcode := *opcodePtr
+	if is32bitInstruction := opcode&3 == 3; is32bitInstruction {
+		return true
+	}
+
+	opcode = int32(uint16(opcode))
+	decompressedOpcode := decompress(opcode)
+	if decompressedOpcode == 0 {
+		cpu.trapWithTval(ExceptionIllegalIstruction, opcode)
+		return false
+	}
+
+	*opcodePtr = decompressedOpcode
+	cpu.nextPC = cpu.pc + 2
+	return true
+}
+
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
 func decompress(opcode int32) int32 {
 	f3 := bits(opcode, 13, 3)
