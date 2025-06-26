@@ -43,33 +43,19 @@ func (cpu *CPU) memRead(virtAddr int32, data *int32, width int32) {
 		return
 	}
 
-	var lo int32
-	if !cpu.bus.read(physAddr, &lo) {
+	if virtAddr&(width-1) != 0 {
+		cpu.trapWithTval(ExceptionLoadAddressMisaligned, virtAddr)
+		return
+	}
+
+	var word int32
+	if !cpu.bus.read(physAddr, &word) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
-	lo >>= (virtAddr & 3) * 8
-
-	hiSize := virtAddr&3 + width - 4
-	if hiSize <= 0 {
-		*data = lo
-		return
-	}
-
-	loSize := width - hiSize
-	virtAddr += loSize
-	if cpu.translateSv32(virtAddr, &physAddr, AccessRead); cpu.isTrapped {
-		return
-	}
-
-	var hi int32
-	if !cpu.bus.read(physAddr, &hi) {
-		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
-		return
-	}
-
-	*data = hi<<(loSize*8) | lo&^(-1<<(loSize*8))
+	shift := (virtAddr & 3) * 8
+	*data = word >> shift
 }
 
 func (cpu *CPU) memWrite(virtAddr, data, width int32) {
@@ -78,51 +64,24 @@ func (cpu *CPU) memWrite(virtAddr, data, width int32) {
 		return
 	}
 
-	shift := virtAddr & 3
-	if alignedWordWrite := width == 4 && shift == 0; alignedWordWrite {
-		if !cpu.bus.write(physAddr, data) {
+	if virtAddr&(width-1) != 0 {
+		cpu.trapWithTval(ExceptionStoreAMOAddressMisaligned, virtAddr)
+		return
+	}
+
+	if width < 4 {
+		var old int32
+		if !cpu.bus.read(physAddr, &old) {
 			cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
+			return
 		}
 
-		return
+		shift := (virtAddr & 3) * 8
+		mask := ^(int32(-1) << (width * 8)) << shift
+		data = old&^mask | data<<shift
 	}
 
-	var lo int32
-	if !cpu.bus.read(physAddr, &lo) {
-		cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
-		return
-	}
-
-	mask := (int32(0x100) << ((width - 1) * 8)) - 1
-	lo &^= mask << (shift * 8)
-	lo |= data << (shift * 8)
-
-	if !cpu.bus.write(physAddr, lo) {
-		cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
-		return
-	}
-
-	hiSize := shift + width - 4
-	if hiSize <= 0 {
-		return
-	}
-
-	loSize := width - hiSize
-	virtAddr += loSize
-	if cpu.translateSv32(virtAddr, &physAddr, AccessWrite); cpu.isTrapped {
-		return
-	}
-
-	var hi int32
-	if !cpu.bus.read(physAddr, &hi) {
-		cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
-		return
-	}
-
-	hi &= -1 << (hiSize * 8)
-	hi |= int32(uint32(data) >> uint32(loSize*8))
-
-	if !cpu.bus.write(physAddr, hi) {
+	if !cpu.bus.write(physAddr, data) {
 		cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
 	}
 }
