@@ -41,9 +41,9 @@ func main() {
 	uart1.Init(&plic, 0x300_0000, 1, terminal.callback)
 	uart2.Init(&plic, 0x600_0000, 2, nil)
 
-	ram.Load(ramBaseAddr, readFile("linux/bin/fw_payload.bin.gz",
-		"0380799b9aa3abe5ea38e0d0ab90f5c613d3bc42952522b62a491c615b7bbcdd"))
-	ram.Load(dtbAddr, readFile("linux/bin/rv.dtb",
+	ram.Load(ramBaseAddr, readFile("linux/buildroot/rv32imac/bin/fw_payload.bin.gz",
+		"df8e6a9ee15bb0baeff267e820e96f56b77c441db8703550d8ea21e0ed8be192"))
+	ram.Load(dtbAddr, readFile("linux/buildroot/rv32imac/bin/rv.dtb",
 		"46f0e3d9ddba89ec2e8251409bca4daca38715a847954a526feb2be9065347e7"))
 
 	for step := 0; !terminal.Closed; step++ {
@@ -59,8 +59,8 @@ func readFile(path, checksum string) []byte {
 		content = check1(io.ReadAll(r))
 	}
 
-	if checksum != "" && checksum != fmt.Sprintf("%x", sha256.Sum256(content)) {
-		panic("file checksum check failed")
+	if cs := fmt.Sprintf("%x", sha256.Sum256(content)); checksum != "" && checksum != cs {
+		panic(path + " checksum check failed, expected " + cs)
 	}
 
 	return content

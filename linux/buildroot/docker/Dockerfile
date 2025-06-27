@@ -1,4 +1,4 @@
-FROM gcc:14.3.0
+FROM gcc:14.3
 
 RUN apt update && \
     apt install -y bc bison build-essential cpio dosfstools file flex git \
@@ -10,7 +10,7 @@ RUN groupadd -r user && \
 USER user
 WORKDIR /home/user
 
-RUN curl -L https://github.com/buildroot/buildroot/archive/refs/tags/2023.11.1.tar.gz -o buildroot.tar.gz && \
+RUN curl -L https://github.com/buildroot/buildroot/archive/refs/tags/2024.02.13.tar.gz -o buildroot.tar.gz && \
   tar -xf buildroot.tar.gz && \
   rm buildroot.tar.gz && \
   mv buildroot*/ buildroot/
