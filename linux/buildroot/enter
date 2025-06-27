@@ -3,5 +3,3 @@ set -euo pipefail
 cd $(dirname $0)
 
 docker exec -ti buildroot bash
-
-# make -C buildroot BR2_EXTERNAL=~/external rv_defconfig && make -C buildroot
