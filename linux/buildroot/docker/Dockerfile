@@ -9,6 +9,6 @@ RUN groupadd -r user && \
 
 USER user
 
-RUN cd ~ && git clone --branch=2024.02.13 https://github.com/buildroot/buildroot
+RUN cd ~ && git clone https://github.com/buildroot/buildroot
 
 WORKDIR /home/user/buildroot

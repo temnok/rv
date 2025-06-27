@@ -8,7 +8,7 @@ type TLBEntry struct {
 	virtAddr, pte int32
 }
 
-const tlbSize = 4
+const tlbSize = 8
 
 func (tlb *TLB) flush() {
 	tlb.entries = tlb.entries[:0]
