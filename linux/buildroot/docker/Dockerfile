@@ -8,9 +8,7 @@ RUN groupadd -r user && \
     useradd -m -r -g user user
 
 USER user
-WORKDIR /home/user
 
-RUN curl -L https://github.com/buildroot/buildroot/archive/refs/tags/2024.02.13.tar.gz -o buildroot.tar.gz && \
-  tar -xf buildroot.tar.gz && \
-  rm buildroot.tar.gz && \
-  mv buildroot*/ buildroot/
+RUN cd ~ && git clone --branch=2024.02.13 https://github.com/buildroot/buildroot
+
+WORKDIR /home/user/buildroot
