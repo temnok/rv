@@ -34,12 +34,12 @@ func main() {
 	})
 
 	ram.Init(ramBaseAddr, 128*1024*1024)
-	clint.Init(&cpu, 0x200_0000)
-	plic.Init(&cpu, 0xC00_0000)
+	clint.Init(&cpu, 0x0200_0000)
+	plic.Init(&cpu, 0x0C00_0000)
 
 	terminal := newTerminal()
-	uart1.Init(&plic, 0x300_0000, 1, terminal.callback)
-	uart2.Init(&plic, 0x600_0000, 2, nil)
+	uart1.Init(&plic, 0x0300_0000, 1, terminal.callback)
+	uart2.Init(&plic, 0x0600_0000, 2, nil)
 
 	ram.Load(ramBaseAddr, readFile("linux/buildroot/rv32imac/bin/fw_payload.bin.gz",
 		""))

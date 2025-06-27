@@ -10,12 +10,12 @@ type CLINT struct {
 func (clint *CLINT) Init(cpu *CPU, baseAddr int32) {
 	*clint = CLINT{
 		cpu:      cpu,
-		baseAddr: int32(uint32(baseAddr) >> 2),
+		baseAddr: baseAddr,
 	}
 }
 
-func (clint *CLINT) access(addr int32, data *int32, write bool) bool {
-	if addr -= clint.baseAddr; addr < 0 || addr >= 0x10000/4 {
+func (clint *CLINT) access(addr int32, data *int32, width int32, write bool) bool {
+	if addr = (addr - clint.baseAddr) / 4; addr < 0 || addr >= 0x10000/4 || width != 4 {
 		return false
 	}
 

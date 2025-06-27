@@ -18,7 +18,7 @@ type UARTfifo struct {
 func (uart *UART) Init(plic *PLIC, baseAddr int32, interuptID int32, callback func(ch *byte, write bool) bool) {
 	*uart = UART{
 		plic:        plic,
-		baseAddr:    int32(uint32(baseAddr) >> 2),
+		baseAddr:    baseAddr,
 		interruptID: interuptID,
 		callback:    callback,
 
@@ -26,8 +26,8 @@ func (uart *UART) Init(plic *PLIC, baseAddr int32, interuptID int32, callback fu
 	}
 }
 
-func (uart *UART) access(addr int32, data *int32, write bool) bool {
-	if addr -= uart.baseAddr; addr < 0 || addr >= 8 {
+func (uart *UART) access(addr int32, data *int32, width int32, write bool) bool {
+	if addr = (addr - uart.baseAddr) / 4; addr < 0 || addr >= 8 || width != 4 {
 		return false
 	}
 

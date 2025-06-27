@@ -15,12 +15,12 @@ type PLIC struct {
 func (plic *PLIC) Init(cpu *CPU, baseAddr int32) {
 	*plic = PLIC{
 		cpu:      cpu,
-		baseAddr: int32(uint32(baseAddr) >> 2),
+		baseAddr: baseAddr,
 	}
 }
 
-func (plic *PLIC) access(addr int32, data *int32, write bool) bool {
-	if addr -= plic.baseAddr; addr < 0 || addr >= 0x400_0000/4 {
+func (plic *PLIC) access(addr int32, data *int32, width int32, write bool) bool {
+	if addr = (addr - plic.baseAddr) / 4; addr < 0 || addr >= 0x400_0000/4 || width != 4 {
 		return false
 	}
 
