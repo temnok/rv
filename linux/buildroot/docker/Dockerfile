@@ -1,19 +1,16 @@
-FROM gcc:15
+FROM gcc:14.3.0
 
-RUN apt update && apt install -y cpio rsync bc
+RUN apt update && \
+    apt install -y bc bison build-essential cpio dosfstools file flex git \
+      libncurses5-dev libssl-dev mtools python3 python3-yaml rsync u-boot-tools unzip wget zip
 
-RUN cd /opt && \
-  curl -L https://github.com/buildroot/buildroot/archive/refs/tags/2025.05.tar.gz -o buildroot.tar.gz && \
+RUN groupadd -r user && \
+    useradd -m -r -g user user
+
+USER user
+WORKDIR /home/user
+
+RUN curl -L https://github.com/buildroot/buildroot/archive/refs/tags/2023.11.1.tar.gz -o buildroot.tar.gz && \
   tar -xf buildroot.tar.gz && \
   rm buildroot.tar.gz && \
   mv buildroot*/ buildroot/
-
-ENV FORCE_UNSAFE_CONFIGURE=1
-COPY extern/ /opt/extern/
-
-WORKDIR /opt
-
-#RUN make -C buildroot BR2_EXTERNAL=/opt/extern rv_defconfig && \
-#    make -C buildroot
-
-#RUN make -C buildroot linux-rebuild opensbi-rebuild all

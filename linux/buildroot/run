@@ -1,7 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-cd $(dirname $0)
-
-docker run -ti --rm buildroot
-
-# make -C buildroot BR2_EXTERNAL=/opt/extern rv_defconfig && make -C buildroot
