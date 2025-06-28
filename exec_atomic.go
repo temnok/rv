@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int32) {
+func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 	f5 := f7 >> 2
 
 	if f3 != 0b_010 || (f5&0b_11100 != 0 && f5&0b_00011 != 0) {
@@ -11,7 +11,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int32) {
 	addr := cpu.x[rs1]
 	val := cpu.x[rs2]
 
-	var old int32
+	var old Xint
 	if f5 != 0b_00011 { // for all except sc
 		if cpu.memRead(addr, &old, 4); cpu.isTrapped {
 			return
@@ -59,12 +59,12 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int32) {
 		}
 
 	case 0b_11000: // amominu
-		if uint32(old) < uint32(val) {
+		if Xuint(old) < Xuint(val) {
 			val = old
 		}
 
 	case 0b_11100: // amomaxu
-		if uint32(old) > uint32(val) {
+		if Xuint(old) > Xuint(val) {
 			val = old
 		}
 

@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execSystem(imm, rs1, f3, rd int32) {
+func (cpu *CPU) execSystem(imm, rs1, f3, rd Xint) {
 	if f3 == 0 {
 		cpu.execSystemSpecial(imm, rd)
 	} else {
@@ -8,7 +8,7 @@ func (cpu *CPU) execSystem(imm, rs1, f3, rd int32) {
 	}
 }
 
-func (cpu *CPU) execSystemSpecial(imm, rd int32) {
+func (cpu *CPU) execSystemSpecial(imm, rd Xint) {
 	if rd != 0 {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
@@ -44,7 +44,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int32) {
 	}
 }
 
-func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int32) {
+func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd Xint) {
 	csr := bits(imm, 0, 12)
 
 	s := rs1
@@ -52,7 +52,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int32) {
 		s = cpu.x[s]
 	}
 
-	var val int32
+	var val Xint
 
 	switch f3 & 0b_11 {
 	case 0b_01: // csrrw

@@ -3,16 +3,16 @@ package rv
 type CPU struct {
 	bus Bus
 
-	x          [32]int32
-	pc, nextPC int32
+	x          [32]Xint
+	pc, nextPC Xint
 	csr        CSR
 
 	isTrapped bool
 
 	reserved        bool
-	reservedAddress int32
+	reservedAddress Xint
 
-	priv int32
+	priv Xint
 
 	tlb TLB
 }
@@ -43,14 +43,12 @@ const (
 	AccessWrite   = 3
 )
 
-func (cpu *CPU) Init(bus Bus, startAddr int32, regs []int32) {
-	const xlen32bit = 0b_01
-
+func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
 	*cpu = CPU{
 		pc:   startAddr,
 		priv: PrivM,
 		csr: CSR{
-			misa: xlen32bit<<30 |
+			misa: 1<<(Xshift+25) |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 		},
@@ -72,7 +70,7 @@ func (cpu *CPU) Step() {
 		return
 	}
 
-	var opcode int32
+	var opcode Xint
 	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped {
 		return
 	}
@@ -105,12 +103,12 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 		return
 	}
 
-	for i := int32(12); i > 0; i-- {
+	for i := Xint(12); i > 0; i-- {
 		if bit(mi, i) == 0 {
 			continue
 		}
 
-		priv := int32(PrivM)
+		priv := Xint(PrivM)
 		if bit(cpu.csr.mideleg, i) != 0 {
 			priv = PrivS
 		}
@@ -123,11 +121,11 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 	}
 }
 
-func (cpu *CPU) trap(cause int32) {
+func (cpu *CPU) trap(cause Xint) {
 	cpu.trapWithTval(cause, 0)
 }
 
-func (cpu *CPU) trapWithTval(cause, tval int32) {
+func (cpu *CPU) trapWithTval(cause, tval Xint) {
 	if cpu.isTrapped {
 		panic("double trap")
 	}
@@ -142,12 +140,12 @@ func (cpu *CPU) trapWithTval(cause, tval int32) {
 		deleg = cpu.csr.mideleg
 	}
 
-	effectivePriv := int32(PrivM)
+	effectivePriv := Xint(PrivM)
 	if cpu.priv < PrivM && bit(deleg, causeID) == 1 {
 		effectivePriv = PrivS
 	}
 
-	var tvec int32
+	var tvec Xint
 
 	switch effectivePriv {
 	case PrivM:
@@ -181,7 +179,7 @@ func (cpu *CPU) trapWithTval(cause, tval int32) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) ret(priv int32) {
+func (cpu *CPU) ret(priv Xint) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
 	trapSRET := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) != 0
 

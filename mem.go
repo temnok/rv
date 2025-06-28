@@ -1,35 +1,35 @@
 package rv
 
-func (cpu *CPU) memFetch(virtAddr int32, data *int32) {
-	var physAddr, lo int32
-	if cpu.translateSv32(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
+func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
+	var physAddr, lo Xint
+	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
 	}
 
-	if !cpu.bus.read(physAddr, &lo, 4) {
+	if !cpu.bus.read(physAddr, &lo, Xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
 
-	if isWordAligned := virtAddr&3 == 0; isWordAligned {
+	if isAligned := virtAddr&(Xbytes-1) == 0; isAligned {
 		*data = lo
 		return
 	}
 
-	lo = int32(uint32(lo) >> 16)
+	lo = Xint(uint32(lo) >> 16)
 
-	if isCompressedInstruction := bits(lo, 0, 2) != 0b_11; isCompressedInstruction {
+	if isCompressedInstruction := lo&3 != 3; isCompressedInstruction {
 		*data = lo
 		return
 	}
 
 	virtAddr += 2
-	if cpu.translateSv32(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
+	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
 	}
 
-	var hi int32
-	if !cpu.bus.read(physAddr, &hi, 4) {
+	var hi Xint
+	if !cpu.bus.read(physAddr, &hi, Xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
@@ -37,9 +37,9 @@ func (cpu *CPU) memFetch(virtAddr int32, data *int32) {
 	*data = hi<<16 | lo
 }
 
-func (cpu *CPU) memRead(virtAddr int32, data *int32, width int32) {
-	var physAddr int32
-	if cpu.translateSv32(virtAddr, &physAddr, AccessRead); cpu.isTrapped {
+func (cpu *CPU) memRead(virtAddr Xint, data *Xint, width Xint) {
+	var physAddr Xint
+	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.isTrapped {
 		return
 	}
 
@@ -53,9 +53,9 @@ func (cpu *CPU) memRead(virtAddr int32, data *int32, width int32) {
 	}
 }
 
-func (cpu *CPU) memWrite(virtAddr, data, width int32) {
-	var physAddr int32
-	if cpu.translateSv32(virtAddr, &physAddr, AccessWrite); cpu.isTrapped {
+func (cpu *CPU) memWrite(virtAddr, data, width Xint) {
+	var physAddr Xint
+	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.isTrapped {
 		return
 	}
 

@@ -12,6 +12,11 @@ const (
 	PteD = 7
 )
 
+func (cpu *CPU) translateSv(virtAddr Xint, physAddr *Xint, access Xint) {
+	//*physAddr = virtAddr
+	cpu.translateSv32(virtAddr, physAddr, access)
+}
+
 func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
