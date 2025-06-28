@@ -2,24 +2,24 @@ package rv
 
 type CLINT struct {
 	cpu      *CPU
-	baseAddr int32
+	baseAddr Xint
 
-	mswi, mtimecmp, mtimecmph int32
+	mswi, mtimecmp, mtimecmph Xint
 }
 
-func (clint *CLINT) Init(cpu *CPU, baseAddr int32) {
+func (clint *CLINT) Init(cpu *CPU, baseAddr Xint) {
 	*clint = CLINT{
 		cpu:      cpu,
 		baseAddr: baseAddr,
 	}
 }
 
-func (clint *CLINT) access(addr int32, data *int32, width int32, write bool) bool {
+func (clint *CLINT) access(addr Xint, data *Xint, width Xint, write bool) bool {
 	if addr = (addr - clint.baseAddr) / 4; addr < 0 || addr >= 0x10000/4 || width != 4 {
 		return false
 	}
 
-	var reg *int32
+	var reg *Xint
 
 	switch addr * 4 {
 	case 0x0: // mswi
@@ -56,8 +56,8 @@ func (clint *CLINT) notifyInterrupts() {
 		csr.mip |= 1 << mipMSI
 	}
 
-	if uint32(csr.mtimeh) > uint32(clint.mtimecmph) ||
-		csr.mtimeh == clint.mtimecmph && uint32(csr.mtime) >= uint32(clint.mtimecmp) {
+	if Xuint(csr.mtimeh) > Xuint(clint.mtimecmph) ||
+		csr.mtimeh == clint.mtimecmph && Xuint(csr.mtime) >= Xuint(clint.mtimecmp) {
 
 		csr.mip |= 1 << mipMTI
 	}

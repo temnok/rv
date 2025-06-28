@@ -16,7 +16,7 @@ func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
 		return
 	}
 
-	lo = Xint(uint32(lo) >> 16)
+	lo = bits(lo, 16, 16)
 
 	if isCompressedInstruction := lo&3 != 3; isCompressedInstruction {
 		*data = lo

@@ -33,7 +33,8 @@ func runTest(t *testing.T, file string) {
 	cpu := &CPU{}
 	ram := &RAM{}
 
-	const ramBaseAddr = -1 << 31
+	ramBaseAddrUint := Xuint(0x8000_0000)
+	ramBaseAddr := Xint(ramBaseAddrUint)
 
 	cpu.Init(Bus{ram}, ramBaseAddr, nil)
 	ram.Init(ramBaseAddr, 64*1024)
@@ -46,7 +47,7 @@ func runTest(t *testing.T, file string) {
 	for {
 		instrCounts[cpu.pc-ramBaseAddr]++
 
-		lastPCs = append(lastPCs, uint32(cpu.pc))
+		lastPCs = append(lastPCs, Xuint(cpu.pc))
 		if n := 10; len(lastPCs) == n+1 {
 			copy(lastPCs[:n], lastPCs[1:])
 			lastPCs = lastPCs[:n]
@@ -56,7 +57,7 @@ func runTest(t *testing.T, file string) {
 		cpu.Step()
 
 		if cpu.isTrapped {
-			lastTraps = append(lastTraps, [2]uint32{uint32(prevPC), uint32(cpu.csr.mcause)})
+			lastTraps = append(lastTraps, [2]Xuint{Xuint(prevPC), Xuint(cpu.csr.mcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
@@ -64,10 +65,10 @@ func runTest(t *testing.T, file string) {
 		}
 
 		if cpu.csr.cycle == 100_000 {
-			var addresses []uint32
+			var addresses []Xuint
 			for i, c := range instrCounts {
 				if c > 10_000 {
-					addresses = append(addresses, uint32(ramBaseAddr+i))
+					addresses = append(addresses, Xuint(ramBaseAddr+Xint(i)))
 				}
 			}
 
@@ -77,7 +78,7 @@ func runTest(t *testing.T, file string) {
 
 			t.Errorf("timeout: priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				cpu.priv, cpu.csr.mcause, uint32(cpu.x[31]), lastPCs, lastTraps, addresses)
+				cpu.priv, cpu.csr.mcause, Xuint(cpu.x[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 
@@ -93,8 +94,8 @@ func runTest(t *testing.T, file string) {
 						"priv=%v, cause=%v,  mepc=%08x, "+
 						"gp=%08x, a0=%08x, t0=%08x, t6=%08x\n",
 						cpu.csr.cycle, lastPCs, lastTraps,
-						cpu.priv, cause, uint32(cpu.csr.mepc),
-						uint32(cpu.x[3]), uint32(cpu.x[10]), uint32(cpu.x[5]), uint32(cpu.x[31]))
+						cpu.priv, cause, Xuint(cpu.csr.mepc),
+						Xuint(cpu.x[3]), Xuint(cpu.x[10]), Xuint(cpu.x[5]), Xuint(cpu.x[31]))
 				}
 
 				break
