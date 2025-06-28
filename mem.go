@@ -1,6 +1,9 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
+	shift := virtAddr & (Xbytes - 1)
+	virtAddr &^= Xbytes - 1
+
 	var physAddr, lo Xint
 	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
@@ -11,19 +14,15 @@ func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
 		return
 	}
 
-	if isAligned := virtAddr&(Xbytes-1) == 0; isAligned {
+	lo >>= shift * 8
+	isCompressedInstruction := lo&3 != 3
+
+	if fullyLoaded := isCompressedInstruction || shift+4 <= Xbytes; fullyLoaded {
 		*data = lo
 		return
 	}
 
-	lo = bits(lo, 16, 16)
-
-	if isCompressedInstruction := lo&3 != 3; isCompressedInstruction {
-		*data = lo
-		return
-	}
-
-	virtAddr += 2
+	virtAddr += Xbytes
 	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
 	}
@@ -34,7 +33,7 @@ func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
 		return
 	}
 
-	*data = hi<<16 | lo
+	*data = hi<<16 | bits(lo, 0, 16)
 }
 
 func (cpu *CPU) memRead(virtAddr Xint, data *Xint, width Xint) {
