@@ -9,7 +9,7 @@ import (
 )
 
 func TestInstructions(t *testing.T) {
-	matches, err := filepath.Glob("tests/pass/*")
+	matches, err := filepath.Glob("tests/pass-64/*")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,0 +1,6 @@
+31          25        20        15    12         7         2   0
+|            1|      rs2|      rs1|    0|       rd|  1 1 1 0|1 1| R      mulw    rd, rs1, rs2
+|            1|      rs2|      rs1|1 0 0|       rd|  1 1 1 0|1 1| R      divw    rd, rs1, rs2
+|            1|      rs2|      rs1|1 0 1|       rd|  1 1 1 0|1 1| R      divuw   rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 0|       rd|  1 1 1 0|1 1| R      remw    rd, rs1, rs2
+|            1|      rs2|      rs1|1 1 1|       rd|  1 1 1 0|1 1| R      remuw   rd, rs1, rs2
