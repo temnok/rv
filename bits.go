@@ -13,7 +13,7 @@ func signedBit(val, i Xint) Xint {
 }
 
 func clearBits(val *Xint, i, n Xint) {
-	if i < Xbits {
+	if i < Xlen {
 		*val &^= (1<<n - 1) << i
 	}
 }

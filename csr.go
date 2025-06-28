@@ -3,6 +3,9 @@ package rv
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
 const (
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misabase
+	misaMXL = Xlen - 2
+
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
 	satp        = 0x180
 	satpMODEx32 = 31
@@ -107,7 +110,7 @@ func (cpu *CPU) csrAccess(i Xint) *Xint {
 		return &csr.mstatush
 
 	case 0x312:
-		if Rv32 {
+		if XlenIs32 {
 			return &csr.medelegh
 		}
 
@@ -136,17 +139,17 @@ func (cpu *CPU) csrAccess(i Xint) *Xint {
 		return &cpu.csr.cycle
 
 	case 0xC80:
-		if Rv32 {
+		if XlenIs32 {
 			return &cpu.csr.cycleh
 		}
 
 	case 0xC81:
-		if Rv32 {
+		if XlenIs32 {
 			return &cpu.csr.mtimeh
 		}
 
 	case 0xC82:
-		if Rv32 {
+		if XlenIs32 {
 			return &cpu.csr.cycleh
 		}
 

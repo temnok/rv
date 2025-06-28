@@ -40,7 +40,7 @@ func main() {
 	uart1.Init(&plic, 0x0300_0000, 1, terminal.callback)
 	uart2.Init(&plic, 0x0600_0000, 2, nil)
 
-	path := fmt.Sprintf("linux/buildroot/rv%vimac/bin", rv.Xbits)
+	path := fmt.Sprintf("linux/buildroot/rv%vimac/bin", rv.Xlen)
 	ram.Load(ramBaseAddr, readFile(path+"/fw_payload.bin.gz", ""))
 	ram.Load(dtbAddr, readFile(path+"/rv.dtb", ""))
 

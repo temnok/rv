@@ -7,9 +7,9 @@ type (
 
 const (
 	Xshift = 5
-	Xbits  = 1 << Xshift
-	Xbytes = Xbits / 8
+	Xlen   = 1 << Xshift
+	Xbytes = Xlen / 8
 
-	Rv32 = Xbits == 32
-	Rv64 = Xbits == 64
+	XlenIs32 = Xlen == 32
+	XlenIs64 = Xlen == 64
 )

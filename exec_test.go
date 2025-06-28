@@ -95,11 +95,12 @@ func runTest(t *testing.T, file string) {
 					fmt.Printf("cycles: %v\n", cpu.csr.cycle)
 				} else {
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
-						"priv=%v, cause=%v,  mepc=%08x, "+
-						"gp=%08x, a0=%08x, t0=%08x, t6=%08x\n",
+						"priv=%v, cause=%v,  mepc=%08x, mstatus=%08x, "+
+						"gp=%08x, a0=%08x, t0=%08x, t2=%08x, t6=%08x\n",
 						cpu.csr.cycle, lastPCs, lastTraps,
-						cpu.priv, cause, Xuint(cpu.csr.mepc),
-						Xuint(cpu.x[3]), Xuint(cpu.x[10]), Xuint(cpu.x[5]), Xuint(cpu.x[31]))
+						cpu.priv, cause, Xuint(cpu.csr.mepc), Xuint(cpu.csr.mstatus),
+						Xuint(cpu.x[3]), Xuint(cpu.x[10]),
+						Xuint(cpu.x[5]), Xuint(cpu.x[7]), Xuint(cpu.x[31]))
 				}
 
 				break

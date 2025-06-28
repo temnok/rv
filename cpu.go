@@ -48,7 +48,7 @@ func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
 		pc:   startAddr,
 		priv: PrivM,
 		csr: CSR{
-			misa: 1<<(Xshift+25) |
+			misa: (Xlen/32)<<misaMXL |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 		},
