@@ -12,16 +12,16 @@ func (cpu *CPU) execComputeIw(imm, rs1, f3, rd Xint) {
 		return
 
 	case 0b_001: // slliw
-		if imm > 0 && imm < 32 {
+		if imm < 32 {
 			cpu.x[rd] = Xint(int32(cpu.x[rs1]) << int32(imm))
 			return
 		}
 
 	case 0b_101:
-		if imm > 0 && imm < 32 { // srliw
+		if imm < 32 { // srliw
 			cpu.x[rd] = Xint(int32(uint32(cpu.x[rs1]) >> uint32(imm)))
 			return
-		} else if imm &^= 0b0100000_00000; imm > 0 && imm < 32 { // sraiw
+		} else if imm &^= 0b0100000_00000; imm < 32 { // sraiw
 			cpu.x[rd] = Xint(int32(cpu.x[rs1]) >> int32(imm))
 			return
 		}
