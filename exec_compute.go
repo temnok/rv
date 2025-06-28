@@ -32,7 +32,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
 	case 0b_101:
 		if imm < Xbits { // srli
 			cpu.x[rd] = Xint(Xuint(cpu.x[rs1]) >> Xuint(imm))
-		} else if imm &^= 0b0100000_00000; imm < Xbits { // srai
+		} else if imm &^= 0b_0100000_00000; imm < Xbits { // srai
 			cpu.x[rd] = cpu.x[rs1] >> imm
 		} else {
 			cpu.trap(ExceptionIllegalIstruction)
@@ -52,46 +52,49 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd Xint) {
 		return
 	}
 
-	switch f7<<3 | f3 {
-	case 0b_0000000_000: // add
+	op := bit(f7, 5)<<3 | f3
+	if f7 &^= 0b0100000; f7 != 0 {
+		cpu.trap(ExceptionIllegalIstruction)
+		return
+	}
+
+	switch op {
+	case 0b_000: // add
 		cpu.x[rd] = cpu.x[rs1] + cpu.x[rs2]
 
-	case 0b_0100000_000: // sub
+	case 0b_1_000: // sub
 		cpu.x[rd] = cpu.x[rs1] - cpu.x[rs2]
 
-	case 0b_0000000_001: // sll
-		shamt := bits(cpu.x[rs2], 0, Xshift)
-		cpu.x[rd] = cpu.x[rs1] << shamt
+	case 0b_001: // sll
+		cpu.x[rd] = cpu.x[rs1] << (cpu.x[rs2] & (Xbits - 1))
 
-	case 0b_0000000_010: // slt
+	case 0b_010: // slt
 		if cpu.x[rs1] < cpu.x[rs2] {
 			cpu.x[rd] = 1
 		} else {
 			cpu.x[rd] = 0
 		}
 
-	case 0b_0000000_011: // sltu
+	case 0b_011: // sltu
 		if Xuint(cpu.x[rs1]) < Xuint(cpu.x[rs2]) {
 			cpu.x[rd] = 1
 		} else {
 			cpu.x[rd] = 0
 		}
 
-	case 0b_0000000_100: // xor
+	case 0b_100: // xor
 		cpu.x[rd] = cpu.x[rs1] ^ cpu.x[rs2]
 
-	case 0b_0000000_101: // srl
-		shamt := bits(cpu.x[rs2], 0, Xshift)
-		cpu.x[rd] = Xint(Xuint(cpu.x[rs1]) >> Xuint(shamt))
+	case 0b_101: // srl
+		cpu.x[rd] = Xint(Xuint(cpu.x[rs1]) >> Xuint(cpu.x[rs2]&(Xbits-1)))
 
-	case 0b_0100000_101: // sra
-		shamt := bits(cpu.x[rs2], 0, Xshift)
-		cpu.x[rd] = cpu.x[rs1] >> shamt
+	case 0b_1_101: // sra
+		cpu.x[rd] = cpu.x[rs1] >> (cpu.x[rs2] & (Xbits - 1))
 
-	case 0b_0000000_110: // or
+	case 0b_110: // or
 		cpu.x[rd] = cpu.x[rs1] | cpu.x[rs2]
 
-	case 0b_0000000_111: // and
+	case 0b_111: // and
 		cpu.x[rd] = cpu.x[rs1] & cpu.x[rs2]
 
 	default:

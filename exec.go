@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) exec(opcode Xint) bool {
+func (cpu *CPU) exec(opcode Xint) {
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
 	rs1 := bits(opcode, 15, 5)
@@ -17,6 +17,9 @@ func (cpu *CPU) exec(opcode Xint) bool {
 	case 0b_00100:
 		cpu.execComputeI(immI(opcode), rs1, f3, rd)
 
+	case 0b_00110:
+		cpu.execComputeIw(immI(opcode), rs1, f3, rd)
+
 	case 0b_00101: // auipc
 		cpu.x[rd] = cpu.pc + immU(opcode)
 
@@ -28,6 +31,9 @@ func (cpu *CPU) exec(opcode Xint) bool {
 
 	case 0b_01100:
 		cpu.execComputeR(f7, rs2, rs1, f3, rd)
+
+	case 0b_01110:
+		cpu.execComputeRw(f7, rs2, rs1, f3, rd)
 
 	case 0b_01101: // lui
 		cpu.x[rd] = immU(opcode)
@@ -54,9 +60,8 @@ func (cpu *CPU) exec(opcode Xint) bool {
 	cpu.x[0] = 0
 
 	if cpu.isTrapped {
-		return false
+		return
 	}
 
 	cpu.pc = cpu.nextPC
-	return true
 }

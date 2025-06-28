@@ -9,13 +9,13 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd Xint) {
 		c = a * b
 
 	case 0b_001: // mulh
-		c = Xint(int64(a) * int64(b) >> Xbits)
+		c = Xint(int64(a) * int64(b) >> 32) // TODO fix 64-bit mode
 
 	case 0b_010: // mulhsu
-		c = Xint(int64(a) * int64(uint32(b)) >> Xbits)
+		c = Xint(int64(a) * int64(uint32(b)) >> 32) // TODO fix 64-bit mode
 
 	case 0b_011: // mulhu
-		c = Xint(int64(Xuint(a)) * int64(Xuint(b)) >> Xbits)
+		c = Xint(int64(Xuint(a)) * int64(Xuint(b)) >> 32) // TODO fix 64-bit mode
 
 	case 0b_100: // div
 		if b != 0 {

@@ -7,9 +7,9 @@
 |          0|       uimm|      rs1|1 0 1|       rd|    1 0 0|1 1| I      srli    rd, rs1, uimm
 |  1|      0|       uimm|      rs1|1 0 1|       rd|    1 0 0|1 1| I      srai    rd, rs1, uimm
 |                    imm|      rs1|    0|       rd|    1 1 0|1 1| I      addiw   rd, rs1, imm
-|          0|       uimm|      rs1|    1|       rd|    1 1 0|1 1| I      slliw   rd, rs1, uimm
-|          0|       uimm|      rs1|1 0 1|       rd|    1 1 0|1 1| I      srliw   rd, rs1, uimm
-|  1|      0|       uimm|      rs1|1 0 1|       rd|    1 1 0|1 1| I      sraiw   rd, rs1, uimm
+|            0|     uimm|      rs1|    1|       rd|    1 1 0|1 1| I      slliw   rd, rs1, uimm
+|            0|     uimm|      rs1|1 0 1|       rd|    1 1 0|1 1| I      srliw   rd, rs1, uimm
+|  1|        0|     uimm|      rs1|1 0 1|       rd|    1 1 0|1 1| I      sraiw   rd, rs1, uimm
 |         immS|      rs2|      rs1|  1 1|     immS|  1 0 0 0|1 1| S      sd      rs2, immS(rs1)
 |            0|      rs2|      rs1|    0|       rd|  1 1 1 0|1 1| R      addw    rd, rs1, rs2
 |  1|        0|      rs2|      rs1|    0|       rd|  1 1 1 0|1 1| R      subw    rd, rs1, rs2
