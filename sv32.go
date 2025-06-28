@@ -1,26 +1,5 @@
 package rv
 
-const (
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#translation
-	PteV = 0
-	PteR = 1
-	PteW = 2
-	PteX = 3
-	PteU = 4
-	//PteG = 5
-	PteA = 6
-	PteD = 7
-)
-
-func (cpu *CPU) translateSv(virtAddr Xint, physAddr *Xint, access Xint) {
-	if Xbits == 64 { // TODO: implement 64-bit translation
-		*physAddr = virtAddr
-		return
-	}
-
-	cpu.translateSv32(virtAddr, physAddr, access)
-}
-
 func (cpu *CPU) translateSv32(virtAddr Xint, physAddr *Xint, access Xint) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
@@ -29,14 +8,14 @@ func (cpu *CPU) translateSv32(virtAddr Xint, physAddr *Xint, access Xint) {
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
-	if bit(cpu.csr.satp, satpMODE) == 0 || epriv == PrivM {
+	if bit(cpu.csr.satp, satpMODEx32) == 0 || epriv == PrivM {
 		*physAddr = virtAddr
 		return
 	}
 
 	pte, shift := cpu.tlb.lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTE(virtAddr, &pte, &shift); cpu.isTrapped {
+		if cpu.loadPTEsv32(virtAddr, &pte, &shift); cpu.isTrapped {
 			return
 		}
 
@@ -63,7 +42,7 @@ func (cpu *CPU) translateSv32(virtAddr Xint, physAddr *Xint, access Xint) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func (cpu *CPU) loadPTE(virtAddr Xint, targetPTE, shift *Xint) {
+func (cpu *CPU) loadPTEsv32(virtAddr Xint, targetPTE, shift *Xint) {
 	*targetPTE = 0
 	var pte Xint
 

@@ -4,8 +4,9 @@ package rv
 
 const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-	satp     = 0x180
-	satpMODE = 31
+	satp        = 0x180
+	satpMODEx32 = 31
+	satpMODEx64 = 60
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	mstatusSIE  = 1
