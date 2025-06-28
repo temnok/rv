@@ -1,5 +1,7 @@
 package rv
 
+import bi "math/bits"
+
 func (cpu *CPU) execComputeM(rs2, rs1, f3, rd Xint) {
 	a, b := cpu.x[rs1], cpu.x[rs2]
 	var c Xint
@@ -9,13 +11,31 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd Xint) {
 		c = a * b
 
 	case 0b_001: // mulh
-		c = Xint(int64(a) * int64(b) >> 32) // TODO fix 64-bit mode
+		if Xbits == 32 {
+			c = Xint(int64(a) * int64(b) >> 32)
+		} else {
+			hi, _ := bi.Mul64(uint64(a), uint64(b))
+			s1 := (a >> 63) & b
+			s2 := (b >> 63) & a
+			c = Xint(hi) - s1 - s2
+		}
 
 	case 0b_010: // mulhsu
-		c = Xint(int64(a) * int64(uint32(b)) >> 32) // TODO fix 64-bit mode
+		if Xbits == 32 {
+			c = Xint(int64(a) * int64(uint32(b)) >> 32)
+		} else {
+			hi, _ := bi.Mul64(uint64(a), uint64(b))
+			s := (a >> 63) & b
+			c = Xint(hi) - s
+		}
 
 	case 0b_011: // mulhu
-		c = Xint(int64(Xuint(a)) * int64(Xuint(b)) >> 32) // TODO fix 64-bit mode
+		if Xbits == 32 {
+			c = Xint(int64(uint32(a)) * int64(uint32(b)) >> 32)
+		} else {
+			hi, _ := bi.Mul64(uint64(a), uint64(b))
+			c = Xint(hi)
+		}
 
 	case 0b_100: // div
 		if b != 0 {
