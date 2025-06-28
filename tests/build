@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+cd $(dirname $0)
+
+docker/build
+
+docker run --rm \
+  -v $(pwd)/all:/home/user/output \
+  riscv-tests bash -c "
+  rm -rf output/isa &&
+  mkdir -p output/isa/{bin,dump} &&
+  rm -rf riscv-target/share/riscv-tests/isa/Makefile &&
+  mv riscv-target/share/riscv-tests/isa/*.dump output/isa/dump/ &&
+  mv riscv-target/share/riscv-tests/isa/* output/isa/bin/
+"
