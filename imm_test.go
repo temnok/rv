@@ -54,11 +54,11 @@ func TestImmJ(t *testing.T) {
 
 type immTests map[uint32]uint32
 
-func testImm(t *testing.T, fnName string, fn func(int32) int32, tests immTests) {
+func testImm(t *testing.T, fnName string, fn func(Xint) Xint, tests immTests) {
 	tests[0] = 0 // include zero-to-zero test case
 
 	for arg, want := range tests {
-		if got := uint32(fn(int32(arg))); want != got {
+		if got := uint32(fn(Xint(arg))); want != got {
 			t.Errorf("%v(0b_%032b):\nwant 0b_%032b\n got 0b_%032b", fnName, arg, want, got)
 		}
 	}

@@ -28,16 +28,16 @@ const (
 )
 
 type CSR struct {
-	cycle, mtime, cycleh, mtimeh int32
+	cycle, mtime, cycleh, mtimeh Xint
 
-	sie, stvec, scounteren, sscratch, sepc, scause, stval, sip, satp int32
+	sie, stvec, scounteren, sscratch, sepc, scause, stval, sip, satp Xint
 
-	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh int32
-	mscratch, mepc, mcause, mtval, mip                                          int32
-	mvendorid, marchid, mimpid, mhartid, mconfigptr                             int32
+	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh Xint
+	mscratch, mepc, mcause, mtval, mip                                          Xint
+	mvendorid, marchid, mimpid, mhartid, mconfigptr                             Xint
 }
 
-func (cpu *CPU) csrAccess(i int32) *int32 {
+func (cpu *CPU) csrAccess(i Xint) *Xint {
 	if priv := bits(i, 8, 2); cpu.priv < priv {
 		cpu.trap(ExceptionIllegalIstruction)
 		return nil
@@ -132,7 +132,7 @@ func (cpu *CPU) csrAccess(i int32) *int32 {
 	}
 }
 
-func (cpu *CPU) csrRead(i int32, val *int32) bool {
+func (cpu *CPU) csrRead(i Xint, val *Xint) bool {
 	ptr := cpu.csrAccess(i)
 	if ptr == nil {
 		return false
@@ -142,7 +142,7 @@ func (cpu *CPU) csrRead(i int32, val *int32) bool {
 	return true
 }
 
-func (cpu *CPU) csrWrite(i, val int32) bool {
+func (cpu *CPU) csrWrite(i, val Xint) bool {
 	if readOnly := bits(i, 10, 2) == 0b_11; readOnly {
 		cpu.trap(ExceptionIllegalIstruction)
 		return false

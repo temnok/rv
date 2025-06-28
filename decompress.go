@@ -1,12 +1,12 @@
 package rv
 
-func (cpu *CPU) decompress(opcodePtr *int32) {
+func (cpu *CPU) decompress(opcodePtr *Xint) {
 	opcode := *opcodePtr
 	if is32bitInstruction := opcode&3 == 3; is32bitInstruction {
 		return
 	}
 
-	opcode = int32(uint16(opcode))
+	opcode = Xint(uint16(opcode))
 	decompressedOpcode := decompress(opcode)
 	if decompressedOpcode == 0 {
 		cpu.trapWithTval(ExceptionIllegalIstruction, opcode)
@@ -18,7 +18,7 @@ func (cpu *CPU) decompress(opcodePtr *int32) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func decompress(opcode int32) int32 {
+func decompress(opcode Xint) Xint {
 	f3 := bits(opcode, 13, 3)
 	rA := bits(opcode, 7, 5)
 	ra := 8 + (rA & 7)
@@ -69,7 +69,7 @@ func decompress(opcode int32) int32 {
 				return encodeR(0, immCI(opcode)&0x1F, ra, 5, ra, 4)
 
 			case 1: // srai
-				return encodeR(32, immCI(opcode)&0x1F, ra, 5, ra, 4)
+				return encodeR(0b_100000, immCI(opcode)&0x1F, ra, 5, ra, 4)
 
 			case 2: // andi
 				return encodeI(immCI(opcode), ra, 7, ra, 4)
@@ -77,7 +77,7 @@ func decompress(opcode int32) int32 {
 			case 3:
 				switch bits(opcode, 5, 2) {
 				case 0: // sub
-					return encodeR(32, rb, ra, 0, ra, 12)
+					return encodeR(0b_100000, rb, ra, 0, ra, 12)
 
 				case 1: // xor
 					return encodeR(0, rb, ra, 4, ra, 12)

@@ -1,13 +1,13 @@
 package rv
 
-func bit(val, i int32) int32 {
+func bit(val, i Xint) Xint {
 	return (val >> i) & 1
 }
 
-func bits(val, i, n int32) int32 {
+func bits(val, i, n Xint) Xint {
 	return (val >> i) & (1<<n - 1)
 }
 
-func signedBit(val, i int32) int32 {
+func signedBit(val, i Xint) Xint {
 	return -bit(val, i)
 }

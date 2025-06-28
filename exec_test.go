@@ -9,7 +9,7 @@ import (
 )
 
 func TestInstructions(t *testing.T) {
-	matches, err := filepath.Glob("tests/pass-64/*")
+	matches, err := filepath.Glob("tests/pass/*")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,9 +39,9 @@ func runTest(t *testing.T, file string) {
 	ram.Init(ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 
-	instrCounts := make([]int32, len(program))
-	var lastPCs []uint32
-	var lastTraps [][2]uint32
+	instrCounts := make([]Xint, len(program))
+	var lastPCs []Xuint
+	var lastTraps [][2]Xuint
 
 	for {
 		instrCounts[cpu.pc-ramBaseAddr]++

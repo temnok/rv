@@ -25,11 +25,11 @@ func main() {
 	)
 
 	const (
-		ramBaseAddr = int32(-1 << 31)
+		ramBaseAddr = rv.Xint(-1 << 31)
 		dtbAddr     = ramBaseAddr + 0x200_0000
 	)
 
-	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []int32{
+	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []rv.Xint{
 		11: dtbAddr,
 	})
 
