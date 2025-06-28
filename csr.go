@@ -170,27 +170,35 @@ func (cpu *CPU) csrAccess(i Xint) *Xint {
 	return nil
 }
 
-func (cpu *CPU) csrRead(i Xint, val *Xint) bool {
+func (cpu *CPU) csrRead(i Xint, val *Xint) {
 	ptr := cpu.csrAccess(i)
-	if ptr == nil {
-		return false
+	if cpu.isTrapped {
+		return
 	}
 
 	*val = *ptr
-	return true
 }
 
-func (cpu *CPU) csrWrite(i, val Xint) bool {
+func (cpu *CPU) csrWrite(i, val Xint) {
 	if readOnly := bits(i, 10, 2) == 0b_11; readOnly {
 		cpu.trap(ExceptionIllegalIstruction)
-		return false
+		return
 	}
 
 	ptr := cpu.csrAccess(i)
-	if ptr == nil {
-		return false
+	if cpu.isTrapped {
+		return
+	}
+
+	csr := &cpu.csr
+
+	switch ptr {
+	case &csr.misa:
+		return
+
+	case &csr.satp:
+		clearBits(&val, satpMODEx64, 3)
 	}
 
 	*ptr = val
-	return true
 }

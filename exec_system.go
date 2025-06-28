@@ -56,19 +56,41 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd Xint) {
 
 	switch f3 & 0b_11 {
 	case 0b_01: // csrrw
-		if (rd == 0 || cpu.csrRead(csr, &val)) && cpu.csrWrite(csr, s) {
+		if rd != 0 {
+			if cpu.csrRead(csr, &val); cpu.isTrapped {
+				return
+			}
+		}
+
+		if cpu.csrWrite(csr, s); !cpu.isTrapped {
 			cpu.x[rd] = val
 		}
 
 	case 0b_10: // csrrs
-		if cpu.csrRead(csr, &val) && (s == 0 || cpu.csrWrite(csr, val|s)) {
-			cpu.x[rd] = val
+		if cpu.csrRead(csr, &val); cpu.isTrapped {
+			return
 		}
 
-	case 0b_11: // csrrc
-		if cpu.csrRead(csr, &val) && (s == 0 || cpu.csrWrite(csr, val&^s)) {
-			cpu.x[rd] = val
+		if s != 0 {
+			if cpu.csrWrite(csr, val|s); cpu.isTrapped {
+				return
+			}
 		}
+
+		cpu.x[rd] = val
+
+	case 0b_11: // csrrc
+		if cpu.csrRead(csr, &val); cpu.isTrapped {
+			return
+		}
+
+		if s != 0 {
+			if cpu.csrWrite(csr, val&^s); cpu.isTrapped {
+				return
+			}
+		}
+
+		cpu.x[rd] = val
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
