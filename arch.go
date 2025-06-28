@@ -1,12 +1,15 @@
 package rv
 
 type (
-	Xint  = int64
-	Xuint = uint64
+	Xint  = int32
+	Xuint = uint32
 )
 
 const (
-	Xshift = 6
+	Xshift = 5
 	Xbits  = 1 << Xshift
 	Xbytes = Xbits / 8
+
+	Rv32 = Xbits == 32
+	Rv64 = Xbits == 64
 )
