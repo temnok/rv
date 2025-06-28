@@ -26,32 +26,32 @@ func decompress(opcode Xint) Xint {
 	rb := 8 + (rB & 7)
 
 	switch op := bits(opcode, 0, 2); op {
-	case 0:
+	case 0b_00:
 		switch f3 {
-		case 0:
+		case 0b_000:
 			if imm := immCIW(opcode); imm != 0 {
 				return encodeI(imm, 2, 0, rb, 4) // addi
 			}
 
-		case 2: // c.lw
+		case 0b_010: // c.lw
 			return encodeI(immCL(opcode), ra, 2, rb, 0) // lw
 
-		case 6: // c.sw
+		case 0b_110: // c.sw
 			return encodeS(immCL(opcode), rb, ra, 2, 8) // sw
 		}
 
-	case 1:
+	case 0b_01:
 		switch f3 {
-		case 0: // addi
+		case 0b_000: // addi
 			return encodeI(immCI(opcode), rA, 0, rA, 4)
 
-		case 1: // jal
+		case 0b_001: // jal
 			return encodeJ(immCJ(opcode), 1, 27)
 
-		case 2: // li
+		case 0b_010: // li
 			return encodeI(immCI(opcode), 0, 0, rA, 4) // addi
 
-		case 3:
+		case 0b_011:
 			switch rA {
 			case 0: // illegal
 				break
@@ -63,52 +63,52 @@ func decompress(opcode Xint) Xint {
 				return encodeU(immCI(opcode), rA, 13)
 			}
 
-		case 4:
+		case 0b_100:
 			switch bits(opcode, 10, 2) {
-			case 0: // srli
+			case 0b_00: // srli
 				return encodeR(0, immCI(opcode)&0x1F, ra, 5, ra, 4)
 
-			case 1: // srai
+			case 0b_01: // srai
 				return encodeR(0b_100000, immCI(opcode)&0x1F, ra, 5, ra, 4)
 
-			case 2: // andi
+			case 0b_10: // andi
 				return encodeI(immCI(opcode), ra, 7, ra, 4)
 
-			case 3:
+			case 0b_11:
 				switch bits(opcode, 5, 2) {
-				case 0: // sub
+				case 0b_00: // sub
 					return encodeR(0b_100000, rb, ra, 0, ra, 12)
 
-				case 1: // xor
+				case 0b_01: // xor
 					return encodeR(0, rb, ra, 4, ra, 12)
 
-				case 2: // or
+				case 0b_10: // or
 					return encodeR(0, rb, ra, 6, ra, 12)
 
-				case 3: // and
+				case 0b_11: // and
 					return encodeR(0, rb, ra, 7, ra, 12)
 				}
 			}
 
-		case 5: // c.j
+		case 0b_101: // c.j
 			return encodeJ(immCJ(opcode), 0, 27) // jal
 
-		case 6: // c.beqz
+		case 0b_110: // c.beqz
 			return encodeB(immCB(opcode), 0, ra, 0, 24) // beq
 
-		case 7: // c.bnez
+		case 0b_111: // c.bnez
 			return encodeB(immCB(opcode), 0, ra, 1, 24) // bne
 		}
 
 	case 2:
 		switch f3 {
-		case 0: // c.slli
+		case 0b_000: // c.slli
 			return encodeR(0, immCI(opcode)&0x1F, rA, 1, rA, 4) // slli
 
-		case 2: // c.lwsp
+		case 0b_010: // c.lwsp
 			return encodeI(immCIx4(opcode), 2, 2, rA, 0) // lw
 
-		case 4:
+		case 0b_100:
 			switch f := bit(opcode, 12); {
 			case f == 0 && rA != 0 && rB == 0: // c.jr
 				return encodeI(0, rA, 0, 0, 25) // jalr
@@ -126,7 +126,7 @@ func decompress(opcode Xint) Xint {
 				return encodeR(0, rB, rA, 0, rA, 12)
 			}
 
-		case 6: // c.swsp
+		case 0b_110: // c.swsp
 			return encodeS(immCSS(opcode), rB, 2, 2, 8) // sw
 		}
 	}
