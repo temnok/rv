@@ -28,6 +28,13 @@ func immCIx4(instr Xint) Xint {
 	return c<<6 | a<<5 | b<<2
 }
 
+func immCIx8(instr Xint) Xint {
+	a := bit(instr, 12)
+	b := bits(instr, 5, 2)
+	c := bits(instr, 2, 3)
+	return c<<6 | a<<5 | b<<3
+}
+
 func immCIx16(instr Xint) Xint {
 	a := signedBit(instr, 12)
 	b := bit(instr, 6)
@@ -62,4 +69,10 @@ func immCSS(instr Xint) Xint {
 	a := bits(instr, 9, 4)
 	b := bits(instr, 7, 2)
 	return b<<6 | a<<2
+}
+
+func immCSSx8(instr Xint) Xint {
+	a := bits(instr, 10, 3)
+	b := bits(instr, 7, 3)
+	return b<<6 | a<<3
 }
