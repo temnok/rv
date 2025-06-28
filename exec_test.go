@@ -9,7 +9,7 @@ import (
 )
 
 func TestInstructions(t *testing.T) {
-	matches, err := filepath.Glob("tests/pass/*")
+	matches, err := filepath.Glob("tests/pass-32/*")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,6 +45,10 @@ func runTest(t *testing.T, file string) {
 	var lastTraps [][2]Xuint
 
 	for {
+		if i := cpu.pc - ramBaseAddr; i < 0 || i >= Xint(len(instrCounts)) {
+			t.Errorf("Invalid cpu.pc: %08x", cpu.pc)
+			return
+		}
 		instrCounts[cpu.pc-ramBaseAddr]++
 
 		lastPCs = append(lastPCs, Xuint(cpu.pc))

@@ -1,11 +1,11 @@
 package rv
 
 func immI(opcode Xint) Xint {
-	return opcode >> 20
+	return Xint(int32(opcode) >> 20)
 }
 
 func immS(opcode Xint) Xint {
-	a := opcode >> 25
+	a := Xint(int32(opcode)) >> 25
 	b := bits(opcode, 7, 5)
 	return a<<5 | b
 }
