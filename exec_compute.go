@@ -5,6 +5,13 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
 	case 0b_000: // addi
 		cpu.x[rd] = cpu.x[rs1] + imm
 
+	case 0b_001: // slli
+		if imm < Xbits {
+			cpu.x[rd] = cpu.x[rs1] << imm
+		} else {
+			cpu.trap(ExceptionIllegalIstruction)
+		}
+
 	case 0b_010: // slti
 		if cpu.x[rs1] < imm {
 			cpu.x[rd] = 1
@@ -22,28 +29,20 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
 	case 0b_100: // xori
 		cpu.x[rd] = cpu.x[rs1] ^ imm
 
+	case 0b_101:
+		if imm < Xbits { // srli
+			cpu.x[rd] = Xint(Xuint(cpu.x[rs1]) >> Xuint(imm))
+		} else if imm &^= 0b0100000_00000; imm < Xbits { // srai
+			cpu.x[rd] = cpu.x[rs1] >> imm
+		} else {
+			cpu.trap(ExceptionIllegalIstruction)
+		}
+
 	case 0b_110: // ori
 		cpu.x[rd] = cpu.x[rs1] | imm
 
 	case 0b_111: // andi
 		cpu.x[rd] = cpu.x[rs1] & imm
-
-	default:
-		shamt := bits(imm, 0, Xshift)
-
-		switch bits(imm, Xshift, 7)<<3 | f3 {
-		case 0b_0000000_001: // slli
-			cpu.x[rd] = cpu.x[rs1] << shamt
-
-		case 0b_0000000_101: // srli
-			cpu.x[rd] = Xint(Xuint(cpu.x[rs1]) >> Xuint(shamt))
-
-		case 0b_0100000_101: // srai
-			cpu.x[rd] = cpu.x[rs1] >> shamt
-
-		default:
-			cpu.trap(ExceptionIllegalIstruction)
-		}
 	}
 }
 
