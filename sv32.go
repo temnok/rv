@@ -17,7 +17,7 @@ func (cpu *CPU) translateSv(virtAddr Xint, physAddr *Xint, access Xint) {
 	cpu.translateSv32(virtAddr, physAddr, access)
 }
 
-func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) {
+func (cpu *CPU) translateSv32(virtAddr Xint, physAddr *Xint, access Xint) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
 	if bit(cpu.csr.mstatus, mstatusMPRV) != 0 && access != AccessExecute {
@@ -59,9 +59,9 @@ func (cpu *CPU) translateSv32(virtAddr int32, physAddr *int32, access int32) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func (cpu *CPU) loadPTE(virtAddr int32, targetPTE, shift *int32) {
+func (cpu *CPU) loadPTE(virtAddr Xint, targetPTE, shift *Xint) {
 	*targetPTE = 0
-	var pte int32
+	var pte Xint
 
 	pteAddr := bits(cpu.csr.satp, 0, 20)<<12 | bits(virtAddr, 22, 10)<<2
 	if !cpu.bus.read(pteAddr, &pte, 4) {
