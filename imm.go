@@ -19,7 +19,7 @@ func immB(opcode Xint) Xint {
 }
 
 func immU(opcode Xint) Xint {
-	return bits(opcode, 12, 20) << 12
+	return Xint(int32(bits(opcode, 12, 20) << 12))
 }
 
 func immJ(opcode Xint) Xint {
