@@ -19,6 +19,16 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd Xint) {
 			cpu.x[rd] = Xint(int32(val))
 		}
 
+	case 0b_011: // ld
+		if Xbits < 64 {
+			cpu.trap(ExceptionIllegalIstruction)
+			return
+		}
+
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 8); !cpu.isTrapped {
+			cpu.x[rd] = Xint(val)
+		}
+
 	case 0b_100: // lbu
 		if cpu.memRead(cpu.x[rs1]+imm, &val, 1); !cpu.isTrapped {
 			cpu.x[rd] = Xint(uint8(val))
@@ -27,6 +37,16 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd Xint) {
 	case 0b_101: // lhu
 		if cpu.memRead(cpu.x[rs1]+imm, &val, 2); !cpu.isTrapped {
 			cpu.x[rd] = Xint(uint16(val))
+		}
+
+	case 0b_110: // lwu
+		if Xbits < 64 {
+			cpu.trap(ExceptionIllegalIstruction)
+			return
+		}
+
+		if cpu.memRead(cpu.x[rs1]+imm, &val, 4); !cpu.isTrapped {
+			cpu.x[rd] = Xint(uint32(val))
 		}
 
 	default:
@@ -44,6 +64,14 @@ func (cpu *CPU) execStore(imm, rs2, rs1, f3 Xint) {
 
 	case 0b_010: // sw
 		cpu.memWrite(cpu.x[rs1]+imm, Xint(uint32(cpu.x[rs2])), 4)
+
+	case 0b_011: // sd
+		if Xbits < 64 {
+			cpu.trap(ExceptionIllegalIstruction)
+			return
+		}
+
+		cpu.memWrite(cpu.x[rs1]+imm, cpu.x[rs2], 8)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
