@@ -4,12 +4,13 @@ cd $(dirname $0)
 
 docker/build
 
-docker run --rm \
+docker run --rm -ti \
   -v $(pwd)/all:/home/user/output \
   riscv-tests bash -c "
   rm -rf output/isa &&
   mkdir -p output/isa/{bin,dump} &&
-  rm -rf riscv-target/share/riscv-tests/isa/Makefile &&
-  mv riscv-target/share/riscv-tests/isa/*.dump output/isa/dump/ &&
-  mv riscv-target/share/riscv-tests/isa/* output/isa/bin/
+  cd riscv-target/share/riscv-tests/isa/ && \
+  rm Makefile &&
+  mv *.dump ~/output/isa/dump/ &&
+  find . -name '*-*' -exec riscv64-unknown-elf-objcopy -O binary {} ~/output/isa/bin/{} \;
 "
