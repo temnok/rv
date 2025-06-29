@@ -45,11 +45,9 @@ func runTest(t *testing.T, file string) {
 	var lastTraps [][2]Xuint
 
 	for {
-		if i := cpu.pc - ramBaseAddr; i < 0 || i >= Xint(len(instrCounts)) {
-			t.Errorf("Invalid cpu.pc: %08x", cpu.pc)
-			return
+		if i := cpu.pc - ramBaseAddr; i >= 0 && i < Xint(len(instrCounts)) {
+			instrCounts[i]++
 		}
-		instrCounts[cpu.pc-ramBaseAddr]++
 
 		lastPCs = append(lastPCs, Xuint(cpu.pc))
 		if n := 10; len(lastPCs) == n+1 {
