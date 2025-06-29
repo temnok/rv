@@ -80,10 +80,10 @@ func decompress(opcode Xint) Xint {
 		case 0b_100:
 			switch bits(opcode, 10, 2) {
 			case 0b_00: // srli
-				return encodeR(0, immCI(opcode)&0x1F, ra, 5, ra, 4)
+				return encodeR(0, immCI(opcode)&(Xlen-1), ra, 5, ra, 4)
 
 			case 0b_01: // srai
-				return encodeR(0b_0100000, immCI(opcode)&0x1F, ra, 5, ra, 4)
+				return encodeR(0b_0100000, immCI(opcode)&(Xlen-1), ra, 5, ra, 4)
 
 			case 0b_10: // andi
 				return encodeI(immCI(opcode), ra, 7, ra, 4)
@@ -127,7 +127,7 @@ func decompress(opcode Xint) Xint {
 	case 2:
 		switch f3 {
 		case 0b_000: // c.slli
-			return encodeR(0, immCI(opcode)&0x1F, rA, 1, rA, 4) // slli
+			return encodeR(0, immCI(opcode)&(Xlen-1), rA, 1, rA, 4) // slli
 
 		case 0b_010: // c.lwsp
 			return encodeI(immCIx4(opcode), 2, 2, rA, 0) // lw

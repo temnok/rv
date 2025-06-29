@@ -9,25 +9,35 @@ import (
 var (
 	cycleCount = 0
 	trapCount  = 0
-	trace      [][2]uint
+	trace      [][4]uint
 )
 
 func (cpu *CPU) debugStep() {
 	cycleCount++
 
 	pc := cpu.pc
+	oldRegs := cpu.x
+
 	opcode := cpu.step()
 
-	trace = append(trace, [2]uint{uint(pc), uint(opcode)})
-	if n := 100; len(trace) == n+1 {
+	entry := [4]uint{uint(pc), uint(opcode)}
+	for i, val := range cpu.x {
+		if val != oldRegs[i] {
+			entry[2], entry[3] = uint(i), uint(val)
+			break
+		}
+	}
+
+	trace = append(trace, entry)
+	if n := 1000; len(trace) == n+1 {
 		copy(trace[:n], trace[1:])
 		trace = trace[:n]
 	}
 
-	if cpu.isTrapped || cycleCount == 10_000_000 {
+	if cpu.isTrapped /*|| cycleCount == 1_000_000*/ {
 		trapCount++
 
-		if trapCount == 2 {
+		if trapCount == 1 {
 			fmt.Printf("Cycle: %v, trap: %v\r\n\r\n", cycleCount, trapCount)
 
 			debugDump(cpu)
@@ -44,6 +54,11 @@ func debugDump(cpu *CPU) {
 		line := isa.Disassemble(entry[0], entry[1]).String()
 		i := strings.LastIndexByte(line, ' ')
 		line = line[:i] + "\t" + line[i+1:]
+
+		if entry[2] != 0 {
+			line += fmt.Sprintf("\t\t// %v:%x", regNames[entry[2]], entry[3])
+		}
+
 		fmt.Printf("%v\r\n", line)
 	}
 
