@@ -44,13 +44,19 @@ const (
 )
 
 func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
+	const xl = Xlen / 32
+	misa := uint64(xl << misaMXL)
+	mstatus := int64(xl<<mstatusSXL | xl<<mstatusUXL)
+
 	*cpu = CPU{
 		pc:   startAddr,
 		priv: PrivM,
 		csr: CSR{
-			misa: (Xlen/32)<<misaMXL |
+			misa: Xint(misa) |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
+
+			mstatus: Xint(mstatus),
 		},
 
 		bus: bus,

@@ -6,10 +6,13 @@ const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misabase
 	misaMXL = Xlen - 2
 
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
+	mstatusSXL = 34
+	mstatusUXL = 32
+
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-	satp        = 0x180
-	satpMODEx32 = 31
-	satpMODEx64 = 60
+	satp     = 0x180
+	satpMODE = Xlen - 1 - (Xlen/64)*3
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	mstatusSIE  = 1
@@ -197,10 +200,17 @@ func (cpu *CPU) csrWrite(i, val Xint) {
 
 	switch ptr {
 	case &csr.misa:
-		return
+		return // ignore writes
+
+	case &csr.mstatus:
+		const mask = 0b_11<<mstatusSXL | 0b_11<<mstatusUXL
+		val = Xint(int64(val)&^mask | int64(csr.mstatus)&mask) // copy SXL/UXL
 
 	case &csr.satp:
-		clearBits(&val, satpMODEx64, 3)
+		if XlenIs64 {
+			const mask = 0b_0111 << satpMODE
+			val = Xint(int64(val) &^ mask)
+		}
 	}
 
 	*ptr = val
