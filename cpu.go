@@ -66,6 +66,11 @@ func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
 }
 
 func (cpu *CPU) Step() {
+	//cpu.debugStep()
+	cpu.step()
+}
+
+func (cpu *CPU) step() Xint {
 	cpu.isTrapped = false
 
 	cpu.updateTimers()
@@ -73,20 +78,23 @@ func (cpu *CPU) Step() {
 	cpu.csr.mip &^= 1<<mipSEI | 1<<mipMTI | 1<<mipMSI
 	cpu.bus.notifyInterrupts()
 	if cpu.trapOnPendingInterrupts(); cpu.isTrapped {
-		return
+		return 0
 	}
 
 	var opcode Xint
 	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped {
-		return
+		return 0
 	}
 
 	cpu.nextPC = cpu.pc + 4
+	origOpcode := opcode
 	if cpu.decompress(&opcode); cpu.isTrapped {
-		return
+		return opcode
 	}
 
 	cpu.exec(opcode)
+
+	return origOpcode
 }
 
 func (cpu *CPU) updateTimers() {

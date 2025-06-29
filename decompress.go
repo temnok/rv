@@ -38,7 +38,7 @@ func decompress(opcode Xint) Xint {
 
 		case 0b_011: // c.ld
 			if XlenIs64 {
-				return encodeI(immCL(opcode), ra, 3, rb, 0) // ld
+				return encodeI(immCLx8(opcode), ra, 3, rb, 0) // ld
 			}
 
 		case 0b_110: // c.sw
@@ -46,7 +46,7 @@ func decompress(opcode Xint) Xint {
 
 		case 0b_111: // c.sd
 			if XlenIs64 {
-				return encodeS(immCL(opcode), rb, ra, 3, 8) // sw
+				return encodeS(immCLx8(opcode), rb, ra, 3, 8) // sw
 			}
 		}
 

@@ -41,6 +41,7 @@ func runTest(t *testing.T, file string) {
 	ram.Load(ramBaseAddr, program)
 
 	instrCounts := make([]Xint, len(program))
+	trapCount := 0
 	var lastPCs []Xuint
 	var lastTraps [][2]Xuint
 
@@ -59,6 +60,8 @@ func runTest(t *testing.T, file string) {
 		cpu.Step()
 
 		if cpu.isTrapped {
+			trapCount++
+
 			lastTraps = append(lastTraps, [2]Xuint{Xuint(prevPC), Xuint(cpu.csr.mcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
@@ -78,9 +81,9 @@ func runTest(t *testing.T, file string) {
 				lastTraps = lastTraps[len(lastTraps)-n:]
 			}
 
-			t.Errorf("timeout: priv=%v, mcause=%08x, x31=%08x\n"+
+			t.Errorf("timeout: trapCount=%v, priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				cpu.priv, cpu.csr.mcause, Xuint(cpu.x[31]), lastPCs, lastTraps, addresses)
+				trapCount, cpu.priv, cpu.csr.mcause, Xuint(cpu.x[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 

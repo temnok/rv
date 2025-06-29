@@ -19,6 +19,8 @@ func (bus Bus) access(addr Xint, data *Xint, width Xint, write bool) bool {
 		}
 	}
 
+	//fmt.Printf("*** bus failure, addr=%x\r\n", addr)
+
 	return false
 }
 

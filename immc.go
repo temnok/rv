@@ -15,6 +15,12 @@ func immCL(instr Xint) Xint {
 	return c<<6 | a<<3 | b<<2
 }
 
+func immCLx8(instr Xint) Xint {
+	a := bits(instr, 10, 3)
+	b := bits(instr, 5, 2)
+	return b<<6 | a<<3
+}
+
 func immCI(instr Xint) Xint {
 	a := signedBit(instr, 12)
 	b := bits(instr, 2, 5)
