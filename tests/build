@@ -7,7 +7,7 @@ docker/build
 docker run --rm -ti \
   -v $(pwd)/all:/home/user/output \
   riscv-tests bash -c "
-  rm -rf output/isa &&
+  rm -rf output/isa/* &&
   mkdir -p output/isa/{bin,dump} &&
   cd riscv-target/share/riscv-tests/isa/ && \
   rm Makefile &&

@@ -23,7 +23,7 @@ docker exec buildroot bash -c "
 
   echo -e '\n\n (4) output \n\n' &&
     gzip -c output/images/fw_payload.bin > output/images/fw_payload.bin.gz &&
-    rm -rf ~/extern/bin && mkdir ~/extern/bin &&
+    rm -rf ~/extern/bin/* &&
     cp output/images/{fw_payload.bin.gz,rv.dtb} ~/extern/bin/ &&
 
   echo -e '\n\n (5) success \n\n'
