@@ -15,7 +15,7 @@ func (clint *CLINT) Init(cpu *CPU, baseAddr Xint) {
 }
 
 func (clint *CLINT) access(addr Xint, data *Xint, width Xint, write bool) bool {
-	if addr = (addr - clint.baseAddr) / 4; addr < 0 || addr >= 0x10000/4 || width != 4 {
+	if addr = (addr - clint.baseAddr) / 4; addr < 0 || addr >= 0x10000/4 || width < 4 {
 		return false
 	}
 
