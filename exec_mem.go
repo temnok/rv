@@ -20,7 +20,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd Xint) {
 		}
 
 	case 0b_011: // ld
-		if XlenIs32 {
+		if Xlen32 {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
@@ -40,7 +40,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd Xint) {
 		}
 
 	case 0b_110: // lwu
-		if XlenIs32 {
+		if Xlen32 {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
@@ -66,7 +66,7 @@ func (cpu *CPU) execStore(imm, rs2, rs1, f3 Xint) {
 		cpu.memWrite(cpu.x[rs1]+imm, Xint(uint32(cpu.x[rs2])), 4)
 
 	case 0b_011: // sd
-		if XlenIs32 {
+		if Xlen32 {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}

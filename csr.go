@@ -113,7 +113,7 @@ func (cpu *CPU) csrAccess(i Xint) *Xint {
 		return &csr.mstatush
 
 	case 0x312:
-		if XlenIs32 {
+		if Xlen32 {
 			return &csr.medelegh
 		}
 
@@ -142,17 +142,17 @@ func (cpu *CPU) csrAccess(i Xint) *Xint {
 		return &cpu.csr.cycle
 
 	case 0xC80:
-		if XlenIs32 {
+		if Xlen32 {
 			return &cpu.csr.cycleh
 		}
 
 	case 0xC81:
-		if XlenIs32 {
+		if Xlen32 {
 			return &cpu.csr.mtimeh
 		}
 
 	case 0xC82:
-		if XlenIs32 {
+		if Xlen32 {
 			return &cpu.csr.cycleh
 		}
 
@@ -207,7 +207,7 @@ func (cpu *CPU) csrWrite(i, val Xint) {
 		val = Xint(int64(val)&^mask | int64(csr.mstatus)&mask) // copy SXL/UXL
 
 	case &csr.satp:
-		if XlenIs64 {
+		if Xlen64 {
 			const mask = 0b_0111 << satpMODE
 			val = Xint(int64(val) &^ mask)
 		}
