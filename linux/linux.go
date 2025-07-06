@@ -45,7 +45,13 @@ func main() {
 	ram.Load(dtbAddr, readFile(path+"/rv.dtb", ""))
 
 	for step := 0; !terminal.Closed; step++ {
-		cpu.Step()
+		if !cpu.Step() {
+
+			fmt.Println()
+			ram.Dump(0x80ea4000, 0x100)
+
+			break
+		}
 	}
 }
 

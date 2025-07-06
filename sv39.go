@@ -47,14 +47,14 @@ func (cpu *CPU) loadPTEsv39(virtAddr Xint, targetPTE, shift *Xint) {
 
 	pteAddr := bits(cpu.csr.satp, 0, 44)<<12 | bits(virtAddr, 30, 9)<<3
 
+	//panic(fmt.Sprintf("*** oops: virtAddr:%x, pteAddr:%x, pte:%x", uint(virtAddr), uint(pteAddr), uint(pte)))
+
 	if !cpu.bus.read(pteAddr, &pte, 8) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
 	isLeaf := bit(pte, PteR) != 0 || bit(pte, PteX) != 0
-
-	//panic(fmt.Sprintf("*** oops: virtAddr:%x, pteAddr:%x, pte:%x", uint(virtAddr), uint(pteAddr), uint(pte)))
 
 	if bit(pte, PteV) == 0 || // valid bit not set
 		bit(pte, PteR) == 0 && bit(pte, PteW) == 1 || // reserved

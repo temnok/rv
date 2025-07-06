@@ -65,9 +65,10 @@ func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
 	copy(cpu.x[:], regs)
 }
 
-func (cpu *CPU) Step() {
-	//cpu.debugStep()
+func (cpu *CPU) Step() bool {
+	//return cpu.debugStep()
 	cpu.step()
+	return true
 }
 
 func (cpu *CPU) step() Xint {

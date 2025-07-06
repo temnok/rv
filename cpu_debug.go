@@ -12,7 +12,7 @@ var (
 	trace      [][4]uint
 )
 
-func (cpu *CPU) debugStep() {
+func (cpu *CPU) debugStep() bool {
 	cycleCount++
 
 	pc := cpu.pc
@@ -37,14 +37,16 @@ func (cpu *CPU) debugStep() {
 	if cpu.isTrapped /*|| cycleCount == 1_000_000*/ {
 		trapCount++
 
-		if trapCount == 8 {
-			fmt.Printf("Cycle: %v, trap: %v\r\n\r\n", cycleCount, trapCount)
-
-			debugDump(cpu)
-
-			panic("stop")
-		}
+		//if trapCount == 8 {
+		//	fmt.Printf("Cycle: %v, trap: %v\r\n\r\n", cycleCount, trapCount)
+		//
+		//	debugDump(cpu)
+		//
+		//	return false
+		//}
 	}
+
+	return true
 }
 
 var isa, _ = rvda.New(Xlen, rvda.RV64gc)
@@ -58,7 +60,7 @@ func debugDump(cpu *CPU) {
 		uint(cpu.csr.mcause), uint(cpu.csr.mepc), uint(cpu.csr.mtvec), uint(cpu.csr.mstatus))
 	fmt.Printf("scause:%x, sepc:%x, stvec:%x, satp:%x\r\n",
 		uint(cpu.csr.scause), uint(cpu.csr.sepc), uint(cpu.csr.stvec), uint(cpu.csr.satp))
-	fmt.Printf("medeleg:%x\r\n\r\n", uint(cpu.csr.medeleg))
+	fmt.Printf("priv:%v, medeleg:%x\r\n\r\n", cpu.priv, uint(cpu.csr.medeleg))
 
 	for i := range 16 {
 		fmt.Printf("% 5v:%16x      % 5v:%16x\r\n",

@@ -1,5 +1,7 @@
 package rv
 
+import "fmt"
+
 type RAM struct {
 	baseAddr Xint
 	words    []Xint
@@ -47,4 +49,17 @@ func (ram *RAM) access(addr Xint, data *Xint, width Xint, write bool) bool {
 	}
 
 	return true
+}
+
+func (ram *RAM) Dump(startAddr, byteCount Xint) {
+	i0 := (startAddr - ram.baseAddr) / 8
+	i1 := i0 + (byteCount+7)/8
+	for i := i0; i < i1; i += 4 {
+		fmt.Printf(
+			"%016x: %016x %016x %016x %016x\r\n",
+			ram.baseAddr+i*8,
+			Xuint(ram.words[i]), Xuint(ram.words[i+1]),
+			Xuint(ram.words[i+2]), Xuint(ram.words[i+3]),
+		)
+	}
 }
