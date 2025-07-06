@@ -44,7 +44,6 @@
 			status = "okay";
 			compatible = "riscv";
 			riscv,isa = "rv64imac";
-			mmu-type = "riscv,sv39";
 			clock-frequency = <0>;
 
 			intc: interrupt-controller {

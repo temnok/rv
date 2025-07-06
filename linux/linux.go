@@ -48,7 +48,7 @@ func main() {
 		if !cpu.Step() {
 
 			fmt.Println()
-			ram.Dump(0x80ea4000, 0x100)
+			//ram.Dump(0x80ea4000, 0x100)
 
 			break
 		}

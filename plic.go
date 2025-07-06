@@ -20,7 +20,7 @@ func (plic *PLIC) Init(cpu *CPU, baseAddr Xint) {
 }
 
 func (plic *PLIC) access(addr Xint, data *Xint, width Xint, write bool) bool {
-	if addr = (addr - plic.baseAddr) / 4; addr < 0 || addr >= 0x400_0000/4 || width != 4 {
+	if addr = (addr - plic.baseAddr) / 4; addr < 0 || addr >= 0x400_0000/4 || width < 4 {
 		return false
 	}
 
