@@ -29,7 +29,7 @@ func (cpu *CPU) debugStep() {
 	}
 
 	trace = append(trace, entry)
-	if n := 1000; len(trace) == n+1 {
+	if n := 100; len(trace) == n+1 {
 		copy(trace[:n], trace[1:])
 		trace = trace[:n]
 	}
@@ -37,7 +37,7 @@ func (cpu *CPU) debugStep() {
 	if cpu.isTrapped /*|| cycleCount == 1_000_000*/ {
 		trapCount++
 
-		if trapCount == 1 {
+		if trapCount == 8 {
 			fmt.Printf("Cycle: %v, trap: %v\r\n\r\n", cycleCount, trapCount)
 
 			debugDump(cpu)
@@ -47,27 +47,42 @@ func (cpu *CPU) debugStep() {
 	}
 }
 
-var isa, _ = rvda.New(64, rvda.RV64gc)
+var isa, _ = rvda.New(Xlen, rvda.RV64gc)
 
 func debugDump(cpu *CPU) {
 	for _, entry := range trace {
-		line := isa.Disassemble(entry[0], entry[1]).String()
-		i := strings.LastIndexByte(line, ' ')
-		line = line[:i] + "\t" + line[i+1:]
-
-		if entry[2] != 0 {
-			line += fmt.Sprintf("\t\t// %v:%x", regNames[entry[2]], entry[3])
-		}
-
-		fmt.Printf("%v\r\n", line)
+		fmt.Printf("%v\r\n", disassemble(entry))
 	}
 
-	fmt.Printf("\r\nmcause:%x, mepc:%x, mstatus:%x, satp:%x\r\n\r\n",
-		cpu.csr.mcause, cpu.csr.mepc, cpu.csr.mstatus, cpu.csr.satp)
+	fmt.Printf("\r\nmcause:%x, mepc:%x, mtvec:%x, mstatus:%x\r\n",
+		uint(cpu.csr.mcause), uint(cpu.csr.mepc), uint(cpu.csr.mtvec), uint(cpu.csr.mstatus))
+	fmt.Printf("scause:%x, sepc:%x, stvec:%x, satp:%x\r\n",
+		uint(cpu.csr.scause), uint(cpu.csr.sepc), uint(cpu.csr.stvec), uint(cpu.csr.satp))
+	fmt.Printf("medeleg:%x\r\n\r\n", uint(cpu.csr.medeleg))
 
 	for i := range 16 {
-		fmt.Printf("% 5v:%16x      % 5v:%16x\r\n", regNames[i], cpu.x[i], regNames[16+i], cpu.x[16+i])
+		fmt.Printf("% 5v:%16x      % 5v:%16x\r\n",
+			regNames[i], uint(cpu.x[i]), regNames[16+i], uint(cpu.x[16+i]))
 	}
+}
+
+func disassemble(entry [4]uint) string {
+	addr, code, reg, regVal := entry[0], entry[1], entry[2], entry[3]
+
+	line := isa.Disassemble(addr, code).String()
+	parts := strings.Split(line, "\t")
+	ops := strings.Split(parts[1], " ")
+	for len(ops) < 2 {
+		ops = append(ops, "")
+	}
+
+	line = fmt.Sprintf("%-30v %-6v %-16v", parts[0], ops[0], ops[1])
+
+	if entry[2] != 0 {
+		line += fmt.Sprintf("// %v=%x", regNames[reg], regVal)
+	}
+
+	return line
 }
 
 var regNames = []string{
