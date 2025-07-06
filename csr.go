@@ -27,7 +27,7 @@ const (
 	mstatusTVM  = 20
 	mstatusTSR  = 22
 
-	mcauseI = 31
+	mcauseI = Xlen - 1
 
 	mipMSI = 3
 	mipMTI = 7
