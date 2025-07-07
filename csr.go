@@ -44,174 +44,160 @@ type CSR struct {
 	mvendorid, marchid, mimpid, mhartid, mconfigptr                             Xint
 }
 
-func (cpu *CPU) csrAccess(i Xint) *Xint {
+func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
+	if write && bits(i, 10, 2) == 0b_11 {
+		cpu.trap(ExceptionIllegalIstruction)
+		return
+	}
+
 	if priv := bits(i, 8, 2); cpu.priv < priv {
 		cpu.trap(ExceptionIllegalIstruction)
-		return nil
+		return
 	}
 
 	if i == satp && cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
 		cpu.trap(ExceptionIllegalIstruction)
-		return nil
+		return
 	}
 
 	csr := &cpu.csr
+	writeVal := *val
+	var reg *Xint
 
 	switch i {
 	case 0x100:
-		return &cpu.csr.mstatus
+		reg = &csr.mstatus
 
 	case 0x104:
-		return &cpu.csr.mie
+		reg = &csr.mie
 
 	case 0x105:
-		return &cpu.csr.stvec
+		reg = &csr.stvec
 
 	case 0x106:
-		return &cpu.csr.scounteren
+		reg = &csr.scounteren
 
 	case 0x140:
-		return &cpu.csr.sscratch
+		reg = &csr.sscratch
 
 	case 0x141:
-		return &cpu.csr.sepc
+		reg = &csr.sepc
 
 	case 0x142:
-		return &cpu.csr.scause
+		reg = &csr.scause
 
 	case 0x143:
-		return &cpu.csr.stval
+		reg = &csr.stval
 
 	case 0x144:
-		return &cpu.csr.sip
+		reg = &csr.sip
 
 	case satp:
-		return &csr.satp
+		reg = &csr.satp
 
 	case 0x300:
-		return &csr.mstatus
+		reg = &csr.mstatus
 
 	case 0x301:
-		return &csr.misa
+		ignoreWrites := csr.misa
+		reg = &ignoreWrites
 
 	case 0x302:
-		return &csr.medeleg
+		reg = &csr.medeleg
 
 	case 0x303:
-		return &csr.mideleg
+		reg = &csr.mideleg
 
 	case 0x304:
-		return &csr.mie
+		reg = &csr.mie
 
 	case 0x305:
-		return &csr.mtvec
+		reg = &csr.mtvec
 
 	case 0x306:
-		return &csr.mcounteren
+		reg = &csr.mcounteren
 
 	case 0x310:
-		return &csr.mstatush
+		if Xlen32 {
+			reg = &csr.mstatush
+		}
 
 	case 0x312:
 		if Xlen32 {
-			return &csr.medelegh
+			reg = &csr.medelegh
 		}
 
 	case 0x340:
-		return &csr.mscratch
+		reg = &csr.mscratch
 
 	case 0x341:
-		return &csr.mepc
+		reg = &csr.mepc
 
 	case 0x342:
-		return &csr.mcause
+		reg = &csr.mcause
 
 	case 0x343:
-		return &csr.mtval
+		reg = &csr.mtval
 
 	case 0x344:
-		return &csr.mip
+		reg = &csr.mip
 
 	case 0xC00:
-		return &cpu.csr.cycle
+		reg = &csr.cycle
 
 	case 0xC01:
-		return &cpu.csr.mtime
+		reg = &csr.mtime
 
 	case 0xC02:
-		return &cpu.csr.cycle
+		reg = &csr.cycle
 
 	case 0xC80:
 		if Xlen32 {
-			return &cpu.csr.cycleh
+			reg = &csr.cycleh
 		}
 
 	case 0xC81:
 		if Xlen32 {
-			return &cpu.csr.mtimeh
+			reg = &csr.mtimeh
 		}
 
 	case 0xC82:
 		if Xlen32 {
-			return &cpu.csr.cycleh
+			reg = &csr.cycleh
 		}
 
 	case 0xF11:
-		return &csr.mvendorid
+		reg = &csr.mvendorid
 
 	case 0xF12:
-		return &csr.marchid
+		reg = &csr.marchid
 
 	case 0xF13:
-		return &csr.mimpid
+		reg = &csr.mimpid
 
 	case 0xF14:
-		return &csr.mhartid
+		reg = &csr.mhartid
 
 	case 0xF15:
-		return &csr.mconfigptr
+		reg = &csr.mconfigptr
 	}
 
-	cpu.trap(ExceptionIllegalIstruction)
-	return nil
-}
-
-func (cpu *CPU) csrRead(i Xint, val *Xint) {
-	ptr := cpu.csrAccess(i)
-	if cpu.isTrapped {
-		return
-	}
-
-	*val = *ptr
-}
-
-func (cpu *CPU) csrWrite(i, val Xint) {
-	if readOnly := bits(i, 10, 2) == 0b_11; readOnly {
+	if reg == nil {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
 
-	ptr := cpu.csrAccess(i)
-	if cpu.isTrapped {
-		return
+	if write {
+		*reg = writeVal
+	} else {
+		*val = *reg
 	}
+}
 
-	csr := &cpu.csr
+func (cpu *CPU) csrRead(i Xint, val *Xint) {
+	cpu.csrAccess(i, val, false)
+}
 
-	switch ptr {
-	case &csr.misa:
-		return // ignore writes
-
-	case &csr.mstatus:
-		const mask = 0b_11<<mstatusSXL | 0b_11<<mstatusUXL
-		val = Xint(int64(val)&^mask | int64(csr.mstatus)&mask) // copy SXL/UXL
-
-	case &csr.satp:
-		if Xlen64 {
-			const mask = 0b_0111 << satpMODE
-			val = Xint(int64(val) &^ mask)
-		}
-	}
-
-	*ptr = val
+func (cpu *CPU) csrWrite(i, val Xint) {
+	cpu.csrAccess(i, &val, true)
 }
