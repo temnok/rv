@@ -11,9 +11,3 @@ func bits(val, i, n Xint) Xint {
 func signedBit(val, i Xint) Xint {
 	return -bit(val, i)
 }
-
-func clearBits(val *Xint, i, n Xint) {
-	if i < Xlen {
-		*val &^= (1<<n - 1) << i
-	}
-}
