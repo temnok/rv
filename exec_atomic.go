@@ -21,7 +21,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 		}
 	}
 
-	if width < Xbytes {
+	if width == 4 {
 		val = Xint(int32(val))
 		old = Xint(int32(old))
 	}
@@ -82,6 +82,10 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 	}
 
 	if write {
+		if width == 4 {
+			val = Xint(uint32(val))
+		}
+
 		if cpu.memWrite(addr, val, width); cpu.isTrapped {
 			return
 		}
