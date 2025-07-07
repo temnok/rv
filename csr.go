@@ -11,7 +11,6 @@ const (
 	mstatusUXL = 32
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-	satp     = 0x180
 	satpMODE = Xlen - 1 - (Xlen/64)*3
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
@@ -30,6 +29,7 @@ const (
 	mcauseI = Xlen - 1
 
 	mipMSI = 3
+	mipSTI = 5
 	mipMTI = 7
 	mipSEI = 9
 )
@@ -37,7 +37,7 @@ const (
 type CSR struct {
 	cycle, mtime, cycleh, mtimeh Xint
 
-	sie, stvec, scounteren, sscratch, sepc, scause, stval, sip, satp Xint
+	stvec, scounteren, sscratch, sepc, scause, stval, satp Xint
 
 	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh Xint
 	mscratch, mepc, mcause, mtval, mip                                          Xint
@@ -55,13 +55,9 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 		return
 	}
 
-	if i == satp && cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
-		cpu.trap(ExceptionIllegalIstruction)
-		return
-	}
-
 	csr := &cpu.csr
-	writeVal := *val
+	mask := Xint(-1)
+
 	var reg *Xint
 
 	switch i {
@@ -70,6 +66,7 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x104:
 		reg = &csr.mie
+		mask = 1<<mipSEI | 1<<mipSTI
 
 	case 0x105:
 		reg = &csr.stvec
@@ -90,17 +87,28 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 		reg = &csr.stval
 
 	case 0x144:
-		reg = &csr.sip
+		reg = &csr.mip
+		if write {
+			mask = 0
+		} else {
+			mask = 1 << mipSEI
+		}
 
-	case satp:
+	case 0x180:
 		reg = &csr.satp
+		if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
+			cpu.trap(ExceptionIllegalIstruction)
+			return
+		}
 
 	case 0x300:
 		reg = &csr.mstatus
 
 	case 0x301:
-		ignoreWrites := csr.misa
-		reg = &ignoreWrites
+		reg = &csr.misa
+		if write {
+			mask = 0
+		}
 
 	case 0x302:
 		reg = &csr.medeleg
@@ -110,6 +118,7 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x304:
 		reg = &csr.mie
+		mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
 
 	case 0x305:
 		reg = &csr.mtvec
@@ -141,6 +150,7 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x344:
 		reg = &csr.mip
+		mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
 
 	case 0xC00:
 		reg = &csr.cycle
@@ -188,9 +198,9 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 	}
 
 	if write {
-		*reg = writeVal
+		*reg = *reg&^mask | *val&mask
 	} else {
-		*val = *reg
+		*val = *reg & mask
 	}
 }
 
