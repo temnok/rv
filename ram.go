@@ -4,48 +4,48 @@ import "fmt"
 
 type RAM struct {
 	baseAddr Xint
-	words    []Xint
+	words    []int
 }
 
 func (ram *RAM) Init(baseAddr Xint, size int) {
 	*ram = RAM{
 		baseAddr: baseAddr,
-		words:    make([]Xint, size/Xbytes),
+		words:    make([]int, size/8),
 	}
 }
 
 func (ram *RAM) Load(addr Xint, program []byte) {
-	addr = (addr - ram.baseAddr) / Xbytes
-	words := ram.words[addr : addr+Xint(len(program))/Xbytes+1]
+	addr = (addr - ram.baseAddr) / 8
+	words := ram.words[addr : addr+Xint(len(program))/8+1]
 
 	clear(words)
 	for i, b := range program {
-		shift := (i & (Xbytes - 1)) * 8
-		words[i/Xbytes] |= Xint(b) << shift
+		shift := (i & 7) * 8
+		words[i/8] |= int(b) << shift
 	}
 }
 
 func (ram *RAM) access(addr Xint, data *Xint, width Xint, write bool) bool {
-	i := (addr - ram.baseAddr) / Xbytes
+	i := (addr - ram.baseAddr) / 8
 	if i < 0 || i >= Xint(len(ram.words)) {
 		return false
 	}
 
-	if width == Xbytes {
+	if width == 8 {
 		if write {
-			ram.words[i] = *data
+			ram.words[i] = int(*data)
 		} else {
-			*data = ram.words[i]
+			*data = Xint(ram.words[i])
 		}
 
 		return true
 	}
 
-	if shift := (addr & (Xbytes - 1)) * 8; write {
-		mask := Xint(-1) << (width * 8)
-		ram.words[i] = (ram.words[i] &^ (^mask << shift)) | *data<<shift
+	if shift := (addr & 7) * 8; write {
+		mask := -1 << (width * 8)
+		ram.words[i] = (ram.words[i] &^ (^mask << shift)) | (int(*data)&^mask)<<shift
 	} else {
-		*data = ram.words[i] >> shift
+		*data = Xint(ram.words[i] >> shift)
 	}
 
 	return true
