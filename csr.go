@@ -37,11 +37,11 @@ const (
 type CSR struct {
 	cycle, cycleh, mtime, mtimeh Xint
 
-	stvec, sscratch, sepc, scause, stval, satp Xint
+	stvec, scounteren, sscratch, sepc, scause, stval, sip, satp Xint
 
-	mstatus, misa, medeleg, mideleg, mie, mtvec Xint
-	mscratch, mepc, mcause, mtval, mip          Xint
-	mvendorid, marchid, mimpid, mhartid         Xint
+	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren Xint
+	mscratch, mepc, mcause, mtval, mip                      Xint
+	mvendorid, marchid, mimpid, mhartid                     Xint
 }
 
 func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
@@ -70,6 +70,9 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x105: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_vector_base_address_stvec_register
 		reg = &csr.stvec
+
+	case 0x106:
+		reg = &csr.scounteren
 
 	case 0x140: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_scratch_sscratch_register
 		reg = &csr.sscratch
@@ -100,6 +103,10 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x300: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 		reg = &csr.mstatus
+		if write {
+			tmp := ^int64(0b_11<<mstatusSXL | 0b_11<<mstatusUXL)
+			mask = Xint(tmp)
+		}
 
 	case 0x301: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
 		reg = &csr.misa
@@ -115,10 +122,14 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x304: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
 		reg = &csr.mie
-		mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
+		// TODO
+		//mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
 
 	case 0x305: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_vector_base_address_mtvec_register
 		reg = &csr.mtvec
+
+	case 0x306:
+		reg = &csr.mcounteren
 
 	case 0x340: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_scratch_mscratch_register
 		reg = &csr.mscratch
@@ -134,7 +145,8 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 
 	case 0x344: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
 		reg = &csr.mip
-		mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
+		// TODO
+		//mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
 
 	case 0xC00:
 		reg = &csr.cycle
