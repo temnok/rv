@@ -11,4 +11,14 @@ const (
 	Xbytes = Xlen / 8
 	Xlen32 = Xlen == 32
 	Xlen64 = Xlen == 64
+
+	xshift = 64 - Xlen
 )
+
+func FixInt(val Xint) Xint {
+	return val << xshift >> xshift
+}
+
+func FixUint(val Xuint) Xuint {
+	return val << xshift >> xshift
+}

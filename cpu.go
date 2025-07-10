@@ -56,7 +56,7 @@ func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 
-			mstatus: Xint(mstatus),
+			mstatus: FixInt(mstatus),
 		},
 
 		bus: bus,

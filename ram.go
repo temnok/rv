@@ -9,13 +9,13 @@ type RAM struct {
 
 func (ram *RAM) Init(baseAddr Xint, size int) {
 	*ram = RAM{
-		baseAddr: baseAddr,
+		baseAddr: FixInt(baseAddr),
 		words:    make([]int, size/8),
 	}
 }
 
 func (ram *RAM) Load(addr Xint, program []byte) {
-	addr = (addr - ram.baseAddr) / 8
+	addr = (FixInt(addr) - ram.baseAddr) / 8
 	words := ram.words[addr : addr+Xint(len(program))/8+1]
 
 	clear(words)
@@ -26,7 +26,7 @@ func (ram *RAM) Load(addr Xint, program []byte) {
 }
 
 func (ram *RAM) access(addr Xint, data *Xint, width Xint, write bool) bool {
-	i := (addr - ram.baseAddr) / 8
+	i := (FixInt(addr) - ram.baseAddr) / 8
 	if i < 0 || i >= Xint(len(ram.words)) {
 		return false
 	}
