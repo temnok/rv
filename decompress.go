@@ -14,7 +14,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	}
 
 	*opcodePtr = decompressedOpcode
-	cpu.nextPC = Xint(cpu.pc + 2)
+	cpu.nextPC = cpu.Xint(cpu.pc + 2)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings

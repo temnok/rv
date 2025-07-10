@@ -33,8 +33,7 @@ func runTest(t *testing.T, file string) {
 	cpu := &CPU{}
 	ram := &RAM{}
 
-	ramBaseAddrUint := uint(0x8000_0000)
-	ramBaseAddr := int(ramBaseAddrUint)
+	ramBaseAddr := cpu.Xint(0x8000_0000)
 
 	cpu.Init(Bus{ram}, ramBaseAddr, nil)
 	ram.Init(ramBaseAddr, 64*1024)

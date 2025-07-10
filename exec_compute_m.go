@@ -46,7 +46,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 
 	case 0b_101: // divu
 		if b != 0 {
-			c = int(Xuint(a) / Xuint(b))
+			c = int(cpu.Xuint(a) / cpu.Xuint(b))
 		} else {
 			c = -1
 		}
@@ -60,11 +60,11 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 
 	case 0b_111: // remu
 		if b != 0 {
-			c = int(Xuint(a) % Xuint(b))
+			c = int(cpu.Xuint(a) % cpu.Xuint(b))
 		} else {
 			c = a
 		}
 	}
 
-	cpu.x[rd] = Xint(c)
+	cpu.x[rd] = cpu.Xint(c)
 }

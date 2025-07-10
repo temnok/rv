@@ -8,7 +8,7 @@ const (
 	Xlen64 = Xlen == 64
 )
 
-func Xint(val int) int {
+func (cpu *CPU) Xint(val int) int {
 	if Xlen64 {
 		return val
 	}
@@ -16,7 +16,7 @@ func Xint(val int) int {
 	return int(int32(val))
 }
 
-func Xuint(val int) uint {
+func (cpu *CPU) Xuint(val int) uint {
 	if Xlen64 {
 		return uint(val)
 	}
