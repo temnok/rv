@@ -10,10 +10,10 @@ const (
 	xshift = 64 - Xlen
 )
 
-func FixInt(val int) int {
+func Xint(val int) int {
 	return val << xshift >> xshift
 }
 
-func FixUint(val uint) uint {
-	return val << xshift >> xshift
+func Xuint(val int) uint {
+	return uint(val) << xshift >> xshift
 }

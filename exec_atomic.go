@@ -67,12 +67,12 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 
 	case 0b_11000: // amominu
-		if uint(old) < uint(val) {
+		if Xuint(old) < Xuint(val) {
 			val = old
 		}
 
 	case 0b_11100: // amomaxu
-		if uint(old) > uint(val) {
+		if Xuint(old) > Xuint(val) {
 			val = old
 		}
 
