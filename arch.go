@@ -6,14 +6,20 @@ const (
 	Xbytes = Xlen / 8
 	Xlen32 = Xlen == 32
 	Xlen64 = Xlen == 64
-
-	xshift = 64 - Xlen
 )
 
 func Xint(val int) int {
-	return val << xshift >> xshift
+	if Xlen64 {
+		return val
+	}
+
+	return int(int32(val))
 }
 
 func Xuint(val int) uint {
-	return uint(val) << xshift >> xshift
+	if Xlen64 {
+		return uint(val)
+	}
+
+	return uint(uint32(val))
 }
