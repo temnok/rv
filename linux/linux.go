@@ -14,7 +14,9 @@ import (
 
 func main() {
 	state := check1(term.MakeRaw(0))
-	defer term.Restore(0, state)
+	defer func() {
+		check(term.Restore(0, state))
+	}()
 
 	var (
 		cpu          rv.CPU

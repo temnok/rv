@@ -52,7 +52,7 @@ func (plic *PLIC) access(addr int, data *int, width int, write bool) bool {
 			}
 		}
 	default:
-		if addr > 0 && addr < int(len(plic.priority)) {
+		if addr > 0 && addr < len(plic.priority) {
 			reg = &plic.priority[addr]
 		}
 	}
@@ -79,9 +79,9 @@ func (plic *PLIC) triggerInterrupt(source int) {
 }
 
 func (plic *PLIC) notifyInterrupts() {
-	maxPriority := int(0)
-	irq := int(0)
-	for i := int(1); i < 32; i++ {
+	maxPriority := 0
+	irq := 0
+	for i := 1; i < 32; i++ {
 		if bit(plic.claiming, i) == 1 {
 			plic.pending &^= 1 << i
 		} else if bit(plic.enable, i) == 1 &&

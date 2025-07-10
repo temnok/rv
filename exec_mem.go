@@ -26,7 +26,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		}
 
 		if cpu.memRead(cpu.x[rs1]+imm, &val, 8); !cpu.isTrapped {
-			cpu.x[rd] = int(val)
+			cpu.x[rd] = val
 		}
 
 	case 0b_100: // lbu

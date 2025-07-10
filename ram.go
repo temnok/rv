@@ -27,15 +27,15 @@ func (ram *RAM) Load(addr int, program []byte) {
 
 func (ram *RAM) access(addr int, data *int, width int, write bool) bool {
 	i := (FixInt(addr) - ram.baseAddr) / 8
-	if i < 0 || i >= int(len(ram.words)) {
+	if i < 0 || i >= len(ram.words) {
 		return false
 	}
 
 	if width == 8 {
 		if write {
-			ram.words[i] = int(*data)
+			ram.words[i] = *data
 		} else {
-			*data = int(ram.words[i])
+			*data = ram.words[i]
 		}
 
 		return true
@@ -43,7 +43,7 @@ func (ram *RAM) access(addr int, data *int, width int, write bool) bool {
 
 	if shift := (addr & 7) * 8; write {
 		mask := -1 << (width * 8)
-		ram.words[i] = (ram.words[i] &^ (^mask << shift)) | (int(*data)&^mask)<<shift
+		ram.words[i] = (ram.words[i] &^ (^mask << shift)) | (*data&^mask)<<shift
 	} else {
 		*data = int(ram.words[i] >> shift)
 	}

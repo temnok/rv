@@ -52,7 +52,7 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 	}
 
 	csr := &cpu.csr
-	mask := int(-1)
+	mask := -1
 
 	var reg *int
 

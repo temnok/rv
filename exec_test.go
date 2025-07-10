@@ -46,7 +46,7 @@ func runTest(t *testing.T, file string) {
 	var lastTraps [][2]uint
 
 	for {
-		if i := cpu.pc - ramBaseAddr; i >= 0 && i < int(len(instrCounts)) {
+		if i := cpu.pc - ramBaseAddr; i >= 0 && i < len(instrCounts) {
 			instrCounts[i]++
 		}
 
@@ -73,7 +73,7 @@ func runTest(t *testing.T, file string) {
 			var addresses []uint
 			for i, c := range instrCounts {
 				if c > 10_000 {
-					addresses = append(addresses, uint(ramBaseAddr+int(i)))
+					addresses = append(addresses, uint(ramBaseAddr+i))
 				}
 			}
 

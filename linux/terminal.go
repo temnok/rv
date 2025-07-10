@@ -33,7 +33,7 @@ func newTerminal() *Terminal {
 
 func (t *Terminal) callback(data *byte, write bool) bool {
 	if write {
-		os.Stdout.Write([]byte{*data})
+		check1(os.Stdout.Write([]byte{*data}))
 		return true
 	}
 

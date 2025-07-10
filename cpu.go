@@ -117,12 +117,12 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 		return
 	}
 
-	for i := int(12); i > 0; i-- {
+	for i := 12; i > 0; i-- {
 		if bit(mi, i) == 0 {
 			continue
 		}
 
-		priv := int(PrivM)
+		priv := PrivM
 		if bit(cpu.csr.mideleg, i) != 0 {
 			priv = PrivS
 		}
@@ -154,7 +154,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		deleg = cpu.csr.mideleg
 	}
 
-	effectivePriv := int(PrivM)
+	effectivePriv := PrivM
 	if cpu.priv < PrivM && bit(deleg, causeID) == 1 {
 		effectivePriv = PrivS
 	}
