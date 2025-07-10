@@ -9,7 +9,7 @@ const (
 )
 
 func (cpu *CPU) Xint(val int) int {
-	if Xlen64 {
+	if cpu.Xlen64 {
 		return val
 	}
 
@@ -17,7 +17,7 @@ func (cpu *CPU) Xint(val int) int {
 }
 
 func (cpu *CPU) Xuint(val int) uint {
-	if Xlen64 {
+	if cpu.Xlen64 {
 		return uint(val)
 	}
 

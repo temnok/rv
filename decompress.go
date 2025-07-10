@@ -7,18 +7,18 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	}
 
 	opcode = int(uint16(opcode))
-	decompressedOpcode := decompress(opcode)
+	decompressedOpcode := cpu.decompressOpcode(opcode)
 	if decompressedOpcode == 0 {
 		cpu.trapWithTval(ExceptionIllegalIstruction, opcode)
 		return
 	}
 
 	*opcodePtr = decompressedOpcode
-	cpu.nextPC = cpu.Xint(cpu.pc + 2)
+	cpu.nextPC = cpu.Xint(cpu.PC + 2)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func decompress(opcode int) int {
+func (cpu *CPU) decompressOpcode(opcode int) int {
 	f3 := bits(opcode, 13, 3)
 	rA := bits(opcode, 7, 5)
 	ra := 8 + (rA & 7)
@@ -80,10 +80,10 @@ func decompress(opcode int) int {
 		case 0b_100:
 			switch bits(opcode, 10, 2) {
 			case 0b_00: // srli
-				return encodeR(0, immCI(opcode)&(Xlen-1), ra, 5, ra, 4)
+				return encodeR(0, immCI(opcode)&(cpu.Xlen-1), ra, 5, ra, 4)
 
 			case 0b_01: // srai
-				return encodeR(0b_0100000, immCI(opcode)&(Xlen-1), ra, 5, ra, 4)
+				return encodeR(0b_0100000, immCI(opcode)&(cpu.Xlen-1), ra, 5, ra, 4)
 
 			case 0b_10: // andi
 				return encodeI(immCI(opcode), ra, 7, ra, 4)
@@ -127,7 +127,7 @@ func decompress(opcode int) int {
 	case 2:
 		switch f3 {
 		case 0b_000: // c.slli
-			return encodeR(0, immCI(opcode)&(Xlen-1), rA, 1, rA, 4) // slli
+			return encodeR(0, immCI(opcode)&(cpu.Xlen-1), rA, 1, rA, 4) // slli
 
 		case 0b_010: // c.lwsp
 			return encodeI(immCIx4(opcode), 2, 2, rA, 0) // lw

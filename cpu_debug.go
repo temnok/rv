@@ -15,7 +15,7 @@ var (
 func (cpu *CPU) debugStep() bool {
 	cycleCount++
 
-	pc := cpu.pc
+	pc := cpu.PC
 	oldRegs := cpu.x
 
 	opcode := cpu.step()
@@ -49,11 +49,11 @@ func (cpu *CPU) debugStep() bool {
 	return true
 }
 
-var isa, _ = rvda.New(Xlen, rvda.RV64gc)
-
 func debugDump(cpu *CPU) {
+	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
+
 	for _, entry := range trace {
-		fmt.Printf("%v\r\n", disassemble(entry))
+		fmt.Printf("%v\r\n", disassemble(isa, entry))
 	}
 
 	fmt.Printf("\r\nmcause:%x, mepc:%x, mtvec:%x, mstatus:%x\r\n",
@@ -68,7 +68,7 @@ func debugDump(cpu *CPU) {
 	}
 }
 
-func disassemble(entry [4]uint) string {
+func disassemble(isa *rvda.ISA, entry [4]uint) string {
 	addr, code, reg, regVal := entry[0], entry[1], entry[2], entry[3]
 
 	line := isa.Disassemble(addr, code).String()

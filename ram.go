@@ -3,19 +3,21 @@ package rv
 import "fmt"
 
 type RAM struct {
+	cpu      *CPU
 	baseAddr int
 	words    []int
 }
 
-func (ram *RAM) Init(baseAddr int, size int) {
+func (ram *RAM) Init(cpu *CPU, baseAddr int, size int) {
 	*ram = RAM{
-		baseAddr: baseAddr,
+		cpu:      cpu,
+		baseAddr: cpu.Xint(baseAddr),
 		words:    make([]int, size/8),
 	}
 }
 
 func (ram *RAM) Load(addr int, program []byte) {
-	addr = (addr - ram.baseAddr) / 8
+	addr = (ram.cpu.Xint(addr) - ram.baseAddr) / 8
 	words := ram.words[addr : addr+int(len(program))/8+1]
 
 	clear(words)

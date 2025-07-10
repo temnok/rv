@@ -26,14 +26,14 @@ func main() {
 		uart1, uart2 rv.UART
 	)
 
-	ramBaseAddr := cpu.Xint(0x8000_0000)
+	ramBaseAddr := 0x8000_0000
 	dtbAddr := ramBaseAddr + 0x0200_0000
 
 	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []int{
 		11: dtbAddr,
 	})
 
-	ram.Init(ramBaseAddr, 128*1024*1024)
+	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
 
@@ -41,7 +41,7 @@ func main() {
 	uart1.Init(&plic, 0x0300_0000, 1, terminal.callback)
 	uart2.Init(&plic, 0x0600_0000, 2, nil)
 
-	path := fmt.Sprintf("linux/buildroot/rv%vimac/bin", rv.Xlen)
+	path := fmt.Sprintf("linux/buildroot/rv%vimac/bin", cpu.Xlen)
 	ram.Load(ramBaseAddr, readFile(path+"/fw_payload.bin.gz", ""))
 	ram.Load(dtbAddr, readFile(path+"/rv.dtb", ""))
 

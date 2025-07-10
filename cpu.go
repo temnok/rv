@@ -1,10 +1,13 @@
 package rv
 
 type CPU struct {
+	Xlen, Xbytes   int
+	Xlen32, Xlen64 bool
+
 	bus Bus
 
 	x          [32]int
-	pc, nextPC int
+	PC, nextPC int
 	csr        CSR
 
 	isTrapped bool
@@ -44,24 +47,32 @@ const (
 )
 
 func (cpu *CPU) Init(bus Bus, startAddr int, regs []int) {
-	const xl = Xlen / 32
+	xl := Xlen / 32
 	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
-		pc:   cpu.Xint(startAddr),
+		Xlen:   Xlen,
+		Xbytes: Xlen / 8,
+		Xlen32: Xlen == 32,
+		Xlen64: Xlen == 64,
+
 		priv: PrivM,
 		csr: CSR{
 			misa: int(misa) |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
-
-			mstatus: cpu.Xint(xl<<mstatusSXL | xl<<mstatusUXL),
 		},
 
 		bus: bus,
 	}
 
+	cpu.PC = cpu.Xint(startAddr)
+	cpu.csr.mstatus = cpu.Xint(xl<<mstatusSXL | xl<<mstatusUXL)
+
 	copy(cpu.x[:], regs)
+	for i, x := range cpu.x {
+		cpu.x[i] = cpu.Xint(x)
+	}
 }
 
 func (cpu *CPU) Step() bool {
@@ -82,11 +93,11 @@ func (cpu *CPU) step() int {
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped {
+	if cpu.memFetch(cpu.PC, &opcode); cpu.isTrapped {
 		return 0
 	}
 
-	cpu.nextPC = cpu.Xint(cpu.pc + 4)
+	cpu.nextPC = cpu.Xint(cpu.PC + 4)
 	origOpcode := opcode
 	if cpu.decompress(&opcode); cpu.isTrapped {
 		return opcode
@@ -167,7 +178,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		cpu.csr.mstatus &^= 0b_11<<mstatusMPP | 1<<mstatusMPIE | 1<<mstatusMIE
 		cpu.csr.mstatus |= cpu.priv<<mstatusMPP | mie<<mstatusMPIE
 
-		cpu.csr.mepc = cpu.pc
+		cpu.csr.mepc = cpu.PC
 		cpu.csr.mcause = cause
 		cpu.csr.mtval = tval
 		tvec = cpu.csr.mtvec
@@ -177,15 +188,15 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		cpu.csr.mstatus &^= 1<<mstatusSPP | 1<<mstatusSPIE | 1<<mstatusSIE
 		cpu.csr.mstatus |= cpu.priv<<mstatusSPP | sie<<mstatusSPIE
 
-		cpu.csr.sepc = cpu.pc
+		cpu.csr.sepc = cpu.PC
 		cpu.csr.scause = cause
 		cpu.csr.stval = tval
 		tvec = cpu.csr.stvec
 	}
 
-	cpu.pc = tvec &^ 0b_11
+	cpu.PC = tvec &^ 0b_11
 	if bit(tvec, 0) != 0 && isInterrupt {
-		cpu.pc += causeID * 4
+		cpu.PC += causeID * 4
 	}
 
 	cpu.priv = effectivePriv

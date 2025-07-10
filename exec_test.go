@@ -33,10 +33,10 @@ func runTest(t *testing.T, file string) {
 	cpu := &CPU{}
 	ram := &RAM{}
 
-	ramBaseAddr := cpu.Xint(0x8000_0000)
+	ramBaseAddr := 0x8000_0000
 
 	cpu.Init(Bus{ram}, ramBaseAddr, nil)
-	ram.Init(ramBaseAddr, 64*1024)
+	ram.Init(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 
 	instrCounts := make([]int, len(program))
@@ -44,18 +44,18 @@ func runTest(t *testing.T, file string) {
 	var lastPCs []uint
 	var lastTraps [][2]uint
 
-	for {
-		if i := cpu.pc - ramBaseAddr; i >= 0 && i < len(instrCounts) {
+	for startPC := cpu.PC; ; {
+		if i := cpu.PC - startPC; i >= 0 && i < len(instrCounts) {
 			instrCounts[i]++
 		}
 
-		lastPCs = append(lastPCs, uint(cpu.pc))
+		lastPCs = append(lastPCs, uint(cpu.PC))
 		if n := 10; len(lastPCs) == n+1 {
 			copy(lastPCs[:n], lastPCs[1:])
 			lastPCs = lastPCs[:n]
 		}
 
-		prevPC := cpu.pc
+		prevPC := cpu.PC
 		cpu.Step()
 
 		if cpu.isTrapped {

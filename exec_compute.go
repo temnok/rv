@@ -6,7 +6,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 		cpu.x[rd] = cpu.Xint(cpu.x[rs1] + imm)
 
 	case 0b_001: // slli
-		if imm < Xlen {
+		if imm < cpu.Xlen {
 			cpu.x[rd] = cpu.Xint(cpu.x[rs1] << imm)
 		} else {
 			cpu.trap(ExceptionIllegalIstruction)
@@ -30,9 +30,9 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 		cpu.x[rd] = cpu.x[rs1] ^ imm
 
 	case 0b_101:
-		if imm < Xlen { // srli
+		if imm < cpu.Xlen { // srli
 			cpu.x[rd] = cpu.Xint(int(cpu.Xuint(cpu.x[rs1]) >> cpu.Xuint(imm)))
-		} else if imm &^= 0b_0100000_00000; imm < Xlen { // srai
+		} else if imm &^= 0b_0100000_00000; imm < cpu.Xlen { // srai
 			cpu.x[rd] = cpu.x[rs1] >> imm
 		} else {
 			cpu.trap(ExceptionIllegalIstruction)
@@ -66,7 +66,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 		cpu.x[rd] = cpu.Xint(cpu.x[rs1] - cpu.x[rs2])
 
 	case 0b_001: // sll
-		cpu.x[rd] = cpu.Xint(cpu.x[rs1] << (cpu.x[rs2] & (Xlen - 1)))
+		cpu.x[rd] = cpu.Xint(cpu.x[rs1] << (cpu.x[rs2] & (cpu.Xlen - 1)))
 
 	case 0b_010: // slt
 		if cpu.x[rs1] < cpu.x[rs2] {
@@ -86,10 +86,10 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 		cpu.x[rd] = cpu.x[rs1] ^ cpu.x[rs2]
 
 	case 0b_101: // srl
-		cpu.x[rd] = cpu.Xint(int(cpu.Xuint(cpu.x[rs1]) >> cpu.Xuint(cpu.x[rs2]&(Xlen-1))))
+		cpu.x[rd] = cpu.Xint(int(cpu.Xuint(cpu.x[rs1]) >> cpu.Xuint(cpu.x[rs2]&(cpu.Xlen-1))))
 
 	case 0b_1_101: // sra
-		cpu.x[rd] = cpu.x[rs1] >> (cpu.x[rs2] & (Xlen - 1))
+		cpu.x[rd] = cpu.x[rs1] >> (cpu.x[rs2] & (cpu.Xlen - 1))
 
 	case 0b_110: // or
 		cpu.x[rd] = cpu.x[rs1] | cpu.x[rs2]
