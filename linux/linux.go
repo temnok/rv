@@ -24,11 +24,11 @@ func main() {
 		uart1, uart2 rv.UART
 	)
 
-	ramBaseAddrUint := rv.Xuint(0x8000_0000)
-	ramBaseAddr := rv.Xint(ramBaseAddrUint)
+	ramBaseAddrUint := uint(0x8000_0000)
+	ramBaseAddr := int(ramBaseAddrUint)
 	dtbAddr := ramBaseAddr + 0x0200_0000
 
-	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []rv.Xint{
+	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []int{
 		11: dtbAddr,
 	})
 

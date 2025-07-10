@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execBranch(imm, rs2, rs1, f3 Xint) {
+func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 	cond := false
 
 	switch f3 {
@@ -17,10 +17,10 @@ func (cpu *CPU) execBranch(imm, rs2, rs1, f3 Xint) {
 		cond = cpu.x[rs1] >= cpu.x[rs2]
 
 	case 0b_110: // bltu
-		cond = Xuint(cpu.x[rs1]) < Xuint(cpu.x[rs2])
+		cond = uint(cpu.x[rs1]) < uint(cpu.x[rs2])
 
 	case 0b_111: // bgeu
-		cond = Xuint(cpu.x[rs1]) >= Xuint(cpu.x[rs2])
+		cond = uint(cpu.x[rs1]) >= uint(cpu.x[rs2])
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

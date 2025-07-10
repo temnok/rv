@@ -2,29 +2,29 @@ package rv
 
 type PLIC struct {
 	cpu      *CPU
-	baseAddr Xint
+	baseAddr int
 
-	priority  [32]Xint
-	pending   Xint
-	enable    Xint
-	threshold Xint
-	claim     Xint
-	claiming  Xint
+	priority  [32]int
+	pending   int
+	enable    int
+	threshold int
+	claim     int
+	claiming  int
 }
 
-func (plic *PLIC) Init(cpu *CPU, baseAddr Xint) {
+func (plic *PLIC) Init(cpu *CPU, baseAddr int) {
 	*plic = PLIC{
 		cpu:      cpu,
 		baseAddr: baseAddr,
 	}
 }
 
-func (plic *PLIC) access(addr Xint, data *Xint, width Xint, write bool) bool {
+func (plic *PLIC) access(addr int, data *int, width int, write bool) bool {
 	if addr = (addr - plic.baseAddr) / 4; addr < 0 || addr >= 0x400_0000/4 || width < 4 {
 		return false
 	}
 
-	var reg *Xint
+	var reg *int
 	val := *data
 
 	switch addr {
@@ -52,7 +52,7 @@ func (plic *PLIC) access(addr Xint, data *Xint, width Xint, write bool) bool {
 			}
 		}
 	default:
-		if addr > 0 && addr < Xint(len(plic.priority)) {
+		if addr > 0 && addr < int(len(plic.priority)) {
 			reg = &plic.priority[addr]
 		}
 	}
@@ -72,16 +72,16 @@ func (plic *PLIC) access(addr Xint, data *Xint, width Xint, write bool) bool {
 	return true
 }
 
-func (plic *PLIC) triggerInterrupt(source Xint) {
+func (plic *PLIC) triggerInterrupt(source int) {
 	if source > 0 && source < 32 && bit(plic.claiming, source) == 0 && bit(plic.pending, source) == 0 {
 		plic.pending |= 1 << source
 	}
 }
 
 func (plic *PLIC) notifyInterrupts() {
-	maxPriority := Xint(0)
-	irq := Xint(0)
-	for i := Xint(1); i < 32; i++ {
+	maxPriority := int(0)
+	irq := int(0)
+	for i := int(1); i < 32; i++ {
 		if bit(plic.claiming, i) == 1 {
 			plic.pending &^= 1 << i
 		} else if bit(plic.enable, i) == 1 &&

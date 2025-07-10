@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) translateSv39(virtAddr Xint, physAddr *Xint, access Xint) {
+func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
 		cpu.trapWithTval(ExceptionInstructionPageFault+access, virtAddr)
 		return
@@ -18,7 +18,7 @@ func (cpu *CPU) translateSv39(virtAddr Xint, physAddr *Xint, access Xint) {
 		return
 	}
 
-	var pte, shift Xint
+	var pte, shift int
 	if cpu.loadPTEsv39(virtAddr, &pte, &shift); cpu.isTrapped {
 		return
 	}
@@ -41,9 +41,9 @@ func (cpu *CPU) translateSv39(virtAddr Xint, physAddr *Xint, access Xint) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func (cpu *CPU) loadPTEsv39(virtAddr Xint, targetPTE, shift *Xint) {
+func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
-	var pte Xint
+	var pte int
 
 	pteAddr := bits(cpu.csr.satp, 0, 44)<<12 | bits(virtAddr, 30, 9)<<3
 

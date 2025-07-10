@@ -3,20 +3,20 @@ package rv
 import "fmt"
 
 type RAM struct {
-	baseAddr Xint
+	baseAddr int
 	words    []int
 }
 
-func (ram *RAM) Init(baseAddr Xint, size int) {
+func (ram *RAM) Init(baseAddr int, size int) {
 	*ram = RAM{
 		baseAddr: FixInt(baseAddr),
 		words:    make([]int, size/8),
 	}
 }
 
-func (ram *RAM) Load(addr Xint, program []byte) {
+func (ram *RAM) Load(addr int, program []byte) {
 	addr = (FixInt(addr) - ram.baseAddr) / 8
-	words := ram.words[addr : addr+Xint(len(program))/8+1]
+	words := ram.words[addr : addr+int(len(program))/8+1]
 
 	clear(words)
 	for i, b := range program {
@@ -25,9 +25,9 @@ func (ram *RAM) Load(addr Xint, program []byte) {
 	}
 }
 
-func (ram *RAM) access(addr Xint, data *Xint, width Xint, write bool) bool {
+func (ram *RAM) access(addr int, data *int, width int, write bool) bool {
 	i := (FixInt(addr) - ram.baseAddr) / 8
-	if i < 0 || i >= Xint(len(ram.words)) {
+	if i < 0 || i >= int(len(ram.words)) {
 		return false
 	}
 
@@ -35,7 +35,7 @@ func (ram *RAM) access(addr Xint, data *Xint, width Xint, write bool) bool {
 		if write {
 			ram.words[i] = int(*data)
 		} else {
-			*data = Xint(ram.words[i])
+			*data = int(ram.words[i])
 		}
 
 		return true
@@ -45,21 +45,21 @@ func (ram *RAM) access(addr Xint, data *Xint, width Xint, write bool) bool {
 		mask := -1 << (width * 8)
 		ram.words[i] = (ram.words[i] &^ (^mask << shift)) | (int(*data)&^mask)<<shift
 	} else {
-		*data = Xint(ram.words[i] >> shift)
+		*data = int(ram.words[i] >> shift)
 	}
 
 	return true
 }
 
-func (ram *RAM) Dump(startAddr, byteCount Xint) {
+func (ram *RAM) Dump(startAddr, byteCount int) {
 	i0 := (startAddr - ram.baseAddr) / 8
 	i1 := i0 + (byteCount+7)/8
 	for i := i0; i < i1; i += 4 {
 		fmt.Printf(
 			"%016x: %016x %016x %016x %016x\r\n",
 			ram.baseAddr+i*8,
-			Xuint(ram.words[i]), Xuint(ram.words[i+1]),
-			Xuint(ram.words[i+2]), Xuint(ram.words[i+3]),
+			uint(ram.words[i]), uint(ram.words[i+1]),
+			uint(ram.words[i+2]), uint(ram.words[i+3]),
 		)
 	}
 }

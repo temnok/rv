@@ -1,18 +1,18 @@
 package rv
 
 type Bus []interface {
-	access(addr Xint, data *Xint, width Xint, write bool) bool
+	access(addr int, data *int, width int, write bool) bool
 }
 
-func (bus Bus) read(addr Xint, data *Xint, width Xint) bool {
+func (bus Bus) read(addr int, data *int, width int) bool {
 	return bus.access(addr, data, width, false)
 }
 
-func (bus Bus) write(addr Xint, data Xint, width Xint) bool {
+func (bus Bus) write(addr int, data int, width int) bool {
 	return bus.access(addr, &data, width, true)
 }
 
-func (bus Bus) access(addr Xint, data *Xint, width Xint, write bool) bool {
+func (bus Bus) access(addr int, data *int, width int, write bool) bool {
 	for _, device := range bus {
 		if device.access(addr, data, width, write) {
 			return true

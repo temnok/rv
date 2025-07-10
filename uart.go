@@ -2,20 +2,20 @@ package rv
 
 type UART struct {
 	plic        *PLIC
-	baseAddr    Xint
-	interruptID Xint
+	baseAddr    int
+	interruptID int
 	callback    func(ch *byte, write bool) bool
 
 	rx, tx                           UARTfifo
-	txctrl, rxctrl, ip, ie, div, clk Xint
+	txctrl, rxctrl, ip, ie, div, clk int
 }
 
 type UARTfifo struct {
 	buf  uint64
-	size Xint
+	size int
 }
 
-func (uart *UART) Init(plic *PLIC, baseAddr Xint, interuptID Xint, callback func(ch *byte, write bool) bool) {
+func (uart *UART) Init(plic *PLIC, baseAddr int, interuptID int, callback func(ch *byte, write bool) bool) {
 	*uart = UART{
 		plic:        plic,
 		baseAddr:    baseAddr,
@@ -26,7 +26,7 @@ func (uart *UART) Init(plic *PLIC, baseAddr Xint, interuptID Xint, callback func
 	}
 }
 
-func (uart *UART) access(addr Xint, data *Xint, width Xint, write bool) bool {
+func (uart *UART) access(addr int, data *int, width int, write bool) bool {
 	if addr = (addr - uart.baseAddr) / 4; addr < 0 || addr >= 8 || width != 4 {
 		return false
 	}
@@ -91,7 +91,7 @@ func (uart *UART) notifyInterrupts() {
 
 		if bit(uart.rxctrl, 0) == 1 && uart.rx.size < 8 {
 			if uart.callback != nil && uart.callback(&ch, false) {
-				uart.rx.put(Xint(ch))
+				uart.rx.put(int(ch))
 			}
 		}
 
@@ -115,7 +115,7 @@ func (uart *UART) notifyInterrupts() {
 	}
 }
 
-func (fifo *UARTfifo) put(ch Xint) {
+func (fifo *UARTfifo) put(ch int) {
 	if fifo.size == 8 {
 		return
 	}
@@ -124,12 +124,12 @@ func (fifo *UARTfifo) put(ch Xint) {
 	fifo.size++
 }
 
-func (fifo *UARTfifo) get() Xint {
+func (fifo *UARTfifo) get() int {
 	if fifo.size == 0 {
 		return 0
 	}
 
-	ch := Xint(fifo.buf & 0xFF)
+	ch := int(fifo.buf & 0xFF)
 	fifo.buf >>= 8
 	fifo.size--
 

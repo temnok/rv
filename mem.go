@@ -1,10 +1,10 @@
 package rv
 
-func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
+func (cpu *CPU) memFetch(virtAddr int, data *int) {
 	shift := virtAddr & (Xbytes - 1)
 	virtAddr &^= Xbytes - 1
 
-	var physAddr, lo Xint
+	var physAddr, lo int
 	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
 	}
@@ -27,7 +27,7 @@ func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
 		return
 	}
 
-	var hi Xint
+	var hi int
 	if !cpu.bus.read(physAddr, &hi, Xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
@@ -36,8 +36,8 @@ func (cpu *CPU) memFetch(virtAddr Xint, data *Xint) {
 	*data = hi<<16 | bits(lo, 0, 16)
 }
 
-func (cpu *CPU) memRead(virtAddr Xint, data *Xint, width Xint) {
-	var physAddr Xint
+func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
+	var physAddr int
 	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.isTrapped {
 		return
 	}
@@ -52,8 +52,8 @@ func (cpu *CPU) memRead(virtAddr Xint, data *Xint, width Xint) {
 	}
 }
 
-func (cpu *CPU) memWrite(virtAddr, data, width Xint) {
-	var physAddr Xint
+func (cpu *CPU) memWrite(virtAddr, data, width int) {
+	var physAddr int
 	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.isTrapped {
 		return
 	}

@@ -33,24 +33,24 @@ func runTest(t *testing.T, file string) {
 	cpu := &CPU{}
 	ram := &RAM{}
 
-	ramBaseAddrUint := Xuint(0x8000_0000)
-	ramBaseAddr := Xint(ramBaseAddrUint)
+	ramBaseAddrUint := uint(0x8000_0000)
+	ramBaseAddr := int(ramBaseAddrUint)
 
 	cpu.Init(Bus{ram}, ramBaseAddr, nil)
 	ram.Init(ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 
-	instrCounts := make([]Xint, len(program))
+	instrCounts := make([]int, len(program))
 	trapCount := 0
-	var lastPCs []Xuint
-	var lastTraps [][2]Xuint
+	var lastPCs []uint
+	var lastTraps [][2]uint
 
 	for {
-		if i := cpu.pc - ramBaseAddr; i >= 0 && i < Xint(len(instrCounts)) {
+		if i := cpu.pc - ramBaseAddr; i >= 0 && i < int(len(instrCounts)) {
 			instrCounts[i]++
 		}
 
-		lastPCs = append(lastPCs, Xuint(cpu.pc))
+		lastPCs = append(lastPCs, uint(cpu.pc))
 		if n := 10; len(lastPCs) == n+1 {
 			copy(lastPCs[:n], lastPCs[1:])
 			lastPCs = lastPCs[:n]
@@ -62,7 +62,7 @@ func runTest(t *testing.T, file string) {
 		if cpu.isTrapped {
 			trapCount++
 
-			lastTraps = append(lastTraps, [2]Xuint{Xuint(prevPC), Xuint(cpu.csr.mcause)})
+			lastTraps = append(lastTraps, [2]uint{uint(prevPC), uint(cpu.csr.mcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
@@ -70,10 +70,10 @@ func runTest(t *testing.T, file string) {
 		}
 
 		if cpu.csr.cycle == 100_000 {
-			var addresses []Xuint
+			var addresses []uint
 			for i, c := range instrCounts {
 				if c > 10_000 {
-					addresses = append(addresses, Xuint(ramBaseAddr+Xint(i)))
+					addresses = append(addresses, uint(ramBaseAddr+int(i)))
 				}
 			}
 
@@ -83,7 +83,7 @@ func runTest(t *testing.T, file string) {
 
 			t.Errorf("timeout: trapCount=%v, priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				trapCount, cpu.priv, cpu.csr.mcause, Xuint(cpu.x[31]), lastPCs, lastTraps, addresses)
+				trapCount, cpu.priv, cpu.csr.mcause, uint(cpu.x[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 
@@ -99,9 +99,9 @@ func runTest(t *testing.T, file string) {
 						"priv=%v, cause=%v,  mepc=%08x, mstatus=%08x, "+
 						"gp=%08x, a0=%08x, t0=%08x, t2=%08x, t6=%08x\n",
 						cpu.csr.cycle, lastPCs, lastTraps,
-						cpu.priv, cause, Xuint(cpu.csr.mepc), Xuint(cpu.csr.mstatus),
-						Xuint(cpu.x[3]), Xuint(cpu.x[10]),
-						Xuint(cpu.x[5]), Xuint(cpu.x[7]), Xuint(cpu.x[31]))
+						cpu.priv, cause, uint(cpu.csr.mepc), uint(cpu.csr.mstatus),
+						uint(cpu.x[3]), uint(cpu.x[10]),
+						uint(cpu.x[5]), uint(cpu.x[7]), uint(cpu.x[31]))
 				}
 
 				break

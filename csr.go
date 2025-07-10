@@ -35,16 +35,16 @@ const (
 )
 
 type CSR struct {
-	cycle, cycleh, mtime, mtimeh Xint
+	cycle, cycleh, mtime, mtimeh int
 
-	stvec, scounteren, sscratch, sepc, scause, stval, sip, satp Xint
+	stvec, scounteren, sscratch, sepc, scause, stval, sip, satp int
 
-	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren Xint
-	mscratch, mepc, mcause, mtval, mip                      Xint
-	mvendorid, marchid, mimpid, mhartid                     Xint
+	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren int
+	mscratch, mepc, mcause, mtval, mip                      int
+	mvendorid, marchid, mimpid, mhartid                     int
 }
 
-func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
+func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_csr_address_mapping_conventions
 	if write && bits(i, 10, 2) == 3 || cpu.priv < bits(i, 8, 2) {
 		cpu.trap(ExceptionIllegalIstruction)
@@ -52,16 +52,16 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 	}
 
 	csr := &cpu.csr
-	mask := Xint(-1)
+	mask := int(-1)
 
-	var reg *Xint
+	var reg *int
 
 	switch i {
 	case 0x100: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sstatus
 		reg = &csr.mstatus
 		mask = 1<<mstatusSIE | 1<<mstatusSUM | 1<<mstatusMXR | 1<<mstatusSPP
 		if !write {
-			mask = Xint(int64(mask) | 1<<mstatusSPIE | 3<<mstatusUXL)
+			mask = int(int64(mask) | 1<<mstatusSPIE | 3<<mstatusUXL)
 		}
 
 	case 0x104: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
@@ -105,7 +105,7 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 		reg = &csr.mstatus
 		if write {
 			tmp := ^int64(0b_11<<mstatusSXL | 0b_11<<mstatusUXL)
-			mask = Xint(tmp)
+			mask = int(tmp)
 		}
 
 	case 0x301: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
@@ -197,10 +197,10 @@ func (cpu *CPU) csrAccess(i Xint, val *Xint, write bool) {
 	}
 }
 
-func (cpu *CPU) csrRead(i Xint, val *Xint) {
+func (cpu *CPU) csrRead(i int, val *int) {
 	cpu.csrAccess(i, val, false)
 }
 
-func (cpu *CPU) csrWrite(i, val Xint) {
+func (cpu *CPU) csrWrite(i, val int) {
 	cpu.csrAccess(i, &val, true)
 }

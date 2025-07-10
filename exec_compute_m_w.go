@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execComputeMw(rs2, rs1, f3, rd Xint) {
+func (cpu *CPU) execComputeMw(rs2, rs1, f3, rd int) {
 	a, b := int32(cpu.x[rs1]), int32(cpu.x[rs2])
 	var c int32
 
@@ -41,5 +41,5 @@ func (cpu *CPU) execComputeMw(rs2, rs1, f3, rd Xint) {
 		return
 	}
 
-	cpu.x[rd] = Xint(c)
+	cpu.x[rd] = int(c)
 }

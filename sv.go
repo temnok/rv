@@ -12,7 +12,7 @@ const (
 	PteD = 7
 )
 
-func (cpu *CPU) translateSv(virtAddr Xint, physAddr *Xint, access Xint) {
+func (cpu *CPU) translateSv(virtAddr int, physAddr *int, access int) {
 	if Xlen32 {
 		cpu.translateSv32(virtAddr, physAddr, access)
 	} else {

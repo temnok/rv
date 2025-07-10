@@ -1,10 +1,5 @@
 package rv
 
-type (
-	Xint  = int64
-	Xuint = uint64
-)
-
 const (
 	Xlen = 64
 
@@ -15,10 +10,10 @@ const (
 	xshift = 64 - Xlen
 )
 
-func FixInt(val Xint) Xint {
+func FixInt(val int) int {
 	return val << xshift >> xshift
 }
 
-func FixUint(val Xuint) Xuint {
+func FixUint(val uint) uint {
 	return val << xshift >> xshift
 }

@@ -5,7 +5,7 @@ type TLB struct {
 }
 
 type TLBEntry struct {
-	virtAddr, pte Xint
+	virtAddr, pte int
 }
 
 const tlbSize = 8
@@ -14,7 +14,7 @@ func (tlb *TLB) flush() {
 	tlb.entries = tlb.entries[:0]
 }
 
-func (tlb *TLB) lookup(virtAddr Xint) (Xint, Xint) {
+func (tlb *TLB) lookup(virtAddr int) (int, int) {
 	for i, e := range tlb.entries {
 		shift := e.virtAddr & 0xFFF
 		if virtAddr>>shift == e.virtAddr>>shift {
@@ -27,7 +27,7 @@ func (tlb *TLB) lookup(virtAddr Xint) (Xint, Xint) {
 	return 0, 0
 }
 
-func (tlb *TLB) append(virtAddr, shift, pte Xint) {
+func (tlb *TLB) append(virtAddr, shift, pte int) {
 	if tlbSize == 0 {
 		return
 	}

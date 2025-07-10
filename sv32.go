@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) translateSv32(virtAddr Xint, physAddr *Xint, access Xint) {
+func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
 	if bit(cpu.csr.mstatus, mstatusMPRV) != 0 && access != AccessExecute {
@@ -42,9 +42,9 @@ func (cpu *CPU) translateSv32(virtAddr Xint, physAddr *Xint, access Xint) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func (cpu *CPU) loadPTEsv32(virtAddr Xint, targetPTE, shift *Xint) {
+func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
-	var pte Xint
+	var pte int
 
 	pteAddr := bits(cpu.csr.satp, 0, 20)<<12 | bits(virtAddr, 22, 10)<<2
 	if !cpu.bus.read(pteAddr, &pte, 4) {

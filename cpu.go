@@ -3,16 +3,16 @@ package rv
 type CPU struct {
 	bus Bus
 
-	x          [32]Xint
-	pc, nextPC Xint
+	x          [32]int
+	pc, nextPC int
 	csr        CSR
 
 	isTrapped bool
 
 	reserved        bool
-	reservedAddress Xint
+	reservedAddress int
 
-	priv Xint
+	priv int
 
 	tlb TLB
 }
@@ -43,20 +43,19 @@ const (
 	AccessWrite   = 3
 )
 
-func (cpu *CPU) Init(bus Bus, startAddr Xint, regs []Xint) {
+func (cpu *CPU) Init(bus Bus, startAddr int, regs []int) {
 	const xl = Xlen / 32
-	misa := uint64(xl << misaMXL)
-	mstatus := int64(xl<<mstatusSXL | xl<<mstatusUXL)
+	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
 		pc:   startAddr,
 		priv: PrivM,
 		csr: CSR{
-			misa: Xint(misa) |
+			misa: int(misa) |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 
-			mstatus: FixInt(mstatus),
+			mstatus: FixInt(xl<<mstatusSXL | xl<<mstatusUXL),
 		},
 
 		bus: bus,
@@ -71,7 +70,7 @@ func (cpu *CPU) Step() bool {
 	return true
 }
 
-func (cpu *CPU) step() Xint {
+func (cpu *CPU) step() int {
 	cpu.isTrapped = false
 
 	cpu.updateTimers()
@@ -82,7 +81,7 @@ func (cpu *CPU) step() Xint {
 		return 0
 	}
 
-	var opcode Xint
+	var opcode int
 	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped {
 		return 0
 	}
@@ -118,12 +117,12 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 		return
 	}
 
-	for i := Xint(12); i > 0; i-- {
+	for i := int(12); i > 0; i-- {
 		if bit(mi, i) == 0 {
 			continue
 		}
 
-		priv := Xint(PrivM)
+		priv := int(PrivM)
 		if bit(cpu.csr.mideleg, i) != 0 {
 			priv = PrivS
 		}
@@ -136,11 +135,11 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 	}
 }
 
-func (cpu *CPU) trap(cause Xint) {
+func (cpu *CPU) trap(cause int) {
 	cpu.trapWithTval(cause, 0)
 }
 
-func (cpu *CPU) trapWithTval(cause, tval Xint) {
+func (cpu *CPU) trapWithTval(cause, tval int) {
 	if cpu.isTrapped {
 		panic("double trap")
 	}
@@ -155,12 +154,12 @@ func (cpu *CPU) trapWithTval(cause, tval Xint) {
 		deleg = cpu.csr.mideleg
 	}
 
-	effectivePriv := Xint(PrivM)
+	effectivePriv := int(PrivM)
 	if cpu.priv < PrivM && bit(deleg, causeID) == 1 {
 		effectivePriv = PrivS
 	}
 
-	var tvec Xint
+	var tvec int
 
 	switch effectivePriv {
 	case PrivM:
@@ -194,7 +193,7 @@ func (cpu *CPU) trapWithTval(cause, tval Xint) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) ret(priv Xint) {
+func (cpu *CPU) ret(priv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
 	trapSRET := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) != 0
 

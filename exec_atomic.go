@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
+func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 	f5 := f7 >> 2
 
 	if !(f3 == 0b_010 || (Xlen64 && f3 == 0b_011)) ||
@@ -9,12 +9,12 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 		return
 	}
 
-	width := Xint(4) << (f3 & 1)
+	width := int(4) << (f3 & 1)
 
 	addr := cpu.x[rs1]
 	val := cpu.x[rs2]
 
-	var old Xint
+	var old int
 	if f5 != 0b_00011 { // for all except sc
 		if cpu.memRead(addr, &old, width); cpu.isTrapped {
 			return
@@ -22,8 +22,8 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 	}
 
 	if width == 4 {
-		val = Xint(int32(val))
-		old = Xint(int32(old))
+		val = int(int32(val))
+		old = int(int32(old))
 	}
 
 	write := true
@@ -67,12 +67,12 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 		}
 
 	case 0b_11000: // amominu
-		if Xuint(old) < Xuint(val) {
+		if uint(old) < uint(val) {
 			val = old
 		}
 
 	case 0b_11100: // amomaxu
-		if Xuint(old) > Xuint(val) {
+		if uint(old) > uint(val) {
 			val = old
 		}
 
@@ -83,7 +83,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd Xint) {
 
 	if write {
 		if width == 4 {
-			val = Xint(uint32(val))
+			val = int(uint32(val))
 		}
 
 		if cpu.memWrite(addr, val, width); cpu.isTrapped {

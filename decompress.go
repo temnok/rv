@@ -1,12 +1,12 @@
 package rv
 
-func (cpu *CPU) decompress(opcodePtr *Xint) {
+func (cpu *CPU) decompress(opcodePtr *int) {
 	opcode := *opcodePtr
 	if is32bitInstruction := opcode&3 == 3; is32bitInstruction {
 		return
 	}
 
-	opcode = Xint(uint16(opcode))
+	opcode = int(uint16(opcode))
 	decompressedOpcode := decompress(opcode)
 	if decompressedOpcode == 0 {
 		cpu.trapWithTval(ExceptionIllegalIstruction, opcode)
@@ -18,7 +18,7 @@ func (cpu *CPU) decompress(opcodePtr *Xint) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func decompress(opcode Xint) Xint {
+func decompress(opcode int) int {
 	f3 := bits(opcode, 13, 3)
 	rA := bits(opcode, 7, 5)
 	ra := 8 + (rA & 7)

@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
+func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_000: // addi
 		cpu.x[rd] = FixInt(cpu.x[rs1] + imm)
@@ -20,7 +20,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
 		}
 
 	case 0b_011: // sltiu
-		if Xuint(cpu.x[rs1]) < Xuint(imm) {
+		if uint(cpu.x[rs1]) < uint(imm) {
 			cpu.x[rd] = 1
 		} else {
 			cpu.x[rd] = 0
@@ -31,7 +31,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
 
 	case 0b_101:
 		if imm < Xlen { // srli
-			cpu.x[rd] = FixInt(Xint(FixUint(Xuint(cpu.x[rs1])) >> Xuint(imm)))
+			cpu.x[rd] = FixInt(int(FixUint(uint(cpu.x[rs1])) >> uint(imm)))
 		} else if imm &^= 0b_0100000_00000; imm < Xlen { // srai
 			cpu.x[rd] = cpu.x[rs1] >> imm
 		} else {
@@ -46,7 +46,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd Xint) {
 	}
 }
 
-func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd Xint) {
+func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 	if f7 == 1 {
 		cpu.execComputeM(rs2, rs1, f3, rd)
 		return
@@ -76,7 +76,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd Xint) {
 		}
 
 	case 0b_011: // sltu
-		if Xuint(cpu.x[rs1]) < Xuint(cpu.x[rs2]) {
+		if uint(cpu.x[rs1]) < uint(cpu.x[rs2]) {
 			cpu.x[rd] = 1
 		} else {
 			cpu.x[rd] = 0
@@ -86,7 +86,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd Xint) {
 		cpu.x[rd] = cpu.x[rs1] ^ cpu.x[rs2]
 
 	case 0b_101: // srl
-		cpu.x[rd] = FixInt(Xint(FixUint(Xuint(cpu.x[rs1])) >> Xuint(cpu.x[rs2]&(Xlen-1))))
+		cpu.x[rd] = FixInt(int(FixUint(uint(cpu.x[rs1])) >> uint(cpu.x[rs2]&(Xlen-1))))
 
 	case 0b_1_101: // sra
 		cpu.x[rd] = cpu.x[rs1] >> (cpu.x[rs2] & (Xlen - 1))

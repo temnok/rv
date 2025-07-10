@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) exec(opcode Xint) {
+func (cpu *CPU) exec(opcode int) {
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
 	rs1 := bits(opcode, 15, 5)
