@@ -7,7 +7,6 @@
 
 	aliases {
 		serial0 = &uart0;
-		serial1 = &uart1;
 	};
 
 	chosen {
@@ -83,15 +82,6 @@
 			reg = <0x3000000 0x20>;
 			interrupt-parent = <&plic>;
 			interrupts = <1>;
-			clocks = <&hfclk>;
-			no-loopback-test;
-		};
-
-		uart1: serial@6000000 {
-			compatible = "sifive,uart0";
-			reg = <0x6000000 0x20>;
-			interrupt-parent = <&plic>;
-			interrupts = <2>;
 			clocks = <&hfclk>;
 			no-loopback-test;
 		};
