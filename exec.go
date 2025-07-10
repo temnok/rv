@@ -21,7 +21,7 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execComputeIw(immI(opcode), rs1, f3, rd)
 
 	case 0b_00101: // auipc
-		cpu.x[rd] = cpu.pc + immU(opcode)
+		cpu.x[rd] = Xint(cpu.pc + immU(opcode))
 
 	case 0b_01000:
 		cpu.execStore(immS(opcode), rs2, rs1, f3)
@@ -43,12 +43,12 @@ func (cpu *CPU) exec(opcode int) {
 
 	case 0b_11001: // jalr
 		saved := cpu.nextPC
-		cpu.nextPC = (cpu.x[rs1] + immI(opcode)) &^ 1
+		cpu.nextPC = Xint((cpu.x[rs1] + immI(opcode)) &^ 1)
 		cpu.x[rd] = saved
 
 	case 0b_11011: // jal
 		cpu.x[rd] = cpu.nextPC
-		cpu.nextPC = cpu.pc + immJ(opcode)
+		cpu.nextPC = Xint(cpu.pc + immJ(opcode))
 
 	case 0b_11100:
 		cpu.execSystem(immI(opcode), rs1, f3, rd)

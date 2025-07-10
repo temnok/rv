@@ -38,7 +38,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		return
 	}
 
-	*physAddr = bits(pte, 10, 20)<<12 | bits(virtAddr, 0, shift)
+	*physAddr = Xint(bits(pte, 10, 20)<<12 | bits(virtAddr, 0, shift))
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
@@ -46,7 +46,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
 	var pte int
 
-	pteAddr := bits(cpu.csr.satp, 0, 20)<<12 | bits(virtAddr, 22, 10)<<2
+	pteAddr := Xint(bits(cpu.csr.satp, 0, 20)<<12 | bits(virtAddr, 22, 10)<<2)
 	if !cpu.bus.read(pteAddr, &pte, 4) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return
@@ -63,7 +63,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	*shift = 22
 
 	if !isLeaf {
-		pteAddr = bits(pte, 10, 20)<<12 | bits(virtAddr, 12, 10)<<2
+		pteAddr = Xint(bits(pte, 10, 20)<<12 | bits(virtAddr, 12, 10)<<2)
 		if !cpu.bus.read(pteAddr, &pte, 4) {
 			cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 			return

@@ -48,7 +48,7 @@ func (cpu *CPU) Init(bus Bus, startAddr int, regs []int) {
 	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
-		pc:   startAddr,
+		pc:   Xint(startAddr),
 		priv: PrivM,
 		csr: CSR{
 			misa: int(misa) |
@@ -86,7 +86,7 @@ func (cpu *CPU) step() int {
 		return 0
 	}
 
-	cpu.nextPC = cpu.pc + 4
+	cpu.nextPC = Xint(cpu.pc + 4)
 	origOpcode := opcode
 	if cpu.decompress(&opcode); cpu.isTrapped {
 		return opcode
@@ -98,12 +98,12 @@ func (cpu *CPU) step() int {
 }
 
 func (cpu *CPU) updateTimers() {
-	if cpu.csr.cycle++; cpu.csr.cycle == 0 {
+	if cpu.csr.cycle = Xint(cpu.csr.cycle + 1); cpu.csr.cycle == 0 {
 		cpu.csr.cycleh++
 	}
 
 	if cpu.csr.cycle&0xFFF == 0 {
-		if cpu.csr.mtime++; cpu.csr.mtime == 0 {
+		if cpu.csr.mtime = Xint(cpu.csr.mtime + 1); cpu.csr.mtime == 0 {
 			cpu.csr.mtimeh++
 		}
 	}
