@@ -8,7 +8,15 @@ import (
 	"testing"
 )
 
-func TestInstructions(t *testing.T) {
+func TestInstructions32(t *testing.T) {
+	testInstructions(t, 32)
+}
+
+func TestInstructions64(t *testing.T) {
+	testInstructions(t, 64)
+}
+
+func testInstructions(t *testing.T, xlen int) {
 	matches, err := filepath.Glob("tests/pass/*")
 	if err != nil {
 		t.Fatal(err)
@@ -19,12 +27,12 @@ func TestInstructions(t *testing.T) {
 		testName := file[i+1:]
 
 		t.Run(testName, func(t *testing.T) {
-			runTest(t, file)
+			runTest(t, xlen, file)
 		})
 	}
 }
 
-func runTest(t *testing.T, file string) {
+func runTest(t *testing.T, xlen int, file string) {
 	program, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +43,7 @@ func runTest(t *testing.T, file string) {
 
 	ramBaseAddr := 0x8000_0000
 
-	cpu.Init(Bus{ram}, ramBaseAddr, nil)
+	cpu.Init(xlen, Bus{ram}, ramBaseAddr, nil)
 	ram.Init(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 

@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+const xlen = 64
+
 func main() {
 	state := check1(term.MakeRaw(0))
 	defer func() {
@@ -29,7 +31,7 @@ func main() {
 	ramBaseAddr := 0x8000_0000
 	dtbAddr := ramBaseAddr + 0x0200_0000
 
-	cpu.Init(rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []int{
+	cpu.Init(xlen, rv.Bus{&ram, &clint, &plic, &uart1, &uart2}, ramBaseAddr, []int{
 		11: dtbAddr,
 	})
 

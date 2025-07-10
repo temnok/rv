@@ -46,15 +46,16 @@ const (
 	AccessWrite   = 3
 )
 
-func (cpu *CPU) Init(bus Bus, startAddr int, regs []int) {
-	xl := Xlen / 32
+func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
+	xl := xlen / 32
+	misaMXL := xlen - 2
 	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
-		Xlen:   Xlen,
-		Xbytes: Xlen / 8,
-		Xlen32: Xlen == 32,
-		Xlen64: Xlen == 64,
+		Xlen:   xlen,
+		Xbytes: xlen / 8,
+		Xlen32: xlen == 32,
+		Xlen64: xlen == 64,
 
 		priv: PrivM,
 		csr: CSR{
@@ -73,6 +74,22 @@ func (cpu *CPU) Init(bus Bus, startAddr int, regs []int) {
 	for i, x := range cpu.x {
 		cpu.x[i] = cpu.Xint(x)
 	}
+}
+
+func (cpu *CPU) Xint(val int) int {
+	if cpu.Xlen64 {
+		return val
+	}
+
+	return int(int32(val))
+}
+
+func (cpu *CPU) Xuint(val int) uint {
+	if cpu.Xlen64 {
+		return uint(val)
+	}
+
+	return uint(uint32(val))
 }
 
 func (cpu *CPU) Step() bool {
@@ -138,6 +155,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 			priv = PrivS
 		}
 
+		mcauseI := cpu.Xlen - 1
 		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
 			cpu.trap(-1<<mcauseI | i)
 
@@ -157,6 +175,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 
 	cpu.isTrapped = true
 
+	mcauseI := cpu.Xlen - 1
 	isInterrupt := bit(cause, mcauseI) != 0
 	causeID := bits(cause, 0, 5)
 

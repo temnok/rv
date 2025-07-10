@@ -8,7 +8,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
-	if bit(cpu.csr.satp, satpMODE) == 0 || epriv == PrivM {
+	if bit(cpu.csr.satp, satpMODE32) == 0 || epriv == PrivM {
 		*physAddr = virtAddr
 		return
 	}

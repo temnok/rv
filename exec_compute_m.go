@@ -11,7 +11,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		c = a * b
 
 	case 0b_001: // mulh
-		if Xlen32 {
+		if cpu.Xlen32 {
 			c = int(int64(a) * int64(b) >> 32)
 		} else {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
@@ -21,7 +21,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 
 	case 0b_010: // mulhsu
-		if Xlen32 {
+		if cpu.Xlen32 {
 			c = int(int64(a) * int64(uint32(b)) >> 32)
 		} else {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
@@ -30,7 +30,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 
 	case 0b_011: // mulhu
-		if Xlen32 {
+		if cpu.Xlen32 {
 			c = int(int64(uint32(a)) * int64(uint32(b)) >> 32)
 		} else {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))

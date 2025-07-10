@@ -3,15 +3,13 @@ package rv
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
 const (
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misabase
-	misaMXL = Xlen - 2
-
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	mstatusSXL = 34
 	mstatusUXL = 32
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-	satpMODE = Xlen - 1 - (Xlen/64)*3
+	satpMODE32 = 31
+	satpMODE64 = 60
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	mstatusSIE  = 1
@@ -25,8 +23,6 @@ const (
 	mstatusMXR  = 19
 	mstatusTVM  = 20
 	mstatusTSR  = 22
-
-	mcauseI = Xlen - 1
 
 	mipMSI = 3
 	mipSTI = 5
@@ -158,17 +154,17 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 		reg = &csr.cycle
 
 	case 0xC80:
-		if Xlen32 {
+		if cpu.Xlen32 {
 			reg = &csr.cycleh
 		}
 
 	case 0xC81: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
-		if Xlen32 {
+		if cpu.Xlen32 {
 			reg = &csr.mtimeh
 		}
 
 	case 0xC82:
-		if Xlen32 {
+		if cpu.Xlen32 {
 			reg = &csr.cycleh
 		}
 
