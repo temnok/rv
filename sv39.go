@@ -18,9 +18,15 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 		return
 	}
 
-	var pte, shift int
-	if cpu.loadPTEsv39(virtAddr, &pte, &shift); cpu.isTrapped {
-		return
+	pte, shift := cpu.tlb.lookup(virtAddr)
+	if pte == 0 {
+		if cpu.loadPTEsv39(virtAddr, &pte, &shift); cpu.isTrapped {
+			return
+		}
+
+		if pte != 0 {
+			cpu.tlb.append(virtAddr, shift, pte)
+		}
 	}
 
 	sum, mxr := bit(cpu.csr.mstatus, mstatusSUM), bit(cpu.csr.mstatus, mstatusMXR)
