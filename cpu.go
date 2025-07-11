@@ -1,23 +1,22 @@
 package rv
 
 type CPU struct {
-	Xlen, Xbytes   int
-	Xlen32, Xlen64 bool
-
-	bus Bus
+	Xlen   int
+	Xlen32 bool
 
 	x          [32]int
 	PC, nextPC int
 	csr        CSR
+	priv       int
 
 	isTrapped bool
 
 	reserved        bool
 	reservedAddress int
 
-	priv int
-
 	tlb TLB
+
+	bus Bus
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -53,9 +52,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 
 	*cpu = CPU{
 		Xlen:   xlen,
-		Xbytes: xlen / 8,
 		Xlen32: xlen == 32,
-		Xlen64: xlen == 64,
 
 		priv: PrivM,
 		csr: CSR{
@@ -77,19 +74,19 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 }
 
 func (cpu *CPU) Xint(val int) int {
-	if cpu.Xlen64 {
-		return val
+	if cpu.Xlen32 {
+		return int(int32(val))
 	}
 
-	return int(int32(val))
+	return val
 }
 
 func (cpu *CPU) Xuint(val int) uint {
-	if cpu.Xlen64 {
-		return uint(val)
+	if cpu.Xlen32 {
+		return uint(uint32(val))
 	}
 
-	return uint(uint32(val))
+	return uint(val)
 }
 
 func (cpu *CPU) Step() bool {

@@ -3,7 +3,7 @@ package rv
 func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 	f5 := f7 >> 2
 
-	if !(f3 == 0b_010 || (cpu.Xlen64 && f3 == 0b_011)) ||
+	if f3 != 0b_010 && (cpu.Xlen32 || f3 != 0b_011) ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
 		cpu.trap(ExceptionIllegalIstruction)
 		return

@@ -37,7 +37,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeI(immCL(opcode), ra, 2, rb, 0) // lw
 
 		case 0b_011: // c.ld
-			if cpu.Xlen64 {
+			if !cpu.Xlen32 {
 				return encodeI(immCLx8(opcode), ra, 3, rb, 0) // ld
 			}
 
@@ -45,7 +45,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeS(immCL(opcode), rb, ra, 2, 8) // sw
 
 		case 0b_111: // c.sd
-			if cpu.Xlen64 {
+			if !cpu.Xlen32 {
 				return encodeS(immCLx8(opcode), rb, ra, 3, 8) // sw
 			}
 		}
@@ -103,12 +103,12 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 					return encodeR(0, rb, ra, 7, ra, 12)
 
 				case 0b_100: // c.subw
-					if cpu.Xlen64 {
+					if !cpu.Xlen32 {
 						return encodeR(0b_0100000, rb, ra, 0, ra, 0b_01110)
 					}
 
 				case 0b_101: // c.addw
-					if cpu.Xlen64 {
+					if !cpu.Xlen32 {
 						return encodeR(0, rb, ra, 0, ra, 0b_01110)
 					}
 				}
@@ -133,7 +133,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeI(immCIx4(opcode), 2, 2, rA, 0) // lw
 
 		case 0b_011: // c.ldsp
-			if cpu.Xlen64 {
+			if !cpu.Xlen32 {
 				return encodeI(immCIx8(opcode), 2, 3, rA, 0) // ld
 			}
 
@@ -159,7 +159,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeS(immCSS(opcode), rB, 2, 2, 8) // sw
 
 		case 0b_111: // c.sdsp
-			if cpu.Xlen64 {
+			if !cpu.Xlen32 {
 				return encodeS(immCSSx8(opcode), rB, 2, 3, 8) // sd
 			}
 		}

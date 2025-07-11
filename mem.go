@@ -1,15 +1,17 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int, data *int) {
-	shift := virtAddr & (cpu.Xbytes - 1)
-	virtAddr &^= cpu.Xbytes - 1
+	xbytes := cpu.Xlen >> 3
+
+	shift := virtAddr & (xbytes - 1)
+	virtAddr &^= xbytes - 1
 
 	var physAddr, lo int
 	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
 	}
 
-	if !cpu.bus.read(physAddr, &lo, cpu.Xbytes) {
+	if !cpu.bus.read(physAddr, &lo, xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
@@ -17,18 +19,18 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 	lo >>= shift * 8
 	isCompressedInstruction := lo&3 != 3
 
-	if fullyLoaded := isCompressedInstruction || shift+4 <= cpu.Xbytes; fullyLoaded {
+	if fullyLoaded := isCompressedInstruction || shift+4 <= xbytes; fullyLoaded {
 		*data = lo
 		return
 	}
 
-	virtAddr += cpu.Xbytes
+	virtAddr += xbytes
 	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
 		return
 	}
 
 	var hi int
-	if !cpu.bus.read(physAddr, &hi, cpu.Xbytes) {
+	if !cpu.bus.read(physAddr, &hi, xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
