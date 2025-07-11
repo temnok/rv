@@ -1,8 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-cd $(dirname $0)
-
-docker run -ti -d \
-  -v $(pwd)/rv64imac:/home/user/extern \
-  --name=buildroot \
-  buildroot

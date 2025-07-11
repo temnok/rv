@@ -42,9 +42,9 @@ func main() {
 	terminal := newTerminal()
 	uart.Init(&plic, 0x0300_0000, 1, terminal.callback)
 
-	path := fmt.Sprintf("linux/buildroot/rv%vimac/bin", cpu.Xlen)
-	ram.Load(ramBaseAddr, readFile(path+"/fw_payload.bin.gz", ""))
-	ram.Load(dtbAddr, readFile(path+"/rv.dtb", ""))
+	path := fmt.Sprintf("buildroot/output/rv%v", cpu.Xlen)
+	ram.Load(ramBaseAddr, readFile(path+".kernel.gz", ""))
+	ram.Load(dtbAddr, readFile(path+".dtb", ""))
 
 	for step := 0; !terminal.Closed; step++ {
 		if !cpu.Step() {
