@@ -1,31 +1,36 @@
 package rv
 
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#immtypes
+
+func immB(opcode int) int {
+	a := bits(opcode, 8, 4)
+	b := bits(opcode, 25, 6)
+	c := bit(opcode, 7)
+	d := signBit(opcode, 31)
+
+	return d<<12 | c<<11 | b<<5 | a<<1
+}
+
 func immI(opcode int) int {
 	return int(int32(opcode) >> 20)
 }
 
-func immS(opcode int) int {
-	a := int(int32(opcode)) >> 25
-	b := bits(opcode, 7, 5)
-	return a<<5 | b
+func immJ(opcode int) int {
+	a := bits(opcode, 21, 10)
+	b := bit(opcode, 20)
+	c := bits(opcode, 12, 8)
+	d := signBit(opcode, 31)
+
+	return d<<20 | c<<12 | b<<11 | a<<1
 }
 
-func immB(opcode int) int {
-	a := signedBit(opcode, 31)
-	b := bits(opcode, 25, 6)
-	c := bits(opcode, 8, 4)
-	d := bit(opcode, 7)
-	return a<<12 | d<<11 | b<<5 | c<<1
+func immS(opcode int) int {
+	a := bits(opcode, 7, 5)
+	b := int(int32(opcode)) >> 25
+
+	return b<<5 | a
 }
 
 func immU(opcode int) int {
 	return int(int32(bits(opcode, 12, 20) << 12))
-}
-
-func immJ(opcode int) int {
-	a := signedBit(opcode, 31)
-	b := bits(opcode, 21, 10)
-	c := bit(opcode, 20)
-	d := bits(opcode, 12, 8)
-	return a<<20 | d<<12 | c<<11 | b<<1
 }
