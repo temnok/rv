@@ -11,12 +11,16 @@ import (
 	"strings"
 )
 
-func RunKernel(xlen int, in io.Reader, out io.Writer) {
+func RunKernel(xlen int) {
 	state := check1(term.MakeRaw(0))
 	defer func() {
 		check(term.Restore(0, state))
 	}()
 
+	runKernel(xlen, os.Stdin, os.Stdout, 0)
+}
+
+func runKernel(xlen int, in io.Reader, out io.Writer, timeout int) {
 	var (
 		cpu   CPU
 		ram   RAM
@@ -36,7 +40,7 @@ func RunKernel(xlen int, in io.Reader, out io.Writer) {
 	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
 
-	terminal := newTerminal()
+	terminal := newTerminal(in, out)
 	uart.Init(&plic, 0x0300_0000, 1, terminal.callback)
 
 	path := fmt.Sprintf("buildroot/output/rv%v", cpu.Xlen)
@@ -49,6 +53,10 @@ func RunKernel(xlen int, in io.Reader, out io.Writer) {
 			fmt.Println()
 			//ram.Dump(0x80ea4000, 0x100)
 
+			break
+		}
+
+		if timeout > 0 && step > timeout {
 			break
 		}
 	}

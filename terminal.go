@@ -2,7 +2,6 @@ package rv
 
 import (
 	"io"
-	"os"
 )
 
 type Terminal struct {
@@ -14,11 +13,7 @@ type Terminal struct {
 
 const ctrlC = 3
 
-func newTerminal() *Terminal {
-	return newTerminalIO(os.Stdin, os.Stdout)
-}
-
-func newTerminalIO(in io.Reader, out io.Writer) *Terminal {
+func newTerminal(in io.Reader, out io.Writer) *Terminal {
 	t := &Terminal{
 		stdin: make(chan byte),
 		out:   out,
