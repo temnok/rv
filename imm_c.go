@@ -27,7 +27,7 @@ func immCI(instr int) int {
 	return a<<5 | b
 }
 
-func immCIx4(instr int) int {
+func immCI2(instr int) int {
 	a := bit(instr, 12)
 	b := bits(instr, 4, 3)
 	c := bits(instr, 2, 2)
@@ -41,7 +41,7 @@ func immCIx8(instr int) int {
 	return c<<6 | a<<5 | b<<3
 }
 
-func immCIx16(instr int) int {
+func immCI4(instr int) int {
 	a := signedBit(instr, 12)
 	b := bit(instr, 6)
 	c := bit(instr, 5)

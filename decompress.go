@@ -71,7 +71,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 				break
 
 			case 2: // c.addi16sp
-				return encodeI(immCIx16(opcode), 2, 0, 2, 4)
+				return encodeI(immCI4(opcode), 2, 0, 2, 4)
 
 			default: // c.lui
 				return encodeU(immCI(opcode), rA, 13)
@@ -130,7 +130,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeR(0, immCI(opcode)&(cpu.Xlen-1), rA, 1, rA, 4) // slli
 
 		case 0b_010: // c.lwsp
-			return encodeI(immCIx4(opcode), 2, 2, rA, 0) // lw
+			return encodeI(immCI2(opcode), 2, 2, rA, 0) // lw
 
 		case 0b_011: // c.ldsp
 			if !cpu.Xlen32 {
