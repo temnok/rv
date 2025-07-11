@@ -1,9 +1,13 @@
-package main
+package rv
 
-import "os"
+import (
+	"io"
+	"os"
+)
 
 type Terminal struct {
 	stdin chan byte
+	out   io.Writer
 
 	Closed bool
 }
@@ -11,14 +15,19 @@ type Terminal struct {
 const ctrlC = 3
 
 func newTerminal() *Terminal {
+	return newTerminalIO(os.Stdin, os.Stdout)
+}
+
+func newTerminalIO(in io.Reader, out io.Writer) *Terminal {
 	t := &Terminal{
 		stdin: make(chan byte),
+		out:   out,
 	}
 
 	go func() {
 		for {
 			buf := []byte{0}
-			if check1(os.Stdin.Read(buf)) > 0 {
+			if check1(in.Read(buf)) > 0 {
 				t.stdin <- buf[0]
 
 				if buf[0] == ctrlC {
@@ -33,7 +42,7 @@ func newTerminal() *Terminal {
 
 func (t *Terminal) callback(data *byte, write bool) bool {
 	if write {
-		check1(os.Stdout.Write([]byte{*data}))
+		check1(t.out.Write([]byte{*data}))
 		return true
 	}
 

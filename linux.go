@@ -1,37 +1,34 @@
-package main
+package rv
 
 import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
 	"fmt"
-	rv "github.com/temnok/gorv"
 	"golang.org/x/term"
 	"io"
 	"os"
 	"strings"
 )
 
-const xlen = 64
-
-func main() {
+func RunKernel(xlen int, in io.Reader, out io.Writer) {
 	state := check1(term.MakeRaw(0))
 	defer func() {
 		check(term.Restore(0, state))
 	}()
 
 	var (
-		cpu   rv.CPU
-		ram   rv.RAM
-		clint rv.CLINT
-		plic  rv.PLIC
-		uart  rv.UART
+		cpu   CPU
+		ram   RAM
+		clint CLINT
+		plic  PLIC
+		uart  UART
 	)
 
 	ramBaseAddr := 0x8000_0000
 	dtbAddr := ramBaseAddr + 0x0200_0000
 
-	cpu.Init(xlen, rv.Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, []int{
+	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, []int{
 		11: dtbAddr,
 	})
 
