@@ -11,8 +11,8 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	width := int(4) << (f3 & 1)
 
-	addr := cpu.x[rs1]
-	val := cpu.x[rs2]
+	addr := cpu.reg[rs1]
+	val := cpu.reg[rs2]
 
 	var old int
 	if f5 != 0b_00011 { // for all except sc
@@ -91,5 +91,6 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.x[rd] = old
+	cpu.updated.regIndex = rd
+	cpu.updated.regValue = old
 }

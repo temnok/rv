@@ -3,7 +3,7 @@ package rv
 import bi "math/bits"
 
 func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
-	a, b := cpu.x[rs1], cpu.x[rs2]
+	a, b := cpu.reg[rs1], cpu.reg[rs2]
 	var c int
 
 	switch f3 {
@@ -66,5 +66,6 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.x[rd] = cpu.xint(c)
+	cpu.updated.regIndex = rd
+	cpu.updated.regValue = cpu.xint(c)
 }

@@ -49,7 +49,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 
 	s := rs1
 	if (f3 & 0b_100) == 0 {
-		s = cpu.x[s]
+		s = cpu.reg[s]
 	}
 
 	var val int
@@ -63,7 +63,8 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 		}
 
 		if cpu.csrWrite(csr, s); !cpu.isTrapped {
-			cpu.x[rd] = val
+			cpu.updated.regIndex = rd
+			cpu.updated.regValue = val
 		}
 
 	case 0b_10: // csrrs
@@ -77,7 +78,8 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		cpu.x[rd] = val
+		cpu.updated.regIndex = rd
+		cpu.updated.regValue = val
 
 	case 0b_11: // csrrc
 		if cpu.csrRead(csr, &val); cpu.isTrapped {
@@ -90,7 +92,8 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		cpu.x[rd] = val
+		cpu.updated.regIndex = rd
+		cpu.updated.regValue = val
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

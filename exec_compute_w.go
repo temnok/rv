@@ -8,21 +8,25 @@ func (cpu *CPU) execComputeIw(imm, rs1, f3, rd int) {
 
 	switch f3 {
 	case 0b_000: // addiw
-		cpu.x[rd] = int(int32(cpu.x[rs1]) + int32(imm))
+		cpu.updated.regIndex = rd
+		cpu.updated.regValue = int(int32(cpu.reg[rs1]) + int32(imm))
 		return
 
 	case 0b_001: // slliw
 		if imm < 32 {
-			cpu.x[rd] = int(int32(cpu.x[rs1]) << int32(imm))
+			cpu.updated.regIndex = rd
+			cpu.updated.regValue = int(int32(cpu.reg[rs1]) << int32(imm))
 			return
 		}
 
 	case 0b_101:
 		if imm < 32 { // srliw
-			cpu.x[rd] = int(int32(uint32(cpu.x[rs1]) >> uint32(imm)))
+			cpu.updated.regIndex = rd
+			cpu.updated.regValue = int(int32(uint32(cpu.reg[rs1]) >> uint32(imm)))
 			return
 		} else if imm &^= 0b0100000_00000; imm < 32 { // sraiw
-			cpu.x[rd] = int(int32(cpu.x[rs1]) >> int32(imm))
+			cpu.updated.regIndex = rd
+			cpu.updated.regValue = int(int32(cpu.reg[rs1]) >> int32(imm))
 			return
 		}
 	}
@@ -49,24 +53,27 @@ func (cpu *CPU) execComputeRw(f7, rs2, rs1, f3, rd int) {
 
 	switch op {
 	case 0b_000: // addw
-		cpu.x[rd] = int(int32(cpu.x[rs1]) + int32(cpu.x[rs2]))
+		cpu.updated.regValue = int(int32(cpu.reg[rs1]) + int32(cpu.reg[rs2]))
 
 	case 0b_1_000: // subw
-		cpu.x[rd] = int(int32(cpu.x[rs1]) - int32(cpu.x[rs2]))
+		cpu.updated.regValue = int(int32(cpu.reg[rs1]) - int32(cpu.reg[rs2]))
 
 	case 0b_001: // sllw
-		shamt := int32(cpu.x[rs2]) & 31
-		cpu.x[rd] = int(int32(cpu.x[rs1]) << shamt)
+		shamt := int32(cpu.reg[rs2]) & 31
+		cpu.updated.regValue = int(int32(cpu.reg[rs1]) << shamt)
 
 	case 0b_101: // srlw
-		shamt := uint32(cpu.x[rs2]) & 31
-		cpu.x[rd] = int(int32(uint32(cpu.x[rs1]) >> shamt))
+		shamt := uint32(cpu.reg[rs2]) & 31
+		cpu.updated.regValue = int(int32(uint32(cpu.reg[rs1]) >> shamt))
 
 	case 0b_1_101: // sraw
-		shamt := int32(cpu.x[rs2]) & 31
-		cpu.x[rd] = int(int32(cpu.x[rs1]) >> shamt)
+		shamt := int32(cpu.reg[rs2]) & 31
+		cpu.updated.regValue = int(int32(cpu.reg[rs1]) >> shamt)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
+		return
 	}
+
+	cpu.updated.regIndex = rd
 }

@@ -3,46 +3,50 @@ package rv
 func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_000: // addi
-		cpu.x[rd] = cpu.xint(cpu.x[rs1] + imm)
+		cpu.updated.regValue = cpu.xint(cpu.reg[rs1] + imm)
 
 	case 0b_001: // slli
 		if imm < cpu.xlen {
-			cpu.x[rd] = cpu.xint(cpu.x[rs1] << imm)
+			cpu.updated.regValue = cpu.xint(cpu.reg[rs1] << imm)
 		} else {
 			cpu.trap(ExceptionIllegalIstruction)
 		}
 
 	case 0b_010: // slti
-		if cpu.x[rs1] < imm {
-			cpu.x[rd] = 1
+		if cpu.reg[rs1] < imm {
+			cpu.updated.regValue = 1
 		} else {
-			cpu.x[rd] = 0
+			cpu.updated.regValue = 0
 		}
 
 	case 0b_011: // sltiu
-		if cpu.xuint(cpu.x[rs1]) < cpu.xuint(imm) {
-			cpu.x[rd] = 1
+		if cpu.xuint(cpu.reg[rs1]) < cpu.xuint(imm) {
+			cpu.updated.regValue = 1
 		} else {
-			cpu.x[rd] = 0
+			cpu.updated.regValue = 0
 		}
 
 	case 0b_100: // xori
-		cpu.x[rd] = cpu.x[rs1] ^ imm
+		cpu.updated.regValue = cpu.reg[rs1] ^ imm
 
 	case 0b_101:
 		if imm < cpu.xlen { // srli
-			cpu.x[rd] = cpu.xint(int(cpu.xuint(cpu.x[rs1]) >> cpu.xuint(imm)))
+			cpu.updated.regValue = cpu.xint(int(cpu.xuint(cpu.reg[rs1]) >> cpu.xuint(imm)))
 		} else if imm &^= 0b_0100000_00000; imm < cpu.xlen { // srai
-			cpu.x[rd] = cpu.x[rs1] >> imm
+			cpu.updated.regValue = cpu.reg[rs1] >> imm
 		} else {
 			cpu.trap(ExceptionIllegalIstruction)
 		}
 
 	case 0b_110: // ori
-		cpu.x[rd] = cpu.x[rs1] | imm
+		cpu.updated.regValue = cpu.reg[rs1] | imm
 
 	case 0b_111: // andi
-		cpu.x[rd] = cpu.x[rs1] & imm
+		cpu.updated.regValue = cpu.reg[rs1] & imm
+	}
+
+	if !cpu.isTrapped {
+		cpu.updated.regIndex = rd
 	}
 }
 
@@ -60,44 +64,47 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 
 	switch op {
 	case 0b_000: // add
-		cpu.x[rd] = cpu.xint(cpu.x[rs1] + cpu.x[rs2])
+		cpu.updated.regValue = cpu.xint(cpu.reg[rs1] + cpu.reg[rs2])
 
 	case 0b_1_000: // sub
-		cpu.x[rd] = cpu.xint(cpu.x[rs1] - cpu.x[rs2])
+		cpu.updated.regValue = cpu.xint(cpu.reg[rs1] - cpu.reg[rs2])
 
 	case 0b_001: // sll
-		cpu.x[rd] = cpu.xint(cpu.x[rs1] << (cpu.x[rs2] & (cpu.xlen - 1)))
+		cpu.updated.regValue = cpu.xint(cpu.reg[rs1] << (cpu.reg[rs2] & (cpu.xlen - 1)))
 
 	case 0b_010: // slt
-		if cpu.x[rs1] < cpu.x[rs2] {
-			cpu.x[rd] = 1
+		if cpu.reg[rs1] < cpu.reg[rs2] {
+			cpu.updated.regValue = 1
 		} else {
-			cpu.x[rd] = 0
+			cpu.updated.regValue = 0
 		}
 
 	case 0b_011: // sltu
-		if cpu.xuint(cpu.x[rs1]) < cpu.xuint(cpu.x[rs2]) {
-			cpu.x[rd] = 1
+		if cpu.xuint(cpu.reg[rs1]) < cpu.xuint(cpu.reg[rs2]) {
+			cpu.updated.regValue = 1
 		} else {
-			cpu.x[rd] = 0
+			cpu.updated.regValue = 0
 		}
 
 	case 0b_100: // xor
-		cpu.x[rd] = cpu.x[rs1] ^ cpu.x[rs2]
+		cpu.updated.regValue = cpu.reg[rs1] ^ cpu.reg[rs2]
 
 	case 0b_101: // srl
-		cpu.x[rd] = cpu.xint(int(cpu.xuint(cpu.x[rs1]) >> cpu.xuint(cpu.x[rs2]&(cpu.xlen-1))))
+		cpu.updated.regValue = cpu.xint(int(cpu.xuint(cpu.reg[rs1]) >> cpu.xuint(cpu.reg[rs2]&(cpu.xlen-1))))
 
 	case 0b_1_101: // sra
-		cpu.x[rd] = cpu.x[rs1] >> (cpu.x[rs2] & (cpu.xlen - 1))
+		cpu.updated.regValue = cpu.reg[rs1] >> (cpu.reg[rs2] & (cpu.xlen - 1))
 
 	case 0b_110: // or
-		cpu.x[rd] = cpu.x[rs1] | cpu.x[rs2]
+		cpu.updated.regValue = cpu.reg[rs1] | cpu.reg[rs2]
 
 	case 0b_111: // and
-		cpu.x[rd] = cpu.x[rs1] & cpu.x[rs2]
+		cpu.updated.regValue = cpu.reg[rs1] & cpu.reg[rs2]
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
+		return
 	}
+
+	cpu.updated.regIndex = rd
 }

@@ -16,12 +16,12 @@ func (cpu *CPU) debugStep() bool {
 	cycleCount++
 
 	pc := cpu.pc
-	oldRegs := cpu.x
+	oldRegs := cpu.reg
 
 	opcode := cpu.innerStep()
 
 	entry := [4]uint{uint(pc), uint(opcode)}
-	for i, val := range cpu.x {
+	for i, val := range cpu.reg {
 		if val != oldRegs[i] {
 			entry[2], entry[3] = uint(i), uint(val)
 			break
@@ -64,7 +64,7 @@ func debugDump(cpu *CPU) {
 
 	for i := range 16 {
 		fmt.Printf("% 5v:%16x      % 5v:%16x\r\n",
-			regNames[i], uint(cpu.x[i]), regNames[16+i], uint(cpu.x[16+i]))
+			regNames[i], uint(cpu.reg[i]), regNames[16+i], uint(cpu.reg[16+i]))
 	}
 }
 

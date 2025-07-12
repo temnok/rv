@@ -90,7 +90,7 @@ func runTest(t *testing.T, xlen int, file string) {
 
 			t.Errorf("timeout: trapCount=%v, priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				trapCount, cpu.priv, cpu.csr.mcause, uint(cpu.x[31]), lastPCs, lastTraps, addresses)
+				trapCount, cpu.priv, cpu.csr.mcause, uint(cpu.reg[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 
@@ -99,7 +99,7 @@ func runTest(t *testing.T, xlen int, file string) {
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {
 
-				if cpu.x[3] == 1 && cpu.x[10] == 0 {
+				if cpu.reg[3] == 1 && cpu.reg[10] == 0 {
 					fmt.Printf("cycles: %v\n", cpu.csr.cycle)
 				} else {
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
@@ -107,8 +107,8 @@ func runTest(t *testing.T, xlen int, file string) {
 						"gp=%08x, a0=%08x, t0=%08x, t2=%08x, t6=%08x\n",
 						cpu.csr.cycle, lastPCs, lastTraps,
 						cpu.priv, cause, uint(cpu.csr.mepc), uint(cpu.csr.mstatus),
-						uint(cpu.x[3]), uint(cpu.x[10]),
-						uint(cpu.x[5]), uint(cpu.x[7]), uint(cpu.x[31]))
+						uint(cpu.reg[3]), uint(cpu.reg[10]),
+						uint(cpu.reg[5]), uint(cpu.reg[7]), uint(cpu.reg[31]))
 				}
 
 				break

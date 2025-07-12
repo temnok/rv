@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) execComputeMw(rs2, rs1, f3, rd int) {
-	a, b := int32(cpu.x[rs1]), int32(cpu.x[rs2])
+	a, b := int32(cpu.reg[rs1]), int32(cpu.reg[rs2])
 	var c int32
 
 	switch f3 {
@@ -41,5 +41,6 @@ func (cpu *CPU) execComputeMw(rs2, rs1, f3, rd int) {
 		return
 	}
 
-	cpu.x[rd] = int(c)
+	cpu.updated.regIndex = rd
+	cpu.updated.regValue = int(c)
 }

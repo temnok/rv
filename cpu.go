@@ -3,7 +3,7 @@ package rv
 type CPU struct {
 	xlen int
 
-	x    [32]int
+	reg  [32]int
 	pc   int
 	csr  CSR
 	priv int
@@ -17,8 +17,10 @@ type CPU struct {
 
 	bus Bus
 
-	next struct {
-		pc int
+	updated struct {
+		pc       int
+		regIndex int
+		regValue int
 	}
 }
 
@@ -67,7 +69,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 	cpu.csr.mstatus = cpu.xint(xl<<mstatusSXL | xl<<mstatusUXL)
 
 	for i, x := range regs {
-		cpu.x[i] = cpu.xint(x)
+		cpu.reg[i] = cpu.xint(x)
 	}
 }
 
@@ -116,8 +118,8 @@ func (cpu *CPU) innerStep() int {
 		return 0
 	}
 
-	cpu.next.pc = cpu.xint(cpu.pc + 4)
-	
+	cpu.updated.pc = cpu.xint(cpu.pc + 4)
+
 	origOpcode := opcode
 	if cpu.decompress(&opcode); cpu.isTrapped {
 		return opcode
@@ -129,7 +131,14 @@ func (cpu *CPU) innerStep() int {
 }
 
 func (cpu *CPU) updateState() {
-	cpu.pc = cpu.next.pc
+	n := &cpu.updated
+
+	cpu.pc = n.pc
+
+	if n.regIndex != 0 {
+		cpu.reg[n.regIndex] = n.regValue
+		n.regIndex = 0
+	}
 }
 
 func (cpu *CPU) updateTimers() {
@@ -220,9 +229,9 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		tvec = cpu.csr.stvec
 	}
 
-	cpu.next.pc = tvec &^ 3
+	cpu.updated.pc = tvec &^ 3
 	if bit(tvec, 0) == 1 && isInterrupt {
-		cpu.next.pc += causeID * 4
+		cpu.updated.pc += causeID * 4
 	}
 
 	cpu.priv = effectivePriv
@@ -241,7 +250,7 @@ func (cpu *CPU) ret(priv int) {
 
 	switch priv {
 	case PrivM:
-		cpu.next.pc = cpu.csr.mepc
+		cpu.updated.pc = cpu.csr.mepc
 		cpu.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
 
 		mie := bit(cpu.csr.mstatus, mstatusMPIE)
@@ -249,7 +258,7 @@ func (cpu *CPU) ret(priv int) {
 		cpu.csr.mstatus &^= 3 << mstatusMPP
 
 	case PrivS:
-		cpu.next.pc = cpu.csr.sepc
+		cpu.updated.pc = cpu.csr.sepc
 		cpu.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
 
 		sie := bit(cpu.csr.mstatus, mstatusSPIE)
