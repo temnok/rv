@@ -17,16 +17,16 @@ func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 		cond = cpu.x[rs1] >= cpu.x[rs2]
 
 	case 0b_110: // bltu
-		cond = cpu.Xuint(cpu.x[rs1]) < cpu.Xuint(cpu.x[rs2])
+		cond = cpu.xuint(cpu.x[rs1]) < cpu.xuint(cpu.x[rs2])
 
 	case 0b_111: // bgeu
-		cond = cpu.Xuint(cpu.x[rs1]) >= cpu.Xuint(cpu.x[rs2])
+		cond = cpu.xuint(cpu.x[rs1]) >= cpu.xuint(cpu.x[rs2])
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 
 	if cond {
-		cpu.nextPC = cpu.Xint(cpu.PC + imm)
+		cpu.nextPC = cpu.xint(cpu.pc + imm)
 	}
 }

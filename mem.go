@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int, data *int) {
-	xbytes := cpu.Xlen >> 3
+	xbytes := cpu.xlen >> 3
 
 	shift := virtAddr & (xbytes - 1)
 	virtAddr &^= xbytes - 1

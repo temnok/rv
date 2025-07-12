@@ -15,10 +15,10 @@ var (
 func (cpu *CPU) debugStep() bool {
 	cycleCount++
 
-	pc := cpu.PC
+	pc := cpu.pc
 	oldRegs := cpu.x
 
-	opcode := cpu.step()
+	opcode := cpu.innerStep()
 
 	entry := [4]uint{uint(pc), uint(opcode)}
 	for i, val := range cpu.x {
@@ -50,7 +50,7 @@ func (cpu *CPU) debugStep() bool {
 }
 
 func debugDump(cpu *CPU) {
-	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
+	isa, _ := rvda.New(uint(cpu.xlen), rvda.RV64gc)
 
 	for _, entry := range trace {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))

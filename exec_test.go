@@ -52,19 +52,19 @@ func runTest(t *testing.T, xlen int, file string) {
 	var lastPCs []uint
 	var lastTraps [][2]uint
 
-	for startPC := cpu.PC; ; {
-		if i := cpu.PC - startPC; i >= 0 && i < len(instrCounts) {
+	for startPC := cpu.pc; ; {
+		if i := cpu.pc - startPC; i >= 0 && i < len(instrCounts) {
 			instrCounts[i]++
 		}
 
-		lastPCs = append(lastPCs, uint(cpu.PC))
+		lastPCs = append(lastPCs, uint(cpu.pc))
 		if n := 10; len(lastPCs) == n+1 {
 			copy(lastPCs[:n], lastPCs[1:])
 			lastPCs = lastPCs[:n]
 		}
 
-		prevPC := cpu.PC
-		cpu.Step()
+		prevPC := cpu.pc
+		cpu.step()
 
 		if cpu.isTrapped {
 			trapCount++

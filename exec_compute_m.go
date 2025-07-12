@@ -11,7 +11,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		c = a * b
 
 	case 0b_001: // mulh
-		if cpu.Xlen64() {
+		if cpu.xlen64() {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
 			s1 := (a >> 63) & b
 			s2 := (b >> 63) & a
@@ -21,7 +21,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 
 	case 0b_010: // mulhsu
-		if cpu.Xlen64() {
+		if cpu.xlen64() {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
 			s := (a >> 63) & b
 			c = int(hi) - s
@@ -30,7 +30,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 
 	case 0b_011: // mulhu
-		if cpu.Xlen64() {
+		if cpu.xlen64() {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
 			c = int(hi)
 		} else {
@@ -46,7 +46,7 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 
 	case 0b_101: // divu
 		if b != 0 {
-			c = int(cpu.Xuint(a) / cpu.Xuint(b))
+			c = int(cpu.xuint(a) / cpu.xuint(b))
 		} else {
 			c = -1
 		}
@@ -60,11 +60,11 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 
 	case 0b_111: // remu
 		if b != 0 {
-			c = int(cpu.Xuint(a) % cpu.Xuint(b))
+			c = int(cpu.xuint(a) % cpu.xuint(b))
 		} else {
 			c = a
 		}
 	}
 
-	cpu.x[rd] = cpu.Xint(c)
+	cpu.x[rd] = cpu.xint(c)
 }

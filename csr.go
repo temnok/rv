@@ -155,17 +155,17 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 		reg = &csr.cycle
 
 	case 0xC80:
-		if !cpu.Xlen64() {
+		if !cpu.xlen64() {
 			reg = &csr.cycleh
 		}
 
 	case 0xC81: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
-		if !cpu.Xlen64() {
+		if !cpu.xlen64() {
 			reg = &csr.mtimeh
 		}
 
 	case 0xC82:
-		if !cpu.Xlen64() {
+		if !cpu.xlen64() {
 			reg = &csr.cycleh
 		}
 

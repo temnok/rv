@@ -1,10 +1,10 @@
 package rv
 
 type CPU struct {
-	Xlen int
+	xlen int
 
 	x          [32]int
-	PC, nextPC int
+	pc, nextPC int
 	csr        CSR
 	priv       int
 
@@ -47,7 +47,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
-		Xlen: xlen,
+		xlen: xlen,
 
 		priv: PrivM,
 		csr: CSR{
@@ -59,41 +59,41 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 		bus: bus,
 	}
 
-	cpu.PC = cpu.Xint(startAddr)
-	cpu.csr.mstatus = cpu.Xint(xl<<mstatusSXL | xl<<mstatusUXL)
+	cpu.pc = cpu.xint(startAddr)
+	cpu.csr.mstatus = cpu.xint(xl<<mstatusSXL | xl<<mstatusUXL)
 
 	for i, x := range regs {
-		cpu.x[i] = cpu.Xint(x)
+		cpu.x[i] = cpu.xint(x)
 	}
 }
 
-func (cpu *CPU) Xlen64() bool {
-	return cpu.Xlen == 64
+func (cpu *CPU) xlen64() bool {
+	return cpu.xlen == 64
 }
 
-func (cpu *CPU) Xint(val int) int {
-	if cpu.Xlen64() {
+func (cpu *CPU) xint(val int) int {
+	if cpu.xlen64() {
 		return val
 	}
 
 	return int(int32(val))
 }
 
-func (cpu *CPU) Xuint(val int) uint {
-	if cpu.Xlen64() {
+func (cpu *CPU) xuint(val int) uint {
+	if cpu.xlen64() {
 		return uint(val)
 	}
 
 	return uint(uint32(val))
 }
 
-func (cpu *CPU) Step() bool {
+func (cpu *CPU) step() bool {
 	//return cpu.debugStep()
-	cpu.step()
+	cpu.innerStep()
 	return true
 }
 
-func (cpu *CPU) step() int {
+func (cpu *CPU) innerStep() int {
 	cpu.isTrapped = false
 
 	cpu.updateTimers()
@@ -105,11 +105,11 @@ func (cpu *CPU) step() int {
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.PC, &opcode); cpu.isTrapped {
+	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped {
 		return 0
 	}
 
-	cpu.nextPC = cpu.Xint(cpu.PC + 4)
+	cpu.nextPC = cpu.xint(cpu.pc + 4)
 	origOpcode := opcode
 	if cpu.decompress(&opcode); cpu.isTrapped {
 		return opcode
@@ -121,12 +121,12 @@ func (cpu *CPU) step() int {
 }
 
 func (cpu *CPU) updateTimers() {
-	if cpu.csr.cycle = cpu.Xint(cpu.csr.cycle + 1); cpu.csr.cycle == 0 {
+	if cpu.csr.cycle = cpu.xint(cpu.csr.cycle + 1); cpu.csr.cycle == 0 {
 		cpu.csr.cycleh++
 	}
 
 	if cpu.csr.cycle%10_000 == 0 {
-		if cpu.csr.mtime = cpu.Xint(cpu.csr.mtime + 1); cpu.csr.mtime == 0 {
+		if cpu.csr.mtime = cpu.xint(cpu.csr.mtime + 1); cpu.csr.mtime == 0 {
 			cpu.csr.mtimeh++
 		}
 	}
@@ -150,7 +150,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 			priv = PrivS
 		}
 
-		mcauseI := cpu.Xlen - 1
+		mcauseI := cpu.xlen - 1
 		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
 			cpu.trap(-1<<mcauseI | i)
 
@@ -170,7 +170,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 
 	cpu.isTrapped = true
 
-	mcauseI := cpu.Xlen - 1
+	mcauseI := cpu.xlen - 1
 	isInterrupt := bit(cause, mcauseI) != 0
 	causeID := bits(cause, 0, 5)
 
@@ -192,7 +192,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		cpu.csr.mstatus &^= 0b_11<<mstatusMPP | 1<<mstatusMPIE | 1<<mstatusMIE
 		cpu.csr.mstatus |= cpu.priv<<mstatusMPP | mie<<mstatusMPIE
 
-		cpu.csr.mepc = cpu.PC
+		cpu.csr.mepc = cpu.pc
 		cpu.csr.mcause = cause
 		cpu.csr.mtval = tval
 		tvec = cpu.csr.mtvec
@@ -202,15 +202,15 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		cpu.csr.mstatus &^= 1<<mstatusSPP | 1<<mstatusSPIE | 1<<mstatusSIE
 		cpu.csr.mstatus |= cpu.priv<<mstatusSPP | sie<<mstatusSPIE
 
-		cpu.csr.sepc = cpu.PC
+		cpu.csr.sepc = cpu.pc
 		cpu.csr.scause = cause
 		cpu.csr.stval = tval
 		tvec = cpu.csr.stvec
 	}
 
-	cpu.PC = tvec &^ 0b_11
+	cpu.pc = tvec &^ 0b_11
 	if bit(tvec, 0) != 0 && isInterrupt {
-		cpu.PC += causeID * 4
+		cpu.pc += causeID * 4
 	}
 
 	cpu.priv = effectivePriv

@@ -14,7 +14,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	}
 
 	*opcodePtr = decompressedOpcode
-	cpu.nextPC = cpu.Xint(cpu.PC + 2)
+	cpu.nextPC = cpu.xint(cpu.pc + 2)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
@@ -37,7 +37,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeI(immCL(opcode), ra, 2, rb, 0) // lw
 
 		case 0b_011: // c.ld
-			if cpu.Xlen64() {
+			if cpu.xlen64() {
 				return encodeI(immCL3(opcode), ra, 3, rb, 0) // ld
 			}
 
@@ -45,7 +45,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeS(immCL(opcode), rb, ra, 2, 8) // sw
 
 		case 0b_111: // c.sd
-			if cpu.Xlen64() {
+			if cpu.xlen64() {
 				return encodeS(immCL3(opcode), rb, ra, 3, 8) // sw
 			}
 		}
@@ -56,7 +56,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeI(immCI(opcode), rA, 0, rA, 4)
 
 		case 0b_001:
-			if !cpu.Xlen64() {
+			if !cpu.xlen64() {
 				return encodeJ(immCJ(opcode), 1, 27) // jal
 			} else if rA != 0 {
 				return encodeI(immCI(opcode), rA, 0, rA, 6) // addiw
@@ -80,10 +80,10 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 		case 0b_100:
 			switch bits(opcode, 10, 2) {
 			case 0b_00: // srli
-				return encodeR(0, immCI(opcode)&(cpu.Xlen-1), ra, 5, ra, 4)
+				return encodeR(0, immCI(opcode)&(cpu.xlen-1), ra, 5, ra, 4)
 
 			case 0b_01: // srai
-				return encodeR(0b_0100000, immCI(opcode)&(cpu.Xlen-1), ra, 5, ra, 4)
+				return encodeR(0b_0100000, immCI(opcode)&(cpu.xlen-1), ra, 5, ra, 4)
 
 			case 0b_10: // andi
 				return encodeI(immCI(opcode), ra, 7, ra, 4)
@@ -103,12 +103,12 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 					return encodeR(0, rb, ra, 7, ra, 12)
 
 				case 0b_100: // c.subw
-					if cpu.Xlen64() {
+					if cpu.xlen64() {
 						return encodeR(0b_0100000, rb, ra, 0, ra, 0b_01110)
 					}
 
 				case 0b_101: // c.addw
-					if cpu.Xlen64() {
+					if cpu.xlen64() {
 						return encodeR(0, rb, ra, 0, ra, 0b_01110)
 					}
 				}
@@ -127,13 +127,13 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 	case 2:
 		switch f3 {
 		case 0b_000: // c.slli
-			return encodeR(0, immCI(opcode)&(cpu.Xlen-1), rA, 1, rA, 4) // slli
+			return encodeR(0, immCI(opcode)&(cpu.xlen-1), rA, 1, rA, 4) // slli
 
 		case 0b_010: // c.lwsp
 			return encodeI(immCI2(opcode), 2, 2, rA, 0) // lw
 
 		case 0b_011: // c.ldsp
-			if cpu.Xlen64() {
+			if cpu.xlen64() {
 				return encodeI(immCI3(opcode), 2, 3, rA, 0) // ld
 			}
 
@@ -159,7 +159,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			return encodeS(immCSS(opcode), rB, 2, 2, 8) // sw
 
 		case 0b_111: // c.sdsp
-			if cpu.Xlen64() {
+			if cpu.xlen64() {
 				return encodeS(immCSS3(opcode), rB, 2, 3, 8) // sd
 			}
 		}

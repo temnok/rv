@@ -10,7 +10,7 @@ type CLINT struct {
 func (clint *CLINT) Init(cpu *CPU, baseAddr int) {
 	*clint = CLINT{
 		cpu:      cpu,
-		baseAddr: cpu.Xint(baseAddr),
+		baseAddr: cpu.xint(baseAddr),
 	}
 }
 

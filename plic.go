@@ -15,7 +15,7 @@ type PLIC struct {
 func (plic *PLIC) Init(cpu *CPU, baseAddr int) {
 	*plic = PLIC{
 		cpu:      cpu,
-		baseAddr: cpu.Xint(baseAddr),
+		baseAddr: cpu.xint(baseAddr),
 	}
 }
 

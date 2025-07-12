@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) execComputeIw(imm, rs1, f3, rd int) {
-	if !cpu.Xlen64() {
+	if !cpu.xlen64() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
@@ -31,7 +31,7 @@ func (cpu *CPU) execComputeIw(imm, rs1, f3, rd int) {
 }
 
 func (cpu *CPU) execComputeRw(f7, rs2, rs1, f3, rd int) {
-	if !cpu.Xlen64() {
+	if !cpu.xlen64() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
