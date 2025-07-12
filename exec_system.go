@@ -34,7 +34,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 		case 0b_0001_001: // sfence.vma
 			cpu.tlb.flush()
 
-			if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) != 0 {
+			if cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTVM) == 1 {
 				cpu.trap(ExceptionIllegalIstruction)
 			}
 
@@ -54,7 +54,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 
 	var val int
 
-	switch f3 & 0b_11 {
+	switch f3 & 3 {
 	case 0b_01: // csrrw
 		if rd != 0 {
 			if cpu.csrRead(csr, &val); cpu.isTrapped {

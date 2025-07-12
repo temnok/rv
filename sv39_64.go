@@ -8,7 +8,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.priv
-	if bit(cpu.csr.mstatus, mstatusMPRV) != 0 && access != AccessExecute {
+	if bit(cpu.csr.mstatus, mstatusMPRV) == 1 && access != AccessExecute {
 		epriv = bits(cpu.csr.mstatus, mstatusMPP, 2)
 	}
 
@@ -60,7 +60,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 		return
 	}
 
-	isLeaf := bit(pte, PteR) != 0 || bit(pte, PteX) != 0
+	isLeaf := bit(pte, PteR) == 1 || bit(pte, PteX) == 1
 
 	if bit(pte, PteV) == 0 || // valid bit not set
 		bit(pte, PteR) == 0 && bit(pte, PteW) == 1 || // reserved
@@ -80,7 +80,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 		return
 	}
 
-	isLeaf = bit(pte, PteR) != 0 || bit(pte, PteX) != 0
+	isLeaf = bit(pte, PteR) == 1 || bit(pte, PteX) == 1
 
 	if bit(pte, PteV) == 0 || // valid bit not set
 		bit(pte, PteR) == 0 && bit(pte, PteW) == 1 || // reserved

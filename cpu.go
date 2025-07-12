@@ -146,12 +146,12 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 		}
 
 		priv := PrivM
-		if bit(cpu.csr.mideleg, i) != 0 {
+		if bit(cpu.csr.mideleg, i) == 1 {
 			priv = PrivS
 		}
 
 		mcauseI := cpu.xlen - 1
-		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) != 0) || priv > cpu.priv {
+		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) == 1) || priv > cpu.priv {
 			cpu.trap(-1<<mcauseI | i)
 
 			return
@@ -171,7 +171,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 	cpu.isTrapped = true
 
 	mcauseI := cpu.xlen - 1
-	isInterrupt := bit(cause, mcauseI) != 0
+	isInterrupt := bit(cause, mcauseI) == 1
 	causeID := bits(cause, 0, 5)
 
 	deleg := cpu.csr.medeleg
@@ -189,7 +189,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 	switch effectivePriv {
 	case PrivM:
 		mie := bit(cpu.csr.mstatus, mstatusMIE)
-		cpu.csr.mstatus &^= 0b_11<<mstatusMPP | 1<<mstatusMPIE | 1<<mstatusMIE
+		cpu.csr.mstatus &^= 3<<mstatusMPP | 1<<mstatusMPIE | 1<<mstatusMIE
 		cpu.csr.mstatus |= cpu.priv<<mstatusMPP | mie<<mstatusMPIE
 
 		cpu.csr.mepc = cpu.pc
@@ -208,8 +208,8 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		tvec = cpu.csr.stvec
 	}
 
-	cpu.pc = tvec &^ 0b_11
-	if bit(tvec, 0) != 0 && isInterrupt {
+	cpu.pc = tvec &^ 3
+	if bit(tvec, 0) == 1 && isInterrupt {
 		cpu.pc += causeID * 4
 	}
 
@@ -220,7 +220,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func (cpu *CPU) ret(priv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
-	trapSRET := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) != 0
+	trapSRET := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) == 1
 
 	if priv > cpu.priv || trapSRET {
 		cpu.trap(ExceptionIllegalIstruction)
@@ -234,7 +234,7 @@ func (cpu *CPU) ret(priv int) {
 
 		mie := bit(cpu.csr.mstatus, mstatusMPIE)
 		cpu.csr.mstatus |= 1<<mstatusMPIE | mie<<mstatusMIE
-		cpu.csr.mstatus &^= 0b_11 << mstatusMPP
+		cpu.csr.mstatus &^= 3 << mstatusMPP
 
 	case PrivS:
 		cpu.nextPC = cpu.csr.sepc

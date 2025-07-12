@@ -93,7 +93,7 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 
 	case 0x180: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
 		reg = &csr.satp
-		if cpu.priv == PrivS && bit(csr.mstatus, mstatusTVM) != 0 {
+		if cpu.priv == PrivS && bit(csr.mstatus, mstatusTVM) == 1 {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
@@ -101,8 +101,7 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 	case 0x300: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 		reg = &csr.mstatus
 		if write {
-			tmp := ^int64(0b_11<<mstatusSXL | 0b_11<<mstatusUXL)
-			mask = int(tmp)
+			mask = ^(3<<mstatusSXL | 3<<mstatusUXL)
 		}
 
 	case 0x301: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
