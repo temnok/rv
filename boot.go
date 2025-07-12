@@ -11,16 +11,16 @@ import (
 	"strings"
 )
 
-func RunKernel(xlen int) {
+func BootLinux(xlen int) {
 	state := check1(term.MakeRaw(0))
 	defer func() {
 		check(term.Restore(0, state))
 	}()
 
-	runKernel(xlen, os.Stdin, os.Stdout, 0)
+	bootLinux(xlen, os.Stdin, os.Stdout, 0)
 }
 
-func runKernel(xlen int, in io.Reader, out io.Writer, timeout int) {
+func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 	var (
 		cpu   CPU
 		ram   RAM

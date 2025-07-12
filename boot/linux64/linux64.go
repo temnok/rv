@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	rv.RunKernel(64)
+	rv.BootLinux(64)
 }
