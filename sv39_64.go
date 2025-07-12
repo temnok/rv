@@ -2,7 +2,7 @@ package rv
 
 func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
-		cpu.trapWithTval(ExceptionInstructionPageFault+access, virtAddr)
+		cpu.trapWithTval(ExceptionPageFault+access, virtAddr)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bit(pte, PteW) == 1 && bit(pte, PteD) == 1) ||
 		bit(pte, PteA) == 0 {
 
-		cpu.trapWithTval(ExceptionInstructionPageFault+access, virtAddr)
+		cpu.trapWithTval(ExceptionPageFault+access, virtAddr)
 		return
 	}
 

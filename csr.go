@@ -40,8 +40,9 @@ type CSR struct {
 	mvendorid, marchid, mimpid, mhartid                     int
 }
 
+// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#ucsrnames
+
 func (cpu *CPU) csrAccess(i int, val *int, write bool) {
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_csr_address_mapping_conventions
 	if write && bits(i, 10, 2) == 3 || cpu.priv < bits(i, 8, 2) {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
@@ -54,14 +55,14 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 
 	switch i {
 	case 0x100: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sstatus
-		reg = &csr.mstatus
+		reg = &csr.mstatus // sstatus
 		mask = 1<<mstatusSIE | 1<<mstatusSUM | 1<<mstatusMXR | 1<<mstatusSPP
 		if !write {
 			mask = int(int64(mask) | 1<<mstatusSPIE | 3<<mstatusUXL)
 		}
 
 	case 0x104: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
-		reg = &csr.mie
+		reg = &csr.mie // sie
 		mask = 1<<mipSEI | 1<<mipSTI
 
 	case 0x105: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_vector_base_address_stvec_register
@@ -83,7 +84,7 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 		reg = &csr.stval
 
 	case 0x144: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
-		reg = &csr.mip
+		reg = &csr.mip // sip
 		if write {
 			mask = 0
 		} else {
@@ -150,21 +151,21 @@ func (cpu *CPU) csrAccess(i int, val *int, write bool) {
 	case 0xC01: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
 		reg = &csr.mtime
 
-	case 0xC02:
+	case 0xC02: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_zicntr_extension_for_base_counters_and_timers
 		reg = &csr.cycle
 
 	case 0xC80:
-		if cpu.Xlen32 {
+		if !cpu.Xlen64() {
 			reg = &csr.cycleh
 		}
 
 	case 0xC81: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
-		if cpu.Xlen32 {
+		if !cpu.Xlen64() {
 			reg = &csr.mtimeh
 		}
 
 	case 0xC82:
-		if cpu.Xlen32 {
+		if !cpu.Xlen64() {
 			reg = &csr.cycleh
 		}
 

@@ -1,8 +1,7 @@
 package rv
 
 type CPU struct {
-	Xlen   int
-	Xlen32 bool
+	Xlen int
 
 	x          [32]int
 	PC, nextPC int
@@ -21,7 +20,6 @@ type CPU struct {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
 const (
-	//ExceptionInstructionAddressMisaligned = 0
 	ExceptionInstructionAccessFault    = 1
 	ExceptionIllegalIstruction         = 2
 	ExceptionBreakpoint                = 3
@@ -32,9 +30,7 @@ const (
 	ExceptionEnvironmentCallFromUMode  = 8
 	ExceptionEnvironmentCallFromSMode  = 9
 	ExceptionEnvironmentCallFromMMode  = 11
-	ExceptionInstructionPageFault      = 12
-	//ExceptionLoadPageFault                = 13
-	//ExceptionStoreAMOPageFault            = 15
+	ExceptionPageFault                 = 12
 
 	PrivU = 0
 	PrivS = 1
@@ -51,8 +47,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
-		Xlen:   xlen,
-		Xlen32: xlen == 32,
+		Xlen: xlen,
 
 		priv: PrivM,
 		csr: CSR{
@@ -67,26 +62,29 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 	cpu.PC = cpu.Xint(startAddr)
 	cpu.csr.mstatus = cpu.Xint(xl<<mstatusSXL | xl<<mstatusUXL)
 
-	copy(cpu.x[:], regs)
-	for i, x := range cpu.x {
+	for i, x := range regs {
 		cpu.x[i] = cpu.Xint(x)
 	}
 }
 
+func (cpu *CPU) Xlen64() bool {
+	return cpu.Xlen == 64
+}
+
 func (cpu *CPU) Xint(val int) int {
-	if cpu.Xlen32 {
-		return int(int32(val))
+	if cpu.Xlen64() {
+		return val
 	}
 
-	return val
+	return int(int32(val))
 }
 
 func (cpu *CPU) Xuint(val int) uint {
-	if cpu.Xlen32 {
-		return uint(uint32(val))
+	if cpu.Xlen64() {
+		return uint(val)
 	}
 
-	return uint(val)
+	return uint(uint32(val))
 }
 
 func (cpu *CPU) Step() bool {

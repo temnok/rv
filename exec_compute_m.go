@@ -11,30 +11,30 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		c = a * b
 
 	case 0b_001: // mulh
-		if cpu.Xlen32 {
-			c = int(int64(a) * int64(b) >> 32)
-		} else {
+		if cpu.Xlen64() {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
 			s1 := (a >> 63) & b
 			s2 := (b >> 63) & a
 			c = int(hi) - s1 - s2
+		} else {
+			c = int(int64(a) * int64(b) >> 32)
 		}
 
 	case 0b_010: // mulhsu
-		if cpu.Xlen32 {
-			c = int(int64(a) * int64(uint32(b)) >> 32)
-		} else {
+		if cpu.Xlen64() {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
 			s := (a >> 63) & b
 			c = int(hi) - s
+		} else {
+			c = int(int64(a) * int64(uint32(b)) >> 32)
 		}
 
 	case 0b_011: // mulhu
-		if cpu.Xlen32 {
-			c = int(int64(uint32(a)) * int64(uint32(b)) >> 32)
-		} else {
+		if cpu.Xlen64() {
 			hi, _ := bi.Mul64(uint64(a), uint64(b))
 			c = int(hi)
+		} else {
+			c = int(int64(uint32(a)) * int64(uint32(b)) >> 32)
 		}
 
 	case 0b_100: // div

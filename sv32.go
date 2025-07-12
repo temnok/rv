@@ -34,7 +34,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bit(pte, PteW) == 1 && bit(pte, PteD) == 1) ||
 		bit(pte, PteA) == 0 {
 
-		cpu.trapWithTval(ExceptionInstructionPageFault+access, virtAddr)
+		cpu.trapWithTval(ExceptionPageFault+access, virtAddr)
 		return
 	}
 
