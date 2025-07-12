@@ -27,6 +27,6 @@ func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 	}
 
 	if cond {
-		cpu.nextPC = cpu.xint(cpu.pc + imm)
+		cpu.next.pc = cpu.xint(cpu.pc + imm)
 	}
 }

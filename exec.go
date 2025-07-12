@@ -42,13 +42,13 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execBranch(immB(opcode), rs2, rs1, f3)
 
 	case 0b_11001: // jalr
-		saved := cpu.nextPC
-		cpu.nextPC = cpu.xint((cpu.x[rs1] + immI(opcode)) &^ 1)
+		saved := cpu.next.pc
+		cpu.next.pc = cpu.xint((cpu.x[rs1] + immI(opcode)) &^ 1)
 		cpu.x[rd] = saved
 
 	case 0b_11011: // jal
-		cpu.x[rd] = cpu.nextPC
-		cpu.nextPC = cpu.xint(cpu.pc + immJ(opcode))
+		cpu.x[rd] = cpu.next.pc
+		cpu.next.pc = cpu.xint(cpu.pc + immJ(opcode))
 
 	case 0b_11100:
 		cpu.execSystem(immI(opcode), rs1, f3, rd)
@@ -58,10 +58,4 @@ func (cpu *CPU) exec(opcode int) {
 	}
 
 	cpu.x[0] = 0
-
-	if cpu.isTrapped {
-		return
-	}
-
-	cpu.pc = cpu.nextPC
 }

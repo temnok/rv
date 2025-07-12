@@ -3,10 +3,10 @@ package rv
 type CPU struct {
 	xlen int
 
-	x          [32]int
-	pc, nextPC int
-	csr        CSR
-	priv       int
+	x    [32]int
+	pc   int
+	csr  CSR
+	priv int
 
 	isTrapped bool
 
@@ -16,6 +16,10 @@ type CPU struct {
 	tlb TLB
 
 	bus Bus
+
+	next struct {
+		pc int
+	}
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -90,6 +94,9 @@ func (cpu *CPU) xuint(val int) uint {
 func (cpu *CPU) step() bool {
 	//return cpu.debugStep()
 	cpu.innerStep()
+
+	cpu.updateState()
+
 	return true
 }
 
@@ -109,7 +116,8 @@ func (cpu *CPU) innerStep() int {
 		return 0
 	}
 
-	cpu.nextPC = cpu.xint(cpu.pc + 4)
+	cpu.next.pc = cpu.xint(cpu.pc + 4)
+	
 	origOpcode := opcode
 	if cpu.decompress(&opcode); cpu.isTrapped {
 		return opcode
@@ -118,6 +126,10 @@ func (cpu *CPU) innerStep() int {
 	cpu.exec(opcode)
 
 	return origOpcode
+}
+
+func (cpu *CPU) updateState() {
+	cpu.pc = cpu.next.pc
 }
 
 func (cpu *CPU) updateTimers() {
@@ -208,9 +220,9 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		tvec = cpu.csr.stvec
 	}
 
-	cpu.pc = tvec &^ 3
+	cpu.next.pc = tvec &^ 3
 	if bit(tvec, 0) == 1 && isInterrupt {
-		cpu.pc += causeID * 4
+		cpu.next.pc += causeID * 4
 	}
 
 	cpu.priv = effectivePriv
@@ -229,7 +241,7 @@ func (cpu *CPU) ret(priv int) {
 
 	switch priv {
 	case PrivM:
-		cpu.nextPC = cpu.csr.mepc
+		cpu.next.pc = cpu.csr.mepc
 		cpu.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
 
 		mie := bit(cpu.csr.mstatus, mstatusMPIE)
@@ -237,7 +249,7 @@ func (cpu *CPU) ret(priv int) {
 		cpu.csr.mstatus &^= 3 << mstatusMPP
 
 	case PrivS:
-		cpu.nextPC = cpu.csr.sepc
+		cpu.next.pc = cpu.csr.sepc
 		cpu.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
 
 		sie := bit(cpu.csr.mstatus, mstatusSPIE)
