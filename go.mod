@@ -1,4 +1,4 @@
-module github.com/temnok/gorv
+module github.com/temnok/rv
 
 go 1.24
 

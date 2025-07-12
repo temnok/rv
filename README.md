@@ -1,2 +1,2 @@
-# gorv
-RISC-V Software Implementation in Go
+# temnok/rv (WIP)
+RISC-V implementation in Go

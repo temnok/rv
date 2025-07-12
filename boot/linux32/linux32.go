@@ -1,7 +1,7 @@
 package main
 
 import (
-	rv "github.com/temnok/gorv"
+	"github.com/temnok/rv"
 )
 
 func main() {
