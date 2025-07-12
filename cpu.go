@@ -19,6 +19,7 @@ type CPU struct {
 
 	updated struct {
 		pc       int
+		priv     int
 		regIndex int
 		regValue int
 	}
@@ -55,7 +56,6 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 	*cpu = CPU{
 		xlen: xlen,
 
-		priv: PrivM,
 		csr: CSR{
 			misa: int(misa) |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
@@ -65,7 +65,9 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 		bus: bus,
 	}
 
-	cpu.pc = cpu.xint(startAddr)
+	cpu.updated.priv = PrivM
+	cpu.updated.pc = cpu.xint(startAddr)
+
 	cpu.csr.mstatus = cpu.xint(xl<<mstatusSXL | xl<<mstatusUXL)
 
 	for i, x := range regs {
@@ -94,10 +96,10 @@ func (cpu *CPU) xuint(val int) uint {
 }
 
 func (cpu *CPU) step() bool {
+	cpu.updateState()
+
 	//return cpu.debugStep()
 	cpu.innerStep()
-
-	cpu.updateState()
 
 	return true
 }
@@ -131,13 +133,14 @@ func (cpu *CPU) innerStep() int {
 }
 
 func (cpu *CPU) updateState() {
-	n := &cpu.updated
+	up := &cpu.updated
 
-	cpu.pc = n.pc
+	cpu.pc = up.pc
+	cpu.priv = up.priv
 
-	if n.regIndex != 0 {
-		cpu.reg[n.regIndex] = n.regValue
-		n.regIndex = 0
+	if up.regIndex != 0 {
+		cpu.reg[up.regIndex] = up.regValue
+		up.regIndex = 0
 	}
 }
 
@@ -234,7 +237,7 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		cpu.updated.pc += causeID * 4
 	}
 
-	cpu.priv = effectivePriv
+	cpu.updated.priv = effectivePriv
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
@@ -251,7 +254,7 @@ func (cpu *CPU) ret(priv int) {
 	switch priv {
 	case PrivM:
 		cpu.updated.pc = cpu.csr.mepc
-		cpu.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
+		cpu.updated.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
 
 		mie := bit(cpu.csr.mstatus, mstatusMPIE)
 		cpu.csr.mstatus |= 1<<mstatusMPIE | mie<<mstatusMIE
@@ -259,7 +262,7 @@ func (cpu *CPU) ret(priv int) {
 
 	case PrivS:
 		cpu.updated.pc = cpu.csr.sepc
-		cpu.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
+		cpu.updated.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
 
 		sie := bit(cpu.csr.mstatus, mstatusSPIE)
 		cpu.csr.mstatus |= 1<<mstatusSPIE | sie<<mstatusSIE
