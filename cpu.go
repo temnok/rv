@@ -125,7 +125,7 @@ func (cpu *CPU) updateTimers() {
 		cpu.csr.cycleh++
 	}
 
-	if cpu.csr.cycle&0xFFF == 0 {
+	if cpu.csr.cycle%10_000 == 0 {
 		if cpu.csr.mtime = cpu.Xint(cpu.csr.mtime + 1); cpu.csr.mtime == 0 {
 			cpu.csr.mtimeh++
 		}
