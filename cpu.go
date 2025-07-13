@@ -17,6 +17,8 @@ type CPUState struct {
 
 	Reserved        bool
 	ReservedAddress int
+
+	ICache Cache
 }
 
 type CPUUpdatedState struct {
@@ -32,6 +34,12 @@ type CPUUpdatedState struct {
 
 	Reserved        bool
 	ReservedAddress int
+
+	ICache Cache
+}
+
+type ICache struct {
+	VirtAddr, PhysAddr, Value int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -161,6 +169,8 @@ func (cpu *CPU) updateState() {
 	if up.Reserved {
 		cpu.ReservedAddress = up.ReservedAddress
 	}
+
+	cpu.ICache = cpu.Updated.ICache
 
 	*up = CPUUpdatedState{}
 }

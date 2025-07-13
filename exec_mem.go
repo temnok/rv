@@ -90,6 +90,8 @@ func (cpu *CPU) execFence(imm, rs1, f3, rd int) {
 		}
 
 	case 0b_001: // fence.i
+		cpu.Updated.ICache.Clear()
+
 		if imm != 0 || rs1 != 0 || rd != 0 {
 			cpu.trap(ExceptionIllegalIstruction)
 		}

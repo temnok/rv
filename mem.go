@@ -1,45 +1,58 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int, data *int) {
-	const xbytes = 8
+	const (
+		xbytes   = 8
+		pageMask = PageSize - 1
+	)
 
 	shift := virtAddr & (xbytes - 1)
 	virtAddr &^= xbytes - 1
 
-	var physAddr, lo int
-	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
-		return
+	var physAddr, val int
+	if cpu.ICache.Hit(virtAddr) {
+		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
+	} else {
+		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
+			return
+		}
+
+		if !cpu.Bus.Read(physAddr, &val, xbytes) {
+			cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
+			return
+		}
 	}
 
-	if !cpu.Bus.Read(physAddr, &lo, xbytes) {
-		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
-		return
-	}
-
-	lo >>= shift * 8
+	lo := val >> (shift * 8)
 	isCompressedInstruction := lo&3 != 3
 
 	if fullyLoaded := isCompressedInstruction || shift+4 <= xbytes; fullyLoaded {
 		*data = lo
+
+		cpu.Updated.ICache = Cache{
+			VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
+
 		return
 	}
 
 	virtAddr += xbytes
 	physAddr += xbytes
 
-	if virtAddr%PageSize == 0 {
+	if virtAddr&pageMask == 0 {
 		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
 			return
 		}
 	}
 
-	var hi int
-	if !cpu.Bus.Read(physAddr, &hi, xbytes) {
+	if !cpu.Bus.Read(physAddr, &val, xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
 
-	*data = hi<<16 | bits(lo, 0, 16)
+	cpu.Updated.ICache = Cache{
+		VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
+
+	*data = val<<16 | bits(lo, 0, 16)
 }
 
 func (cpu *CPU) memRead(virtAddr int, data *int, width int) {

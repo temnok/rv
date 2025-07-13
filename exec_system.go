@@ -33,6 +33,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 		switch bits(imm, 5, 7) {
 		case 0b_0001_001: // sfence.vma
 			cpu.TLB.flush()
+			cpu.Updated.ICache.Clear()
 
 			if cpu.Priv == PrivS && bit(cpu.CSR.Mstatus, MstatusTVM) == 1 {
 				cpu.trap(ExceptionIllegalIstruction)
