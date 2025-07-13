@@ -36,6 +36,8 @@ type CPUUpdatedState struct {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
 const (
+	PageSize = 1 << 12
+
 	ExceptionInstructionAccessFault    = 1
 	ExceptionIllegalIstruction         = 2
 	ExceptionBreakpoint                = 3

@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int, data *int) {
-	xbytes := cpu.XLen >> 3
+	const xbytes = 8
 
 	shift := virtAddr & (xbytes - 1)
 	virtAddr &^= xbytes - 1
@@ -25,8 +25,12 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 	}
 
 	virtAddr += xbytes
-	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
-		return
+	physAddr += xbytes
+
+	if virtAddr%PageSize == 0 {
+		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
+			return
+		}
 	}
 
 	var hi int
