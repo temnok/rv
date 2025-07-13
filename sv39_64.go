@@ -2,7 +2,7 @@ package rv
 
 func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
-		cpu.trapWithTval(ExceptionPageFault+access, virtAddr)
+		cpu.trapEnter(ExceptionPageFault+access, virtAddr)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bit(pte, PteW) == 1 && bit(pte, PteD) == 1) ||
 		bit(pte, PteA) == 0 {
 
-		cpu.trapWithTval(ExceptionPageFault+access, virtAddr)
+		cpu.trapEnter(ExceptionPageFault+access, virtAddr)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 	//panic(fmt.Sprintf("*** oops: virtAddr:%x, pteAddr:%x, pte:%x", uint(virtAddr), uint(pteAddr), uint(pte)))
 
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
-		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
+		cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr = bits(pte, 10, 44)<<12 | bits(virtAddr, 21, 9)<<3
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
-		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
+		cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr = bits(pte, 10, 44)<<12 | bits(virtAddr, 12, 9)<<3
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
-		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
+		cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 

@@ -7,19 +7,15 @@ import (
 )
 
 var (
-	cycleCount = 0
-	trapCount  = 0
-	trace      [][4]uint
+	debugTrapCount = 0
+	debugTrace     [][4]uint
 )
 
 func (cpu *CPU) debugStep() bool {
-	cycleCount++
-
 	pc := cpu.PC
 	oldRegs := cpu.Reg
 
-	cpu.Step()
-	opcode := 0 // TODO
+	opcode := cpu.Step()
 
 	entry := [4]uint{uint(pc), uint(opcode)}
 	for i, val := range cpu.Reg {
@@ -29,14 +25,14 @@ func (cpu *CPU) debugStep() bool {
 		}
 	}
 
-	trace = append(trace, entry)
-	if n := 100; len(trace) == n+1 {
-		copy(trace[:n], trace[1:])
-		trace = trace[:n]
+	debugTrace = append(debugTrace, entry)
+	if n := 100; len(debugTrace) == n+1 {
+		copy(debugTrace[:n], debugTrace[1:])
+		debugTrace = debugTrace[:n]
 	}
 
 	if cpu.isTrapped() /*|| cycleCount == 1_000_000*/ {
-		trapCount++
+		debugTrapCount++
 
 		//if trapCount == 8 {
 		//	fmt.Printf("Cycle: %v, trap: %v\r\n\r\n", cycleCount, trapCount)
@@ -53,7 +49,7 @@ func (cpu *CPU) debugStep() bool {
 func debugDump(cpu *CPU) {
 	isa, _ := rvda.New(uint(cpu.XLen), rvda.RV64gc)
 
-	for _, entry := range trace {
+	for _, entry := range debugTrace {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))
 	}
 

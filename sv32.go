@@ -34,7 +34,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bit(pte, PteW) == 1 && bit(pte, PteD) == 1) ||
 		bit(pte, PteA) == 0 {
 
-		cpu.trapWithTval(ExceptionPageFault+access, virtAddr)
+		cpu.trapEnter(ExceptionPageFault+access, virtAddr)
 		return
 	}
 
@@ -48,7 +48,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr := cpu.xint(bits(cpu.CSR.Satp, 0, 20)<<12 | bits(virtAddr, 22, 10)<<2)
 	if !cpu.Bus.Read(pteAddr, &pte, 4) {
-		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
+		cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	if !isLeaf {
 		pteAddr = cpu.xint(bits(pte, 10, 20)<<12 | bits(virtAddr, 12, 10)<<2)
 		if !cpu.Bus.Read(pteAddr, &pte, 4) {
-			cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
+			cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
 			return
 		}
 

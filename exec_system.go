@@ -22,12 +22,12 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 		cpu.trap(ExceptionBreakpoint)
 
 	case 0b_0001_000_00010: // sret
-		cpu.xret(PrivS)
+		cpu.trapExit(PrivS)
 
 	case 0b_0001_000_00101: // wfi, https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#wfi
 
 	case 0b_0011_000_00010: // mret
-		cpu.xret(PrivM)
+		cpu.trapExit(PrivM)
 
 	default:
 		switch bits(imm, 5, 7) {
