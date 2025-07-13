@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_START=$(date +%s)
+BM_START=$SCRIPT_START
+CPU_COUNT=$(nproc)
+
+function benchmark {
+  BM_END=$(date +%s)
+  echo $((($BM_END-$BM_START)/60))m $((($BM_END-$BM_START)%60))s
+  BM_START=$BM_END
+}
+
+cd $(dirname "${BASH_SOURCE[0]}")
+echo "Using CPUs: $CPU_COUNT"
+
+if [ ! -d _download ]; then
+    echo -n "Downloading sources... "
+
+    rm -rf _download.tmp && mkdir _download.tmp && cd _download.tmp
+    wget --quiet --continue \
+      https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.15.3.tar.xz
+    cd .. && mv _download.tmp _download
+
+    benchmark
+fi
+
+mkdir -p _build _ccache && cd _build && BUILD_DIR=$(pwd)
+
+if [ ! -d linux ]; then
+    echo -n "Building kernel... "
+
+    rm -rf linux.tmp && tar -xf ../_download/linux-* && mv linux-* linux.tmp && cd linux.tmp
+    flags=(
+        ARCH_RV64I DEBUG_INFO DEBUG_INFO_DWARF5 DEBUG_KERNEL GDB_SCRIPTS
+        KGDB KGDB_SERIAL_CONSOLE NONPORTABLE RISCV_INTC RISCV_ISA_C
+        SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
+
+#        VIRTIO VIRTIO_{BALLOON,BLK,BLK_SCSI,NET,PCI,RING,CONSOLE} BALLOON_COMPACTION
+#        # https://raw.githubusercontent.com/docker/docker/master/contrib/check-config.sh:
+#        CGROUP_{DEVICE,PIDS,PERF,HUGETLB,NET_PRIO} MEMCG BLK_CGROUP NET_CLS_CGROUP
+#        VETH BRIDGE BRIDGE_NETFILTER NETFILTER_ADVANCED NETFILTER_XT_MATCH_{ADDRTYPE,IPVS}
+#        NF_{NAT_NEEDED,NAT_IPV4,NAT_TFTP,CONNTRACK_TFTP} IP_NF_{NAT,TARGET_MASQUERADE}
+#        USER_NS MEMCG_SWAP MEMCG_SWAP_ENABLED
+#
+#        BLK_DEV_{THROTTLING,THROTTLING_LOW} IOSCHED_CFQ CFQ_GROUP_IOSCHED CFS_BANDWIDTH RT_GROUP_SCHED
+#        IP_VS IP_VS_NFCT IP_VS_RR VXLAN IPVLAN MACVLAN DUMMY
+#        AUFS_FS BTRFS_FS DM_THIN_PROVISIONING OVERLAY_FS
+#
+#        FB
+    )
+
+#    QUIET=--quiet
+
+    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
+      $QUIET allnoconfig
+    for f in ${flags[@]}; do
+        scripts/config -e $f
+    done
+
+    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
+      $QUIET olddefconfig
+
+    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
+      CC="ccache riscv64-linux-gnu-gcc" \
+      KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
+      KBUILD_BUILD_USER="builduser" \
+      KBUILD_BUILD_HOST="buildhost" \
+      $QUIET --jobs=$CPU_COUNT Image
+
+    cd .. && mv linux.tmp linux
+    benchmark
+fi
+
+if [ ! -d dtb ]; then
+    echo -n "Building dtb... "
+    rm -rf dtb.tmp && mkdir dtb.tmp && cd dtb.tmp
+    dtc -O dtb -o rv64.dtb ../../rv64.dts
+    cd .. && mv dtb.tmp dtb
+    benchmark
+fi
+
+exit
+
+if [ ! -d busybox ]; then
+    echo -n "Building busybox... "
+    rm -rf busybox.tmp && tar -xf ../_download/busybox-* && mv busybox-* busybox.tmp && cd busybox.tmp
+    make --quiet defconfig > /dev/null 2>&1
+    LDFLAGS="--static" make --quiet --jobs=$CPU_COUNT busybox > /dev/null 2>&1
+    cd .. && mv busybox.tmp busybox
+    benchmark
+fi
+
+if [ ! -d iptables ]; then
+    echo -n "Building iptables... "
+    rm -rf iptables.tmp && tar -xf ../_download/iptables-* && mv iptables-* iptables.tmp && cd iptables.tmp
+    LDFLAGS="--static" ./configure --enable-static --disable-shared --disable-nftables > /dev/null
+    make --quiet --jobs=$CPU_COUNT > /dev/null 2>&1
+    cd .. && mv iptables.tmp iptables
+    benchmark
+fi
+
+if [ ! -d docker ]; then
+    echo -n "Installing docker... "
+    tar -xf ../_download/docker* && cd docker/
+    cd ..
+    benchmark
+fi
+
+echo -n "Creating initramfs... "
+rm -rf initramfs && cp -R ../initramfs ./
+mkdir -p initramfs/{bin,etc/ssl/certs,root,sbin,usr/{bin,sbin},home/user}
+cp busybox/busybox initramfs/bin/ &&
+  chmod +s initramfs/bin/busybox
+# exclude ctr, docker-init, docker-proxy
+cp docker/{containerd,containerd-shim-runc-v2,docker,dockerd,runc} initramfs/usr/bin/
+cp iptables/iptables/xtables-legacy-multi initramfs/sbin/iptables
+cp /etc/ssl/certs/ca-certificates.crt initramfs/etc/ssl/certs/
+
+cd initramfs && find . | cpio --quiet --create --owner 0:0 --format newc | gzip -c > ../initramfs.cpio.gz && cd ..
+benchmark
+
+echo -n "Total execution time: "
+BM_START=$SCRIPT_START && benchmark
+
+sha256sum -b linux/arch/x86/boot/bzImage
+# b72e11d453dbc08e13bb8fde1ab539209901f811d63da14fb37a7c085371ac9d

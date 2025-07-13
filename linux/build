@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -e
+cd $(dirname "$0")
+
+docker/build
+
+docker run -ti --rm \
+    -v $(pwd)/work:/home/user/work \
+    rv-linux-build \
+    bash build
