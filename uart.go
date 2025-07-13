@@ -26,7 +26,7 @@ func (uart *UART) Init(plic *PLIC, baseAddr int, interuptID int, callback func(c
 	}
 }
 
-func (uart *UART) access(addr int, data *int, width int, write bool) bool {
+func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
 	if addr = (addr - uart.baseAddr) / 4; addr < 0 || addr >= 8 || width != 4 {
 		return false
 	}
@@ -80,7 +80,7 @@ func (uart *UART) access(addr int, data *int, width int, write bool) bool {
 	return true
 }
 
-func (uart *UART) notifyInterrupts() {
+func (uart *UART) NotifyInterrupts() {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
 		if bit(uart.txctrl, 0) == 1 && uart.tx.size > 0 {
@@ -111,7 +111,7 @@ func (uart *UART) notifyInterrupts() {
 	}
 
 	if uart.ip != 0 && uart.plic != nil {
-		uart.plic.triggerInterrupt(uart.interruptID)
+		uart.plic.TriggerInterrupt(uart.interruptID)
 	}
 }
 

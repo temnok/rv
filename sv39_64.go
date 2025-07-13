@@ -7,29 +7,29 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
-	epriv := cpu.priv
-	if bit(cpu.csr.mstatus, mstatusMPRV) == 1 && access != AccessExecute {
-		epriv = bits(cpu.csr.mstatus, mstatusMPP, 2)
+	epriv := cpu.Priv
+	if bit(cpu.CSR.Mstatus, MstatusMPRV) == 1 && access != AccessExecute {
+		epriv = bits(cpu.CSR.Mstatus, MstatusMPP, 2)
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
-	if bits(cpu.csr.satp, satpMODE64, 4) == 0 || epriv == PrivM {
+	if bits(cpu.CSR.Satp, SatpMODE64, 4) == 0 || epriv == PrivM {
 		*physAddr = virtAddr
 		return
 	}
 
-	pte, shift := cpu.tlb.lookup(virtAddr)
+	pte, shift := cpu.TLB.lookup(virtAddr)
 	if pte == 0 {
 		if cpu.loadPTEsv39(virtAddr, &pte, &shift); cpu.isTrapped() {
 			return
 		}
 
 		if pte != 0 {
-			cpu.tlb.append(virtAddr, shift, pte)
+			cpu.TLB.append(virtAddr, shift, pte)
 		}
 	}
 
-	sum, mxr := bit(cpu.csr.mstatus, mstatusSUM), bit(cpu.csr.mstatus, mstatusMXR)
+	sum, mxr := bit(cpu.CSR.Mstatus, MstatusSUM), bit(cpu.CSR.Mstatus, MstatusMXR)
 
 	if pte == 0 ||
 		epriv == PrivU && bit(pte, PteU) == 0 ||
@@ -51,11 +51,11 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
 	var pte int
 
-	pteAddr := bits(cpu.csr.satp, 0, 44)<<12 | bits(virtAddr, 30, 9)<<3
+	pteAddr := bits(cpu.CSR.Satp, 0, 44)<<12 | bits(virtAddr, 30, 9)<<3
 
 	//panic(fmt.Sprintf("*** oops: virtAddr:%x, pteAddr:%x, pte:%x", uint(virtAddr), uint(pteAddr), uint(pte)))
 
-	if !cpu.bus.read(pteAddr, &pte, 8) {
+	if !cpu.Bus.Read(pteAddr, &pte, 8) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
@@ -75,7 +75,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 	}
 
 	pteAddr = bits(pte, 10, 44)<<12 | bits(virtAddr, 21, 9)<<3
-	if !cpu.bus.read(pteAddr, &pte, 8) {
+	if !cpu.Bus.Read(pteAddr, &pte, 8) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
@@ -95,7 +95,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 	}
 
 	pteAddr = bits(pte, 10, 44)<<12 | bits(virtAddr, 12, 9)<<3
-	if !cpu.bus.read(pteAddr, &pte, 8) {
+	if !cpu.Bus.Read(pteAddr, &pte, 8) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 		return
 	}

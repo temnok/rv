@@ -41,12 +41,12 @@ func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 	terminal := newTerminal(in, out)
 	uart.Init(&plic, 0x0300_0000, 1, terminal.callback)
 
-	path := fmt.Sprintf("buildroot/output/rv%v", cpu.xlen)
+	path := fmt.Sprintf("buildroot/output/rv%v", cpu.XLen)
 	ram.Load(ramBaseAddr, readFile(path+".kernel.gz", ""))
 	ram.Load(dtbAddr, readFile(path+".dtb", ""))
 
 	for step := 0; !terminal.Closed; step++ {
-		cpu.step()
+		cpu.Step()
 
 		if timeout > 0 && step > timeout {
 			break

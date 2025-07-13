@@ -17,7 +17,7 @@ func TestInstructions64(t *testing.T) {
 }
 
 func testInstructions(t *testing.T, xlen int) {
-	matches, err := filepath.Glob("tests/pass/*")
+	matches, err := filepath.Glob(fmt.Sprintf("tests/pass/rv%v*", xlen))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,31 +52,31 @@ func runTest(t *testing.T, xlen int, file string) {
 	var lastPCs []uint
 	var lastTraps [][2]uint
 
-	for startPC := cpu.pc; ; {
-		if i := cpu.pc - startPC; i >= 0 && i < len(instrCounts) {
+	for startPC := cpu.PC; ; {
+		if i := cpu.PC - startPC; i >= 0 && i < len(instrCounts) {
 			instrCounts[i]++
 		}
 
-		lastPCs = append(lastPCs, uint(cpu.pc))
+		lastPCs = append(lastPCs, uint(cpu.PC))
 		if n := 10; len(lastPCs) == n+1 {
 			copy(lastPCs[:n], lastPCs[1:])
 			lastPCs = lastPCs[:n]
 		}
 
-		prevPC := cpu.pc
-		cpu.step()
+		prevPC := cpu.PC
+		cpu.Step()
 
 		if cpu.isTrapped() {
 			trapCount++
 
-			lastTraps = append(lastTraps, [2]uint{uint(prevPC), uint(cpu.csr.mcause)})
+			lastTraps = append(lastTraps, [2]uint{uint(prevPC), uint(cpu.CSR.Mcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
 			}
 		}
 
-		if cpu.csr.cycle == 100_000 {
+		if cpu.CSR.Cycle == 100_000 {
 			var addresses []uint
 			for i, c := range instrCounts {
 				if c > 10_000 {
@@ -90,25 +90,25 @@ func runTest(t *testing.T, xlen int, file string) {
 
 			t.Errorf("timeout: trapCount=%v, priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				trapCount, cpu.priv, cpu.csr.mcause, uint(cpu.reg[31]), lastPCs, lastTraps, addresses)
+				trapCount, cpu.Priv, cpu.CSR.Mcause, uint(cpu.Reg[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 
 		if cpu.isTrapped() {
-			if cause := cpu.updated.xcause; cause == ExceptionEnvironmentCallFromUMode ||
+			if cause := cpu.Updated.TrapXcause; cause == ExceptionEnvironmentCallFromUMode ||
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {
 
-				if cpu.reg[3] == 1 && cpu.reg[10] == 0 {
-					fmt.Printf("cycles: %v\n", cpu.csr.cycle)
+				if cpu.Reg[3] == 1 && cpu.Reg[10] == 0 {
+					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, cause=%v,  mepc=%08x, mstatus=%08x, "+
 						"gp=%08x, a0=%08x, t0=%08x, t2=%08x, t6=%08x\n",
-						cpu.csr.cycle, lastPCs, lastTraps,
-						cpu.priv, cause, uint(cpu.csr.mepc), uint(cpu.csr.mstatus),
-						uint(cpu.reg[3]), uint(cpu.reg[10]),
-						uint(cpu.reg[5]), uint(cpu.reg[7]), uint(cpu.reg[31]))
+						cpu.CSR.Cycle, lastPCs, lastTraps,
+						cpu.Priv, cause, uint(cpu.CSR.Mepc), uint(cpu.CSR.Mstatus),
+						uint(cpu.Reg[3]), uint(cpu.Reg[10]),
+						uint(cpu.Reg[5]), uint(cpu.Reg[7]), uint(cpu.Reg[31]))
 				}
 
 				break

@@ -76,10 +76,10 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 		case 0b_100:
 			switch bits(opcode, 10, 2) {
 			case 0b_00: // srli
-				return encodeR(0, immCI(opcode)&(cpu.xlen-1), ra, 5, ra, 4)
+				return encodeR(0, immCI(opcode)&(cpu.XLen-1), ra, 5, ra, 4)
 
 			case 0b_01: // srai
-				return encodeR(0b_0100000, immCI(opcode)&(cpu.xlen-1), ra, 5, ra, 4)
+				return encodeR(0b_0100000, immCI(opcode)&(cpu.XLen-1), ra, 5, ra, 4)
 
 			case 0b_10: // andi
 				return encodeI(immCI(opcode), ra, 7, ra, 4)
@@ -123,7 +123,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 	case 2:
 		switch f3 {
 		case 0b_000: // c.slli
-			return encodeR(0, immCI(opcode)&(cpu.xlen-1), rA, 1, rA, 4) // slli
+			return encodeR(0, immCI(opcode)&(cpu.XLen-1), rA, 1, rA, 4) // slli
 
 		case 0b_010: // c.lwsp
 			return encodeI(immCI2(opcode), 2, 2, rA, 0) // lw

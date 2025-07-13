@@ -15,14 +15,14 @@ var (
 func (cpu *CPU) debugStep() bool {
 	cycleCount++
 
-	pc := cpu.pc
-	oldRegs := cpu.reg
+	pc := cpu.PC
+	oldRegs := cpu.Reg
 
-	cpu.innerStep()
+	cpu.Step()
 	opcode := 0 // TODO
 
 	entry := [4]uint{uint(pc), uint(opcode)}
-	for i, val := range cpu.reg {
+	for i, val := range cpu.Reg {
 		if val != oldRegs[i] {
 			entry[2], entry[3] = uint(i), uint(val)
 			break
@@ -51,21 +51,21 @@ func (cpu *CPU) debugStep() bool {
 }
 
 func debugDump(cpu *CPU) {
-	isa, _ := rvda.New(uint(cpu.xlen), rvda.RV64gc)
+	isa, _ := rvda.New(uint(cpu.XLen), rvda.RV64gc)
 
 	for _, entry := range trace {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))
 	}
 
 	fmt.Printf("\r\nmcause:%x, mepc:%x, mtvec:%x, mstatus:%x\r\n",
-		uint(cpu.csr.mcause), uint(cpu.csr.mepc), uint(cpu.csr.mtvec), uint(cpu.csr.mstatus))
+		uint(cpu.CSR.Mcause), uint(cpu.CSR.Mepc), uint(cpu.CSR.Mtvec), uint(cpu.CSR.Mstatus))
 	fmt.Printf("scause:%x, sepc:%x, stvec:%x, satp:%x\r\n",
-		uint(cpu.csr.scause), uint(cpu.csr.sepc), uint(cpu.csr.stvec), uint(cpu.csr.satp))
-	fmt.Printf("priv:%v, medeleg:%x\r\n\r\n", cpu.priv, uint(cpu.csr.medeleg))
+		uint(cpu.CSR.Scause), uint(cpu.CSR.Sepc), uint(cpu.CSR.Stvec), uint(cpu.CSR.Satp))
+	fmt.Printf("priv:%v, medeleg:%x\r\n\r\n", cpu.Priv, uint(cpu.CSR.Medeleg))
 
 	for i := range 16 {
 		fmt.Printf("% 5v:%16x      % 5v:%16x\r\n",
-			regNames[i], uint(cpu.reg[i]), regNames[16+i], uint(cpu.reg[16+i]))
+			regNames[i], uint(cpu.Reg[i]), regNames[16+i], uint(cpu.Reg[16+i]))
 	}
 }
 

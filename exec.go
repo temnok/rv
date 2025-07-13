@@ -9,7 +9,7 @@ func (cpu *CPU) exec(opcode int) {
 			return
 		}
 	}
-	cpu.updated.pc = cpu.xint(cpu.pc + opcodeSize)
+	cpu.Updated.PC = cpu.xint(cpu.PC + opcodeSize)
 
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
@@ -28,11 +28,11 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execComputeI(immI(opcode), rs1, f3, rd)
 
 	case 0b_00110:
-		cpu.execComputeIw(immI(opcode), rs1, f3, rd)
+		cpu.execComputeI64(immI(opcode), rs1, f3, rd)
 
 	case 0b_00101: // auipc
-		cpu.updated.regIndex = rd
-		cpu.updated.regValue = cpu.xint(cpu.pc + immU(opcode))
+		cpu.Updated.RegIndex = rd
+		cpu.Updated.RegValue = cpu.xint(cpu.PC + immU(opcode))
 
 	case 0b_01000:
 		cpu.execStore(immS(opcode), rs2, rs1, f3)
@@ -44,24 +44,24 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execComputeR(f7, rs2, rs1, f3, rd)
 
 	case 0b_01110:
-		cpu.execComputeRw(f7, rs2, rs1, f3, rd)
+		cpu.execComputeR64(f7, rs2, rs1, f3, rd)
 
 	case 0b_01101: // lui
-		cpu.updated.regIndex = rd
-		cpu.updated.regValue = immU(opcode)
+		cpu.Updated.RegIndex = rd
+		cpu.Updated.RegValue = immU(opcode)
 
 	case 0b_11000:
 		cpu.execBranch(immB(opcode), rs2, rs1, f3)
 
 	case 0b_11001: // jalr
-		cpu.updated.regIndex = rd
-		cpu.updated.regValue = cpu.pc + opcodeSize
-		cpu.updated.pc = cpu.xint((cpu.reg[rs1] + immI(opcode)) &^ 1)
+		cpu.Updated.RegIndex = rd
+		cpu.Updated.RegValue = cpu.PC + opcodeSize
+		cpu.Updated.PC = cpu.xint((cpu.Reg[rs1] + immI(opcode)) &^ 1)
 
 	case 0b_11011: // jal
-		cpu.updated.regIndex = rd
-		cpu.updated.regValue = cpu.pc + opcodeSize
-		cpu.updated.pc = cpu.xint(cpu.pc + immJ(opcode))
+		cpu.Updated.RegIndex = rd
+		cpu.Updated.RegValue = cpu.PC + opcodeSize
+		cpu.Updated.PC = cpu.xint(cpu.PC + immJ(opcode))
 
 	case 0b_11100:
 		cpu.execSystem(immI(opcode), rs1, f3, rd)

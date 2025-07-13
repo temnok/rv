@@ -3,217 +3,213 @@ package rv
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
 const (
-	csrSstatus    = 0x100
-	csrSie        = 0x104
-	csrStvec      = 0x105
-	csrScounteren = 0x106
+	Sstatus    = 0x100
+	Sie        = 0x104
+	Stvec      = 0x105
+	Scounteren = 0x106
 
-	csrSscratch = 0x140
-	csrSepc     = 0x141
-	csrScause   = 0x142
-	csrStval    = 0x143
-	csrSip      = 0x144
+	Sscratch = 0x140
+	Sepc     = 0x141
+	Scause   = 0x142
+	Stval    = 0x143
+	Sip      = 0x144
 
-	csrSatp = 0x180
+	Satp = 0x180
 
-	csrMstatus    = 0x300
-	csrMisa       = 0x301
-	csrMedeleg    = 0x302
-	csrMideleg    = 0x303
-	csrMie        = 0x304
-	csrMtvec      = 0x305
-	csrMcounteren = 0x306
+	Mstatus    = 0x300
+	Misa       = 0x301
+	Medeleg    = 0x302
+	Mideleg    = 0x303
+	Mie        = 0x304
+	Mtvec      = 0x305
+	Mcounteren = 0x306
 
-	csrMscratch = 0x340
-	csrMepc     = 0x341
-	csrMcause   = 0x342
-	csrMtval    = 0x343
-	csrMip      = 0x344
+	Mscratch = 0x340
+	Mepc     = 0x341
+	Mcause   = 0x342
+	Mtval    = 0x343
+	Mip      = 0x344
 
-	csrCycle   = 0xC00
-	csrTime    = 0xC01
-	csrInstret = 0xC02
+	Cycle   = 0xC00
+	Time    = 0xC01
+	Instret = 0xC02
 
-	csrCycleh   = 0xC80
-	csrTimeh    = 0xC81
-	csrInstreth = 0xC82
+	Cycleh   = 0xC80
+	Timeh    = 0xC81
+	Instreth = 0xC82
 
-	csrMvendorid = 0xF11
-	csrMarchid   = 0xF12
-	csrMimpid    = 0xF13
-	csrMhartid   = 0xF14
+	Mvendorid = 0xF11
+	Marchid   = 0xF12
+	Mimpid    = 0xF13
+	Mhartid   = 0xF14
 )
 
 const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-	mstatusSXL = 34
-	mstatusUXL = 32
+	MstatusSXL = 34
+	MstatusUXL = 32
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-	satpMODE32 = 31
-	satpMODE64 = 60
+	SatpMODE32 = 31
+	SatpMODE64 = 60
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-	mstatusSIE  = 1
-	mstatusMIE  = 3
-	mstatusSPIE = 5
-	mstatusMPIE = 7
-	mstatusSPP  = 8
-	mstatusMPP  = 11
-	mstatusMPRV = 17
-	mstatusSUM  = 18
-	mstatusMXR  = 19
-	mstatusTVM  = 20
-	mstatusTSR  = 22
+	MstatusSIE  = 1
+	MstatusMIE  = 3
+	MstatusSPIE = 5
+	MstatusMPIE = 7
+	MstatusSPP  = 8
+	MstatusMPP  = 11
+	MstatusMPRV = 17
+	MstatusSUM  = 18
+	MstatusMXR  = 19
+	MstatusTVM  = 20
+	MstatusTSR  = 22
 
-	mipMSI = 3
-	mipSTI = 5
-	mipMTI = 7
-	mipSEI = 9
+	MipMSI = 3
+	MipSTI = 5
+	MipMTI = 7
+	MipSEI = 9
 )
 
 type CSR struct {
-	cycle, cycleh, time, timeh int
+	Cycle, Cycleh, Time, Timeh int
 
-	stvec, scounteren, sscratch, sepc, scause, stval, sip, satp int
+	Stvec, Scounteren, Sscratch, Sepc, Scause, Stval, Sip, Satp int
 
-	mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren int
-	mscratch, mepc, mcause, mtval, mip                      int
-	mvendorid, marchid, mimpid, mhartid                     int
+	Mstatus, Misa, Medeleg, Mideleg, Mie, Mtvec, Mcounteren int
+	Mscratch, Mepc, Mcause, Mtval, Mip                      int
+	Mvendorid, Marchid, Mimpid, Mhartid                     int
 }
 
 func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask int) {
-	if write && bits(i, 10, 2) == 3 || cpu.priv < bits(i, 8, 2) {
+	if write && bits(i, 10, 2) == 3 || cpu.Priv < bits(i, 8, 2) {
 		return nil, 0
 	}
 
-	csr := &cpu.csr
+	csr := &cpu.CSR
 	mask = -1
 
 	switch i {
-	case csrSstatus: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sstatus
-		reg = &csr.mstatus
-		mask = 1<<mstatusSIE | 1<<mstatusSUM | 1<<mstatusMXR | 1<<mstatusSPP
+	case Sstatus: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sstatus
+		reg = &csr.Mstatus
+		mask = 1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP
 		if !write {
-			mask = int(int64(mask) | 1<<mstatusSPIE | 3<<mstatusUXL)
+			mask = int(int64(mask) | 1<<MstatusSPIE | 3<<MstatusUXL)
 		}
 
-	case csrSie: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
-		reg = &csr.mie // sie
-		mask = 1<<mipSEI | 1<<mipSTI
+	case Sie: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
+		reg = &csr.Mie // sie
+		mask = 1<<MipSEI | 1<<MipSTI
 
-	case csrStvec: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_vector_base_address_stvec_register
-		reg = &csr.stvec
+	case Stvec: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_vector_base_address_stvec_register
+		reg = &csr.Stvec
 
-	case csrScounteren:
-		reg = &csr.scounteren
+	case Scounteren:
+		reg = &csr.Scounteren
 
-	case csrSscratch: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_scratch_sscratch_register
-		reg = &csr.sscratch
+	case Sscratch: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_scratch_sscratch_register
+		reg = &csr.Sscratch
 
-	case csrSepc: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_exception_program_counter_sepc_register
-		reg = &csr.sepc
+	case Sepc: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_exception_program_counter_sepc_register
+		reg = &csr.Sepc
 
-	case csrScause: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#scause
-		reg = &csr.scause
+	case Scause: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#scause
+		reg = &csr.Scause
 
-	case csrStval: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_value_stval_register
-		reg = &csr.stval
+	case Stval: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_value_stval_register
+		reg = &csr.Stval
 
-	case csrSip: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
-		reg = &csr.mip // sip
+	case Sip: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers
+		reg = &csr.Mip // sip
 		if write {
 			mask = 0
 		} else {
-			mask = 1 << mipSEI
+			mask = 1 << MipSEI
 		}
 
-	case csrSatp: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-		if cpu.priv != PrivS || bit(csr.mstatus, mstatusTVM) == 0 {
-			reg = &csr.satp
+	case Satp: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
+		if cpu.Priv != PrivS || bit(csr.Mstatus, MstatusTVM) == 0 {
+			reg = &csr.Satp
 		}
 
-	case csrMstatus: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-		reg = &csr.mstatus
+	case Mstatus: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
+		reg = &csr.Mstatus
 		if write {
-			mask = ^(3<<mstatusSXL | 3<<mstatusUXL)
+			mask = ^(3<<MstatusSXL | 3<<MstatusUXL)
 		}
 
-	case csrMisa: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
-		reg = &csr.misa
+	case Misa: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
+		reg = &csr.Misa
 		if write {
 			mask = 0
 		}
 
-	case csrMedeleg: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_delegation_medeleg_and_mideleg_registers
-		reg = &csr.medeleg
+	case Medeleg: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_delegation_medeleg_and_mideleg_registers
+		reg = &csr.Medeleg
 
-	case csrMideleg: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_delegation_medeleg_and_mideleg_registers
-		reg = &csr.mideleg
+	case Mideleg: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_delegation_medeleg_and_mideleg_registers
+		reg = &csr.Mideleg
 
-	case csrMie: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
-		reg = &csr.mie
-		// TODO
-		//mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
+	case Mie: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
+		reg = &csr.Mie
 
-	case csrMtvec: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_vector_base_address_mtvec_register
-		reg = &csr.mtvec
+	case Mtvec: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_vector_base_address_mtvec_register
+		reg = &csr.Mtvec
 
-	case csrMcounteren:
-		reg = &csr.mcounteren
+	case Mcounteren:
+		reg = &csr.Mcounteren
 
-	case csrMscratch: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_scratch_mscratch_register
-		reg = &csr.mscratch
+	case Mscratch: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_scratch_mscratch_register
+		reg = &csr.Mscratch
 
-	case csrMepc: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_exception_program_counter_mepc_register
-		reg = &csr.mepc
+	case Mepc: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_exception_program_counter_mepc_register
+		reg = &csr.Mepc
 
-	case csrMcause: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcause
-		reg = &csr.mcause
+	case Mcause: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcause
+		reg = &csr.Mcause
 
-	case csrMtval: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_value_mtval_register
-		reg = &csr.mtval
+	case Mtval: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_value_mtval_register
+		reg = &csr.Mtval
 
-	case csrMip: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
-		reg = &csr.mip
-		// TODO
-		//mask = 1<<mipMSI | 1<<mipSTI | 1<<mipMTI | 1<<mipSEI
+	case Mip: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
+		reg = &csr.Mip
 
-	case csrCycle:
-		reg = &csr.cycle
+	case Cycle:
+		reg = &csr.Cycle
 
-	case csrTime: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
-		reg = &csr.time
+	case Time: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
+		reg = &csr.Time
 
-	case csrInstret: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_zicntr_extension_for_base_counters_and_timers
-		reg = &csr.cycle
+	case Instret: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_zicntr_extension_for_base_counters_and_timers
+		reg = &csr.Cycle
 
-	case csrCycleh:
+	case Cycleh:
 		if !cpu.xlen64() {
-			reg = &csr.cycleh
+			reg = &csr.Cycleh
 		}
 
-	case csrTimeh: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
+	case Timeh: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
 		if !cpu.xlen64() {
-			reg = &csr.timeh
+			reg = &csr.Timeh
 		}
 
-	case csrInstreth:
+	case Instreth:
 		if !cpu.xlen64() {
-			reg = &csr.cycleh
+			reg = &csr.Cycleh
 		}
 
-	case csrMvendorid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_vendor_id_mvendorid_register
-		reg = &csr.mvendorid
+	case Mvendorid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_vendor_id_mvendorid_register
+		reg = &csr.Mvendorid
 
-	case csrMarchid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_architecture_id_marchid_register
-		reg = &csr.marchid
+	case Marchid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_architecture_id_marchid_register
+		reg = &csr.Marchid
 
-	case csrMimpid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_implementation_id_mimpid_register
-		reg = &csr.mimpid
+	case Mimpid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_implementation_id_mimpid_register
+		reg = &csr.Mimpid
 
-	case csrMhartid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_hart_id_mhartid_register
-		reg = &csr.mhartid
+	case Mhartid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_hart_id_mhartid_register
+		reg = &csr.Mhartid
 	}
 
 	return
@@ -238,7 +234,7 @@ func (cpu *CPU) csrWrite(i, val int) {
 		return
 	}
 
-	cpu.updated.csrAddr = reg
-	cpu.updated.csrIndex = i
-	cpu.updated.csrValue = *reg&^mask | val&mask
+	cpu.Updated.CSRAddr = reg
+	cpu.Updated.CSRIndex = i
+	cpu.Updated.CSRValue = *reg&^mask | val&mask
 }

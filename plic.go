@@ -19,7 +19,7 @@ func (plic *PLIC) Init(cpu *CPU, baseAddr int) {
 	}
 }
 
-func (plic *PLIC) access(addr int, data *int, width int, write bool) bool {
+func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
 	if addr = (addr - plic.baseAddr) / 4; addr < 0 || addr >= 0x400_0000/4 || width < 4 {
 		return false
 	}
@@ -72,13 +72,13 @@ func (plic *PLIC) access(addr int, data *int, width int, write bool) bool {
 	return true
 }
 
-func (plic *PLIC) triggerInterrupt(source int) {
+func (plic *PLIC) TriggerInterrupt(source int) {
 	if source > 0 && source < 32 && bit(plic.claiming, source) == 0 && bit(plic.pending, source) == 0 {
 		plic.pending |= 1 << source
 	}
 }
 
-func (plic *PLIC) notifyInterrupts() {
+func (plic *PLIC) NotifyInterrupts() {
 	maxPriority := 0
 	irq := 0
 	for i := 1; i < 32; i++ {
@@ -97,6 +97,6 @@ func (plic *PLIC) notifyInterrupts() {
 	plic.claim = irq
 
 	if irq > 0 {
-		plic.cpu.csr.mip |= 1 << mipSEI
+		plic.cpu.CSR.Mip |= 1 << MipSEI
 	}
 }

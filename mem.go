@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) memFetch(virtAddr int, data *int) {
-	xbytes := cpu.xlen >> 3
+	xbytes := cpu.XLen >> 3
 
 	shift := virtAddr & (xbytes - 1)
 	virtAddr &^= xbytes - 1
@@ -11,7 +11,7 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 		return
 	}
 
-	if !cpu.bus.read(physAddr, &lo, xbytes) {
+	if !cpu.Bus.Read(physAddr, &lo, xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
@@ -30,7 +30,7 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 	}
 
 	var hi int
-	if !cpu.bus.read(physAddr, &hi, xbytes) {
+	if !cpu.Bus.Read(physAddr, &hi, xbytes) {
 		cpu.trapWithTval(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
@@ -49,7 +49,7 @@ func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 		return
 	}
 
-	if !cpu.bus.read(physAddr, data, width) {
+	if !cpu.Bus.Read(physAddr, data, width) {
 		cpu.trapWithTval(ExceptionLoadAccessFault, virtAddr)
 	}
 }
@@ -65,7 +65,7 @@ func (cpu *CPU) memWrite(virtAddr, data, width int) {
 		return
 	}
 
-	if !cpu.bus.write(physAddr, data, width) {
+	if !cpu.Bus.Write(physAddr, data, width) {
 		cpu.trapWithTval(ExceptionStoreAMOAccessFault, virtAddr)
 	}
 }

@@ -1,36 +1,37 @@
 package rv
 
 type CPU struct {
-	xlen int
+	XLen int
+	Bus  Bus
+	TLB  TLB
 
-	priv int
-	pc   int
-	reg  [32]int
-	csr  CSR
+	CPUState
+	Updated CPUUpdatedState
+}
 
-	reserved        bool
-	reservedAddress int
+type CPUState struct {
+	Priv int
+	PC   int
+	Reg  [32]int
+	CSR  CSR
 
-	tlb TLB
-
-	bus Bus
-
-	updated CPUUpdatedState
+	Reserved        bool
+	ReservedAddress int
 }
 
 type CPUUpdatedState struct {
-	priv               int
-	pc                 int
-	regIndex, regValue int
+	Priv               int
+	PC                 int
+	RegIndex, RegValue int
 
-	csrAddr            *int
-	csrIndex, csrValue int
+	CSRAddr            *int
+	CSRIndex, CSRValue int
 
-	trapState           bool
-	xepc, xcause, xtval int
+	TrapState                       bool
+	TrapXepc, TrapXcause, TrapXtval int
 
-	reserved        bool
-	reservedAddress int
+	Reserved        bool
+	ReservedAddress int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -60,27 +61,30 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 	xl := xlen / 32
 
 	*cpu = CPU{
-		xlen: xlen,
+		XLen: xlen,
+		Bus:  bus,
 
-		csr: CSR{
-			misa: xl<<(xlen-2) |
-				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-				1<<('u'-'a') | 1<<('s'-'a'),
+		CPUState: CPUState{
+			CSR: CSR{
+				Misa: xl<<(xlen-2) |
+					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+					1<<('u'-'a') | 1<<('s'-'a'),
+			},
 		},
 
-		bus: bus,
+		Updated: CPUUpdatedState{
+			Priv:     PrivM,
+			RegIndex: regIndex,
+			RegValue: regValue,
+		},
 	}
 
-	cpu.csr.mstatus = cpu.xint(xl<<mstatusSXL | xl<<mstatusUXL)
-
-	cpu.updated.priv = PrivM
-	cpu.updated.pc = cpu.xint(startAddr)
-	cpu.updated.regIndex = regIndex
-	cpu.updated.regValue = regValue
+	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)
+	cpu.Updated.PC = cpu.xint(startAddr)
 }
 
 func (cpu *CPU) xlen64() bool {
-	return cpu.xlen == 64
+	return cpu.XLen == 64
 }
 
 func (cpu *CPU) xint(val int) int {
@@ -99,23 +103,19 @@ func (cpu *CPU) xuint(val int) uint {
 	return uint(uint32(val))
 }
 
-func (cpu *CPU) step() {
+func (cpu *CPU) Step() {
 	cpu.updateState()
-	cpu.innerStep()
-}
 
-func (cpu *CPU) innerStep() {
-	cpu.updated.priv = cpu.priv
-	cpu.updated.reserved = cpu.reserved
-	cpu.updated.reservedAddress = cpu.reservedAddress
+	cpu.Updated.Priv = cpu.Priv
+	cpu.Updated.Reserved = cpu.Reserved
+	cpu.Updated.ReservedAddress = cpu.ReservedAddress
 
-	cpu.csr.mip &^= 1<<mipSEI | 1<<mipMTI | 1<<mipMSI
 	if cpu.trapOnPendingInterrupts(); cpu.isTrapped() {
 		return
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped() {
+	if cpu.memFetch(cpu.PC, &opcode); cpu.isTrapped() {
 		return
 	}
 
@@ -123,58 +123,67 @@ func (cpu *CPU) innerStep() {
 }
 
 func (cpu *CPU) isTrapped() bool {
-	return cpu.updated.trapState
+	return cpu.Updated.TrapState
 }
 
 func (cpu *CPU) updateState() {
 	cpu.updateTimers()
+	cpu.clearPendingInterrupts()
 
-	up := &cpu.updated
+	up := &cpu.Updated
 
-	cpu.pc = up.pc
-	cpu.priv = up.priv
+	cpu.PC = up.PC
+	cpu.Priv = up.Priv
 
-	if up.regIndex != 0 {
-		cpu.reg[up.regIndex] = up.regValue
+	if up.RegIndex != 0 {
+		cpu.Reg[up.RegIndex] = up.RegValue
 	}
 
-	if up.csrIndex != 0 {
-		*up.csrAddr = up.csrValue
+	if up.CSRIndex != 0 {
+		*up.CSRAddr = up.CSRValue
 	}
 
-	if up.trapState {
-		if up.priv == PrivM {
-			cpu.csr.mepc, cpu.csr.mcause, cpu.csr.mtval = up.xepc, up.xcause, up.xtval
+	if up.TrapState {
+		if up.Priv == PrivM {
+			cpu.CSR.Mepc = up.TrapXepc
+			cpu.CSR.Mcause = up.TrapXcause
+			cpu.CSR.Mtval = up.TrapXtval
 		} else {
-			cpu.csr.sepc, cpu.csr.scause, cpu.csr.stval = up.xepc, up.xcause, up.xtval
+			cpu.CSR.Sepc = up.TrapXepc
+			cpu.CSR.Scause = up.TrapXcause
+			cpu.CSR.Stval = up.TrapXtval
 		}
 	}
 
-	cpu.reserved = up.reserved
-	if up.reserved {
-		cpu.reservedAddress = up.reservedAddress
+	cpu.Reserved = up.Reserved
+	if up.Reserved {
+		cpu.ReservedAddress = up.ReservedAddress
 	}
 
 	*up = CPUUpdatedState{}
 }
 
 func (cpu *CPU) updateTimers() {
-	if cpu.csr.cycle = cpu.xint(cpu.csr.cycle + 1); cpu.csr.cycle == 0 {
-		cpu.csr.cycleh++
+	if cpu.CSR.Cycle = cpu.xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
+		cpu.CSR.Cycleh++
 	}
 
-	if cpu.csr.cycle%10_000 == 0 {
-		if cpu.csr.time = cpu.xint(cpu.csr.time + 1); cpu.csr.time == 0 {
-			cpu.csr.timeh++
+	if cpu.CSR.Cycle%10_000 == 0 {
+		if cpu.CSR.Time = cpu.xint(cpu.CSR.Time + 1); cpu.CSR.Time == 0 {
+			cpu.CSR.Timeh++
 		}
 	}
 }
 
+func (cpu *CPU) clearPendingInterrupts() {
+	cpu.CSR.Mip &^= 1<<MipSEI | 1<<MipMTI | 1<<MipMSI
+}
+
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func (cpu *CPU) trapOnPendingInterrupts() {
-	cpu.bus.notifyInterrupts()
+	cpu.Bus.NotifyInterrupts()
 
-	mi := cpu.csr.mip & cpu.csr.mie
+	mi := cpu.CSR.Mip & cpu.CSR.Mie
 
 	if mi == 0 {
 		return
@@ -186,12 +195,12 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 		}
 
 		priv := PrivM
-		if bit(cpu.csr.mideleg, i) == 1 {
+		if bit(cpu.CSR.Mideleg, i) == 1 {
 			priv = PrivS
 		}
 
-		mcauseI := cpu.xlen - 1
-		if (priv == cpu.priv && bit(cpu.csr.mstatus, priv) == 1) || priv > cpu.priv {
+		mcauseI := cpu.XLen - 1
+		if (priv == cpu.Priv && bit(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
 			cpu.trap(-1<<mcauseI | i)
 
 			return
@@ -208,17 +217,17 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 		panic("double trap")
 	}
 
-	mcauseI := cpu.xlen - 1
+	mcauseI := cpu.XLen - 1
 	isInterrupt := bit(cause, mcauseI) == 1
 	causeID := bits(cause, 0, 5)
 
-	deleg := cpu.csr.medeleg
+	deleg := cpu.CSR.Medeleg
 	if isInterrupt {
-		deleg = cpu.csr.mideleg
+		deleg = cpu.CSR.Mideleg
 	}
 
 	effectivePriv := PrivM
-	if cpu.priv < PrivM && bit(deleg, causeID) == 1 {
+	if cpu.Priv < PrivM && bit(deleg, causeID) == 1 {
 		effectivePriv = PrivS
 	}
 
@@ -226,67 +235,67 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 
 	switch effectivePriv {
 	case PrivM:
-		mie := bit(cpu.csr.mstatus, mstatusMIE)
-		cpu.updated.csrValue = cpu.csr.mstatus&^(3<<mstatusMPP|1<<mstatusMPIE|1<<mstatusMIE) |
-			(cpu.priv<<mstatusMPP | mie<<mstatusMPIE)
+		mie := bit(cpu.CSR.Mstatus, MstatusMIE)
+		cpu.Updated.CSRValue = cpu.CSR.Mstatus&^(3<<MstatusMPP|1<<MstatusMPIE|1<<MstatusMIE) |
+			(cpu.Priv<<MstatusMPP | mie<<MstatusMPIE)
 
-		tvec = cpu.csr.mtvec
+		tvec = cpu.CSR.Mtvec
 
 	case PrivS:
-		sie := bit(cpu.csr.mstatus, mstatusSIE)
-		cpu.updated.csrValue = cpu.csr.mstatus&^(1<<mstatusSPP|1<<mstatusSPIE|1<<mstatusSIE) |
-			(cpu.priv<<mstatusSPP | sie<<mstatusSPIE)
+		sie := bit(cpu.CSR.Mstatus, MstatusSIE)
+		cpu.Updated.CSRValue = cpu.CSR.Mstatus&^(1<<MstatusSPP|1<<MstatusSPIE|1<<MstatusSIE) |
+			(cpu.Priv<<MstatusSPP | sie<<MstatusSPIE)
 
-		tvec = cpu.csr.stvec
+		tvec = cpu.CSR.Stvec
 	}
 
-	cpu.updated.pc = tvec &^ 3
+	cpu.Updated.PC = tvec &^ 3
 	if bit(tvec, 0) == 1 && isInterrupt {
-		cpu.updated.pc += causeID * 4
+		cpu.Updated.PC += causeID * 4
 	}
 
-	cpu.updated.trapState = true
-	cpu.updated.priv = effectivePriv
-	cpu.updated.csrAddr = &cpu.csr.mstatus
-	cpu.updated.csrIndex = csrMstatus
-	cpu.updated.xepc = cpu.pc
-	cpu.updated.xcause = cause
-	cpu.updated.xtval = tval
+	cpu.Updated.TrapState = true
+	cpu.Updated.Priv = effectivePriv
+	cpu.Updated.CSRAddr = &cpu.CSR.Mstatus
+	cpu.Updated.CSRIndex = Mstatus
+	cpu.Updated.TrapXepc = cpu.PC
+	cpu.Updated.TrapXcause = cause
+	cpu.Updated.TrapXtval = tval
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func (cpu *CPU) xret(priv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
-	trap := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) == 1
+	trap := cpu.Priv == PrivS && bit(cpu.CSR.Mstatus, MstatusTSR) == 1
 
-	if trap || priv > cpu.priv {
+	if trap || priv > cpu.Priv {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
 
-	cpu.updated.csrAddr = &cpu.csr.mstatus
-	cpu.updated.csrIndex = csrMstatus
+	cpu.Updated.CSRAddr = &cpu.CSR.Mstatus
+	cpu.Updated.CSRIndex = Mstatus
 
 	switch priv {
 	case PrivM:
-		cpu.updated.pc = cpu.csr.mepc
-		cpu.updated.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
+		cpu.Updated.PC = cpu.CSR.Mepc
+		cpu.Updated.Priv = bits(cpu.CSR.Mstatus, MstatusMPP, 2)
 
-		mie := bit(cpu.csr.mstatus, mstatusMPIE)
-		cpu.updated.csrValue = cpu.csr.mstatus&^(3<<mstatusMPP) |
-			(1<<mstatusMPIE | mie<<mstatusMIE)
+		mie := bit(cpu.CSR.Mstatus, MstatusMPIE)
+		cpu.Updated.CSRValue = cpu.CSR.Mstatus&^(3<<MstatusMPP) |
+			(1<<MstatusMPIE | mie<<MstatusMIE)
 
 	case PrivS:
-		cpu.updated.pc = cpu.csr.sepc
-		cpu.updated.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
+		cpu.Updated.PC = cpu.CSR.Sepc
+		cpu.Updated.Priv = bits(cpu.CSR.Mstatus, MstatusSPP, 1)
 
-		sie := bit(cpu.csr.mstatus, mstatusSPIE)
-		cpu.updated.csrValue = cpu.csr.mstatus&^(1<<mstatusSPP) |
-			(1<<mstatusSPIE | sie<<mstatusSIE)
+		sie := bit(cpu.CSR.Mstatus, MstatusSPIE)
+		cpu.Updated.CSRValue = cpu.CSR.Mstatus&^(1<<MstatusSPP) |
+			(1<<MstatusSPIE | sie<<MstatusSIE)
 	}
 
-	if cpu.priv != PrivM {
-		cpu.updated.csrValue &^= 1 << mstatusMPRV
+	if cpu.Priv != PrivM {
+		cpu.Updated.CSRValue &^= 1 << MstatusMPRV
 	}
 }

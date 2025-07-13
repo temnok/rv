@@ -27,7 +27,7 @@ func (ram *RAM) Load(addr int, program []byte) {
 	}
 }
 
-func (ram *RAM) access(addr int, data *int, width int, write bool) bool {
+func (ram *RAM) Access(addr int, data *int, width int, write bool) bool {
 	i := (addr - ram.baseAddr) / 8
 	if i < 0 || i >= len(ram.words) {
 		return false

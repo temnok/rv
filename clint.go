@@ -14,7 +14,7 @@ func (clint *CLINT) Init(cpu *CPU, baseAddr int) {
 	}
 }
 
-func (clint *CLINT) access(addr int, data *int, width int, write bool) bool {
+func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 	if addr = (addr - clint.baseAddr) / 4; addr < 0 || addr >= 0x10000/4 || width < 4 {
 		return false
 	}
@@ -29,9 +29,9 @@ func (clint *CLINT) access(addr int, data *int, width int, write bool) bool {
 	case 0x4000 + 0x0000 + 4: // mtimecmph
 		reg = &clint.mtimecmph
 	case 0x4000 + 0x7FF8: // mtime
-		reg = &clint.cpu.csr.time
+		reg = &clint.cpu.CSR.Time
 	case 0x4000 + 0x7FF8 + 4: // mtimeh
-		reg = &clint.cpu.csr.timeh
+		reg = &clint.cpu.CSR.Timeh
 	}
 
 	if write {
@@ -49,16 +49,16 @@ func (clint *CLINT) access(addr int, data *int, width int, write bool) bool {
 	return true
 }
 
-func (clint *CLINT) notifyInterrupts() {
-	csr := &clint.cpu.csr
+func (clint *CLINT) NotifyInterrupts() {
+	csr := &clint.cpu.CSR
 
 	if bit(clint.mswi, 1) == 1 {
-		csr.mip |= 1 << mipMSI
+		csr.Mip |= 1 << MipMSI
 	}
 
-	if uint(csr.timeh) > uint(clint.mtimecmph) ||
-		csr.timeh == clint.mtimecmph && uint(csr.time) >= uint(clint.mtimecmp) {
+	if uint(csr.Timeh) > uint(clint.mtimecmph) ||
+		csr.Timeh == clint.mtimecmph && uint(csr.Time) >= uint(clint.mtimecmp) {
 
-		csr.mip |= 1 << mipMTI
+		csr.Mip |= 1 << MipMTI
 	}
 }
