@@ -1,6 +1,16 @@
 package rv
 
-func (cpu *CPU) exec(opcode, opcodeSize int) {
+func (cpu *CPU) exec(opcode int) {
+	opcodeSize := 4
+	if isCompressed := opcode&3 != 3; isCompressed {
+		opcodeSize = 2
+
+		if cpu.decompress(&opcode); cpu.isTrapped() {
+			return
+		}
+	}
+	cpu.updated.pc = cpu.xint(cpu.pc + opcodeSize)
+
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
 	rs1 := bits(opcode, 15, 5)

@@ -15,14 +15,19 @@ type CPU struct {
 
 	bus Bus
 
-	updated struct {
-		trapState           bool
-		pc, priv            int
-		regIndex, regValue  int
-		csrAddr             *int
-		csrIndex, csrValue  int
-		xepc, xcause, xtval int
-	}
+	updated CPUUpdates
+}
+
+type CPUUpdates struct {
+	priv               int
+	pc                 int
+	regIndex, regValue int
+
+	csrAddr            *int
+	csrIndex, csrValue int
+
+	trapState           bool
+	xepc, xcause, xtval int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -48,16 +53,14 @@ const (
 	AccessWrite   = 3
 )
 
-func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
+func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 	xl := xlen / 32
-	misaMXL := xlen - 2
-	misa := uint(xl << misaMXL)
 
 	*cpu = CPU{
 		xlen: xlen,
 
 		csr: CSR{
-			misa: int(misa) |
+			misa: xl<<(xlen-2) |
 				1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
 				1<<('u'-'a') | 1<<('s'-'a'),
 		},
@@ -65,14 +68,12 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int, regs []int) {
 		bus: bus,
 	}
 
-	cpu.updated.priv = PrivM
-	cpu.updated.pc = cpu.xint(startAddr)
-
 	cpu.csr.mstatus = cpu.xint(xl<<mstatusSXL | xl<<mstatusUXL)
 
-	for i, x := range regs {
-		cpu.reg[i] = cpu.xint(x)
-	}
+	cpu.updated.priv = PrivM
+	cpu.updated.pc = cpu.xint(startAddr)
+	cpu.updated.regIndex = regIndex
+	cpu.updated.regValue = regValue
 }
 
 func (cpu *CPU) xlen64() bool {
@@ -95,38 +96,25 @@ func (cpu *CPU) xuint(val int) uint {
 	return uint(uint32(val))
 }
 
-func (cpu *CPU) step() bool {
+func (cpu *CPU) step() {
 	cpu.updateState()
 	cpu.innerStep()
-
-	return true
 }
 
-func (cpu *CPU) innerStep() int {
+func (cpu *CPU) innerStep() {
 	cpu.csr.mip &^= 1<<mipSEI | 1<<mipMTI | 1<<mipMSI
 	cpu.bus.notifyInterrupts()
 	if cpu.trapOnPendingInterrupts(); cpu.isTrapped() {
-		return 0
+		return
 	}
 
 	var opcode int
 	if cpu.memFetch(cpu.pc, &opcode); cpu.isTrapped() {
-		return 0
+		return
 	}
 
-	opcodeSize := 4
-	if opcode&3 != 3 {
-		opcodeSize = 2
-
-		if cpu.decompress(&opcode); cpu.isTrapped() {
-			return opcode
-		}
-	}
-
-	cpu.updated.pc = cpu.xint(cpu.pc + opcodeSize)
-	cpu.exec(opcode, opcodeSize)
-
-	return opcode
+	cpu.updated.priv = cpu.priv
+	cpu.exec(opcode)
 }
 
 func (cpu *CPU) isTrapped() bool {
@@ -143,15 +131,10 @@ func (cpu *CPU) updateState() {
 
 	if up.regIndex != 0 {
 		cpu.reg[up.regIndex] = up.regValue
-		up.regIndex = 0
-		up.regValue = 0
 	}
 
 	if up.csrIndex != 0 {
 		*up.csrAddr = up.csrValue
-		up.csrAddr = nil
-		up.csrIndex = 0
-		up.csrValue = 0
 	}
 
 	if up.trapState {
@@ -160,10 +143,9 @@ func (cpu *CPU) updateState() {
 		} else {
 			cpu.csr.sepc, cpu.csr.scause, cpu.csr.stval = up.xepc, up.xcause, up.xtval
 		}
-
-		up.xepc, up.xcause, up.xtval = 0, 0, 0
-		up.trapState = false
 	}
+
+	*up = CPUUpdates{}
 }
 
 func (cpu *CPU) updateTimers() {

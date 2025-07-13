@@ -32,9 +32,7 @@ func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 	ramBaseAddr := 0x8000_0000
 	dtbAddr := ramBaseAddr + 0x0200_0000
 
-	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, []int{
-		11: dtbAddr,
-	})
+	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, 11, dtbAddr)
 
 	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x0200_0000)
@@ -48,13 +46,7 @@ func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 	ram.Load(dtbAddr, readFile(path+".dtb", ""))
 
 	for step := 0; !terminal.Closed; step++ {
-		if !cpu.step() {
-
-			fmt.Println()
-			//ram.Dump(0x80ea4000, 0x100)
-
-			break
-		}
+		cpu.step()
 
 		if timeout > 0 && step > timeout {
 			break

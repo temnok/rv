@@ -18,7 +18,8 @@ func (cpu *CPU) debugStep() bool {
 	pc := cpu.pc
 	oldRegs := cpu.reg
 
-	opcode := cpu.innerStep()
+	cpu.innerStep()
+	opcode := 0 // TODO
 
 	entry := [4]uint{uint(pc), uint(opcode)}
 	for i, val := range cpu.reg {
