@@ -45,7 +45,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 		cpu.updated.regValue = cpu.reg[rs1] & imm
 	}
 
-	if !cpu.isTrapped {
+	if !cpu.isTrapped() {
 		cpu.updated.regIndex = rd
 	}
 }

@@ -34,7 +34,7 @@ func (cpu *CPU) debugStep() bool {
 		trace = trace[:n]
 	}
 
-	if cpu.isTrapped /*|| cycleCount == 1_000_000*/ {
+	if cpu.isTrapped() /*|| cycleCount == 1_000_000*/ {
 		trapCount++
 
 		//if trapCount == 8 {

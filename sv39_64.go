@@ -20,7 +20,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 
 	pte, shift := cpu.tlb.lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTEsv39(virtAddr, &pte, &shift); cpu.isTrapped {
+		if cpu.loadPTEsv39(virtAddr, &pte, &shift); cpu.isTrapped() {
 			return
 		}
 

@@ -15,7 +15,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 
 	pte, shift := cpu.tlb.lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTEsv32(virtAddr, &pte, &shift); cpu.isTrapped {
+		if cpu.loadPTEsv32(virtAddr, &pte, &shift); cpu.isTrapped() {
 			return
 		}
 

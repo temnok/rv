@@ -5,17 +5,17 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 
 	switch f3 {
 	case 0b_000: // lb
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 1); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 1); !cpu.isTrapped() {
 			cpu.updated.regValue = int(int8(val))
 		}
 
 	case 0b_001: // lh
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 2); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 2); !cpu.isTrapped() {
 			cpu.updated.regValue = int(int16(val))
 		}
 
 	case 0b_010: // lw
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 4); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 4); !cpu.isTrapped() {
 			cpu.updated.regValue = int(int32(val))
 		}
 
@@ -25,17 +25,17 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 			return
 		}
 
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 8); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 8); !cpu.isTrapped() {
 			cpu.updated.regValue = val
 		}
 
 	case 0b_100: // lbu
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 1); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 1); !cpu.isTrapped() {
 			cpu.updated.regValue = int(uint8(val))
 		}
 
 	case 0b_101: // lhu
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 2); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 2); !cpu.isTrapped() {
 			cpu.updated.regValue = int(uint16(val))
 		}
 
@@ -45,7 +45,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 			return
 		}
 
-		if cpu.memRead(cpu.reg[rs1]+imm, &val, 4); !cpu.isTrapped {
+		if cpu.memRead(cpu.reg[rs1]+imm, &val, 4); !cpu.isTrapped() {
 			cpu.updated.regValue = int(uint32(val))
 		}
 
@@ -53,7 +53,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 
-	if !cpu.isTrapped {
+	if !cpu.isTrapped() {
 		cpu.updated.regIndex = rd
 	}
 }

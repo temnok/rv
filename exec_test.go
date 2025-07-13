@@ -66,7 +66,7 @@ func runTest(t *testing.T, xlen int, file string) {
 		prevPC := cpu.pc
 		cpu.step()
 
-		if cpu.isTrapped {
+		if cpu.isTrapped() {
 			trapCount++
 
 			lastTraps = append(lastTraps, [2]uint{uint(prevPC), uint(cpu.csr.mcause)})
@@ -94,8 +94,8 @@ func runTest(t *testing.T, xlen int, file string) {
 			break
 		}
 
-		if cpu.isTrapped {
-			if cause := cpu.csr.mcause; cause == ExceptionEnvironmentCallFromUMode ||
+		if cpu.isTrapped() {
+			if cause := cpu.updated.xcause; cause == ExceptionEnvironmentCallFromUMode ||
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {
 

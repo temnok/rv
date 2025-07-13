@@ -57,23 +57,23 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 	switch f3 & 3 {
 	case 0b_01: // csrrw
 		if rd != 0 {
-			if cpu.csrRead(csr, &val); cpu.isTrapped {
+			if cpu.csrRead(csr, &val); cpu.isTrapped() {
 				return
 			}
 		}
 
-		if cpu.csrWrite(csr, s); !cpu.isTrapped {
+		if cpu.csrWrite(csr, s); !cpu.isTrapped() {
 			cpu.updated.regIndex = rd
 			cpu.updated.regValue = val
 		}
 
 	case 0b_10: // csrrs
-		if cpu.csrRead(csr, &val); cpu.isTrapped {
+		if cpu.csrRead(csr, &val); cpu.isTrapped() {
 			return
 		}
 
 		if s != 0 {
-			if cpu.csrWrite(csr, val|s); cpu.isTrapped {
+			if cpu.csrWrite(csr, val|s); cpu.isTrapped() {
 				return
 			}
 		}
@@ -82,12 +82,12 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 		cpu.updated.regValue = val
 
 	case 0b_11: // csrrc
-		if cpu.csrRead(csr, &val); cpu.isTrapped {
+		if cpu.csrRead(csr, &val); cpu.isTrapped() {
 			return
 		}
 
 		if s != 0 {
-			if cpu.csrWrite(csr, val&^s); cpu.isTrapped {
+			if cpu.csrWrite(csr, val&^s); cpu.isTrapped() {
 				return
 			}
 		}

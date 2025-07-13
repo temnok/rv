@@ -7,7 +7,7 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 	virtAddr &^= xbytes - 1
 
 	var physAddr, lo int
-	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
+	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
 		return
 	}
 
@@ -25,7 +25,7 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 	}
 
 	virtAddr += xbytes
-	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped {
+	if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
 		return
 	}
 
@@ -40,7 +40,7 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 
 func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.isTrapped {
+	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.isTrapped() {
 		return
 	}
 
@@ -56,7 +56,7 @@ func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 
 func (cpu *CPU) memWrite(virtAddr, data, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.isTrapped {
+	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.isTrapped() {
 		return
 	}
 
