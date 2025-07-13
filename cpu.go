@@ -18,10 +18,10 @@ type CPU struct {
 	bus Bus
 
 	updated struct {
-		pc       int
-		priv     int
-		regIndex int
-		regValue int
+		pc, priv           int
+		regIndex, regValue int
+		csrAddr            *int
+		csrIndex, csrValue int
 	}
 }
 
@@ -141,6 +141,14 @@ func (cpu *CPU) updateState() {
 	if up.regIndex != 0 {
 		cpu.reg[up.regIndex] = up.regValue
 		up.regIndex = 0
+		up.regValue = 0
+	}
+
+	if up.csrIndex != 0 {
+		*up.csrAddr = up.csrValue
+		up.csrAddr = nil
+		up.csrIndex = 0
+		up.csrValue = 0
 	}
 }
 
@@ -150,8 +158,8 @@ func (cpu *CPU) updateTimers() {
 	}
 
 	if cpu.csr.cycle%10_000 == 0 {
-		if cpu.csr.mtime = cpu.xint(cpu.csr.mtime + 1); cpu.csr.mtime == 0 {
-			cpu.csr.mtimeh++
+		if cpu.csr.time = cpu.xint(cpu.csr.time + 1); cpu.csr.time == 0 {
+			cpu.csr.timeh++
 		}
 	}
 }
