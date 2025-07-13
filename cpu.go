@@ -250,14 +250,17 @@ func (cpu *CPU) trapWithTval(cause, tval int) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) ret(priv int) {
+func (cpu *CPU) xret(priv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
-	trapSRET := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) == 1
+	trap := cpu.priv == PrivS && bit(cpu.csr.mstatus, mstatusTSR) == 1
 
-	if priv > cpu.priv || trapSRET {
+	if trap || priv > cpu.priv {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
+
+	cpu.updated.csrAddr = &cpu.csr.mstatus
+	cpu.updated.csrIndex = csrMstatus
 
 	switch priv {
 	case PrivM:
@@ -265,19 +268,19 @@ func (cpu *CPU) ret(priv int) {
 		cpu.updated.priv = bits(cpu.csr.mstatus, mstatusMPP, 2)
 
 		mie := bit(cpu.csr.mstatus, mstatusMPIE)
-		cpu.csr.mstatus |= 1<<mstatusMPIE | mie<<mstatusMIE
-		cpu.csr.mstatus &^= 3 << mstatusMPP
+		cpu.updated.csrValue = cpu.csr.mstatus&^(3<<mstatusMPP) |
+			(1<<mstatusMPIE | mie<<mstatusMIE)
 
 	case PrivS:
 		cpu.updated.pc = cpu.csr.sepc
 		cpu.updated.priv = bits(cpu.csr.mstatus, mstatusSPP, 1)
 
 		sie := bit(cpu.csr.mstatus, mstatusSPIE)
-		cpu.csr.mstatus |= 1<<mstatusSPIE | sie<<mstatusSIE
-		cpu.csr.mstatus &^= 1 << mstatusSPP
+		cpu.updated.csrValue = cpu.csr.mstatus&^(1<<mstatusSPP) |
+			(1<<mstatusSPIE | sie<<mstatusSIE)
 	}
 
 	if cpu.priv != PrivM {
-		cpu.csr.mstatus &^= 1 << mstatusMPRV
+		cpu.updated.csrValue &^= 1 << mstatusMPRV
 	}
 }
