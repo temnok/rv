@@ -1,6 +1,6 @@
 package rv
 
-func (cpu *CPU) exec(opcode int) {
+func (cpu *CPU) exec(opcode, opcodeSize int) {
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
 	rs1 := bits(opcode, 15, 5)
@@ -45,12 +45,12 @@ func (cpu *CPU) exec(opcode int) {
 
 	case 0b_11001: // jalr
 		cpu.updated.regIndex = rd
-		cpu.updated.regValue = cpu.updated.pc
+		cpu.updated.regValue = cpu.pc + opcodeSize
 		cpu.updated.pc = cpu.xint((cpu.reg[rs1] + immI(opcode)) &^ 1)
 
 	case 0b_11011: // jal
 		cpu.updated.regIndex = rd
-		cpu.updated.regValue = cpu.updated.pc
+		cpu.updated.regValue = cpu.pc + opcodeSize
 		cpu.updated.pc = cpu.xint(cpu.pc + immJ(opcode))
 
 	case 0b_11100:

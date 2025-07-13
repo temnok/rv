@@ -2,9 +2,6 @@ package rv
 
 func (cpu *CPU) decompress(opcodePtr *int) {
 	opcode := *opcodePtr
-	if is32bitInstruction := opcode&3 == 3; is32bitInstruction {
-		return
-	}
 
 	opcode = int(uint16(opcode))
 	decompressedOpcode := cpu.decompressOpcode(opcode)
@@ -14,7 +11,6 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	}
 
 	*opcodePtr = decompressedOpcode
-	cpu.updated.pc = cpu.xint(cpu.pc + 2)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings

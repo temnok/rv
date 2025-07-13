@@ -97,8 +97,6 @@ func (cpu *CPU) xuint(val int) uint {
 
 func (cpu *CPU) step() bool {
 	cpu.updateState()
-
-	//return cpu.debugStep()
 	cpu.innerStep()
 
 	return true
@@ -106,8 +104,6 @@ func (cpu *CPU) step() bool {
 
 func (cpu *CPU) innerStep() int {
 	cpu.isTrapped = false
-
-	cpu.updateTimers()
 
 	cpu.csr.mip &^= 1<<mipSEI | 1<<mipMTI | 1<<mipMSI
 	cpu.bus.notifyInterrupts()
@@ -120,19 +116,24 @@ func (cpu *CPU) innerStep() int {
 		return 0
 	}
 
-	cpu.updated.pc = cpu.xint(cpu.pc + 4)
-
-	origOpcode := opcode
-	if cpu.decompress(&opcode); cpu.isTrapped {
-		return opcode
+	opcodeSize := 4
+	if opcode&3 != 3 {
+		opcodeSize = 2
+		
+		if cpu.decompress(&opcode); cpu.isTrapped {
+			return opcode
+		}
 	}
 
-	cpu.exec(opcode)
+	cpu.updated.pc = cpu.xint(cpu.pc + opcodeSize)
+	cpu.exec(opcode, opcodeSize)
 
-	return origOpcode
+	return opcode
 }
 
 func (cpu *CPU) updateState() {
+	cpu.updateTimers()
+
 	up := &cpu.updated
 
 	cpu.pc = up.pc
