@@ -3,10 +3,10 @@ package rv
 type CPU struct {
 	xlen int
 
-	reg  [32]int
-	pc   int
-	csr  CSR
 	priv int
+	pc   int
+	reg  [32]int
+	csr  CSR
 
 	reserved        bool
 	reservedAddress int
@@ -15,10 +15,10 @@ type CPU struct {
 
 	bus Bus
 
-	updated CPUUpdates
+	updated CPUUpdatedState
 }
 
-type CPUUpdates struct {
+type CPUUpdatedState struct {
 	priv               int
 	pc                 int
 	regIndex, regValue int
@@ -28,6 +28,9 @@ type CPUUpdates struct {
 
 	trapState           bool
 	xepc, xcause, xtval int
+
+	reserved        bool
+	reservedAddress int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -102,8 +105,11 @@ func (cpu *CPU) step() {
 }
 
 func (cpu *CPU) innerStep() {
+	cpu.updated.priv = cpu.priv
+	cpu.updated.reserved = cpu.reserved
+	cpu.updated.reservedAddress = cpu.reservedAddress
+
 	cpu.csr.mip &^= 1<<mipSEI | 1<<mipMTI | 1<<mipMSI
-	cpu.bus.notifyInterrupts()
 	if cpu.trapOnPendingInterrupts(); cpu.isTrapped() {
 		return
 	}
@@ -113,7 +119,6 @@ func (cpu *CPU) innerStep() {
 		return
 	}
 
-	cpu.updated.priv = cpu.priv
 	cpu.exec(opcode)
 }
 
@@ -145,7 +150,12 @@ func (cpu *CPU) updateState() {
 		}
 	}
 
-	*up = CPUUpdates{}
+	cpu.reserved = up.reserved
+	if up.reserved {
+		cpu.reservedAddress = up.reservedAddress
+	}
+
+	*up = CPUUpdatedState{}
 }
 
 func (cpu *CPU) updateTimers() {
@@ -162,6 +172,8 @@ func (cpu *CPU) updateTimers() {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func (cpu *CPU) trapOnPendingInterrupts() {
+	cpu.bus.notifyInterrupts()
+
 	mi := cpu.csr.mip & cpu.csr.mie
 
 	if mi == 0 {

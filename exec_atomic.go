@@ -34,8 +34,8 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 	case 0b_00001: // amoswap
 
 	case 0b_00010: // lr
-		cpu.reserved = true
-		cpu.reservedAddress = addr
+		cpu.updated.reserved = true
+		cpu.updated.reservedAddress = addr
 		write = false
 
 	case 0b_00011: // sc
@@ -44,7 +44,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		} else {
 			old = 1
 		}
-		cpu.reserved = false
+		cpu.updated.reserved = false
 		write = old == 0
 
 	case 0b_00100: // amoxor
