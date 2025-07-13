@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	rv.BootLinux(64, "buildroot/output")
+	rv.BootLinux(64, "linux/output")
 }

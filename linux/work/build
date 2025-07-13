@@ -75,7 +75,7 @@ fi
 if [ ! -d dtb ]; then
     echo -n "Building dtb... "
     rm -rf dtb.tmp && mkdir dtb.tmp && cd dtb.tmp
-    dtc -O dtb -o rv64.dtb ../../rv64.dts
+    dtc --quiet -O dtb -o rv64.dtb ../../rv64.dts
     cd .. && mv dtb.tmp dtb
     benchmark
 fi

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"golang.org/x/term"
 	"io"
@@ -11,16 +12,16 @@ import (
 	"strings"
 )
 
-func BootLinux(xlen int) {
+func BootLinux(xlen int, dir string) {
 	state := check1(term.MakeRaw(0))
 	defer func() {
 		check(term.Restore(0, state))
 	}()
 
-	bootLinux(xlen, os.Stdin, os.Stdout, 0)
+	bootLinux(xlen, dir, os.Stdin, os.Stdout, 0)
 }
 
-func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
+func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
 		cpu   CPU
 		ram   RAM
@@ -30,10 +31,20 @@ func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 	)
 
 	ramBaseAddr := 0x8000_0000
-	dtbAddr := ramBaseAddr + 0x0200_0000
+	dtbReg, dtbAddr := 11, ramBaseAddr+0x0200_0000
 
-	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, 11, dtbAddr)
+	path := fmt.Sprintf("%v/rv%v", dir, xlen)
+	kernelPath := path + ".kernel"
+	if !existsFile(kernelPath) {
+		kernelPath += ".gz"
+	}
 
+	if dtbPath := path + ".dtb"; !existsFile(dtbPath) {
+		dtbReg = 0
+		dtbAddr = 0
+	}
+
+	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, dtbReg, dtbAddr)
 	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
@@ -41,9 +52,11 @@ func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 	terminal := newTerminal(in, out)
 	uart.Init(&plic, 0x0300_0000, 1, terminal.callback)
 
-	path := fmt.Sprintf("buildroot/output/rv%v", cpu.XLen)
-	ram.Load(ramBaseAddr, readFile(path+".kernel.gz", ""))
-	ram.Load(dtbAddr, readFile(path+".dtb", ""))
+	ram.Load(ramBaseAddr, readFile(kernelPath, ""))
+
+	if dtbAddr != 0 {
+		ram.Load(dtbAddr, readFile(path+".dtb", ""))
+	}
 
 	for step := 0; !terminal.Closed; step++ {
 		cpu.Step()
@@ -52,6 +65,14 @@ func bootLinux(xlen int, in io.Reader, out io.Writer, timeout int) {
 			break
 		}
 	}
+}
+
+func existsFile(path string) bool {
+	_, err := os.Stat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false // File does not exist
+	}
+	return err == nil
 }
 
 func readFile(path, checksum string) []byte {

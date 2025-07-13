@@ -25,7 +25,7 @@ func testRunKernel(t *testing.T, xlen int) {
 		input: inW,
 	}
 
-	bootLinux(xlen, inR, outW, 200_000_000)
+	bootLinux(xlen, "buildroot/output", inR, outW, 200_000_000)
 
 	if !outW.success {
 		t.Fatalf("Expected 'buildroot login: ' prompt, got:\n%v", string(outW.output))
