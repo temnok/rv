@@ -81,7 +81,11 @@ func disassemble(isa *rvda.ISA, entry []int) string {
 	line = fmt.Sprintf("%-30v %-6v %-16v", parts[0], ops[0], ops[1])
 
 	if len(entry) > 2 {
-		line += fmt.Sprintf("// %x", entry[2])
+		line += fmt.Sprintf("// %x", uint(entry[2]))
+		//
+		//if fmt.Sprintf("%x", uint(entry[2])) != fmt.Sprint(entry[2]) {
+		//	line += fmt.Sprintf(" (%v)", entry[2])
+		//}
 	}
 
 	return line

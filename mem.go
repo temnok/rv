@@ -1,13 +1,13 @@
 package rv
 
-func (cpu *CPU) memFetch(virtAddr int, data *int) {
+func (cpu *CPU) memFetch(addr int, data *int) {
 	const (
 		xbytes   = 8
 		pageMask = PageSize - 1
 	)
 
-	shift := virtAddr & (xbytes - 1)
-	virtAddr &^= xbytes - 1
+	shift := addr & (xbytes - 1)
+	virtAddr := addr &^ (xbytes - 1)
 
 	var physAddr, val int
 	if cpu.ICache.Hit(virtAddr) {
@@ -18,7 +18,7 @@ func (cpu *CPU) memFetch(virtAddr int, data *int) {
 		}
 
 		if !cpu.Bus.Read(physAddr, &val, xbytes) {
-			cpu.trapEnter(ExceptionInstructionAccessFault, virtAddr)
+			cpu.trapEnter(ExceptionInstructionAccessFault, addr)
 			return
 		}
 	}

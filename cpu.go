@@ -98,10 +98,10 @@ func (cpu *CPU) xuint(val int) uint {
 }
 
 func (cpu *CPU) Step() bool {
+	//return cpu.debugStep()
+
 	cpu.innerStep()
 	return true
-
-	//return cpu.debugStep()
 }
 
 func (cpu *CPU) innerStep() int {
