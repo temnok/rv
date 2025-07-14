@@ -97,7 +97,14 @@ func (cpu *CPU) xuint(val int) uint {
 	return uint(uint32(val))
 }
 
-func (cpu *CPU) Step() int {
+func (cpu *CPU) Step() bool {
+	cpu.innerStep()
+	return true
+
+	//return cpu.debugStep()
+}
+
+func (cpu *CPU) innerStep() int {
 	cpu.updateState()
 
 	if cpu.trapOnPendingInterrupts(); cpu.isTrapped() {

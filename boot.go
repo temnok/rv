@@ -59,9 +59,9 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	}
 
 	for step := 0; !terminal.Closed; step++ {
-		cpu.Step()
+		ok := cpu.Step()
 
-		if timeout > 0 && step > timeout {
+		if !ok || (timeout > 0 && step > timeout) {
 			break
 		}
 	}
