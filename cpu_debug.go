@@ -12,10 +12,9 @@ var (
 )
 
 func (cpu *CPU) debugStep() bool {
-	pc := cpu.Updated.PC
 	opcode := cpu.innerStep()
 
-	entry := []int{pc, opcode}
+	entry := []int{cpu.PC, opcode}
 
 	if cpu.Updated.RegIndex != 0 {
 		entry = append(entry, cpu.Updated.RegValue)
@@ -35,9 +34,7 @@ func (cpu *CPU) debugStep() bool {
 		//if cpu.CSR.Cycle == 10 {
 		debugTrapCount++
 
-		if debugTrapCount == 1 {
-			fmt.Printf("Cycle: %v, trap: %v\r\n\r\n", cpu.CSR.Cycle, debugTrapCount)
-
+		if debugTrapCount == 2 {
 			debugDump(cpu)
 
 			return false
@@ -54,12 +51,16 @@ func debugDump(cpu *CPU) {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))
 	}
 
+	fmt.Printf("\r\nCycle: %v, trap: %v\r\n", cpu.CSR.Cycle, debugTrapCount)
+
 	up := &cpu.Updated
 	if cpu.Updated.TrapEnter {
-		fmt.Printf("\r\npriv:%x, pc:%x, mstatus:%x\r\n",
-			uint(up.TrapPriv), uint(up.PC), uint(up.TrapMstatus))
+		fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
+			cpu.Priv, uint(up.TrapPriv), uint(up.PC), uint(up.TrapMstatus))
 		fmt.Printf("xepc:%x, xcause:%x, xtval:%x\r\n",
 			uint(up.TrapXepc), uint(up.TrapXcause), uint(up.TrapXtval))
+		fmt.Printf("mtvec:%x, stvec:%x\r\n",
+			uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
 	}
 
 	//for i := range 16 {

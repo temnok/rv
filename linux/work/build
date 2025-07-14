@@ -31,31 +31,20 @@ if [ ! -d linux ]; then
     echo -n "Building kernel... "
 
     rm -rf linux.tmp && tar -xf ../_download/linux-* && mv linux-* linux.tmp && cd linux.tmp
-    flags=(
+    flags_y=(
         ARCH_RV64I DEBUG_INFO DEBUG_INFO_DWARF5 DEBUG_KERNEL GDB_SCRIPTS
         KGDB KGDB_SERIAL_CONSOLE NONPORTABLE RISCV_INTC RISCV_ISA_C
         SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
-
-#        VIRTIO VIRTIO_{BALLOON,BLK,BLK_SCSI,NET,PCI,RING,CONSOLE} BALLOON_COMPACTION
-#        # https://raw.githubusercontent.com/docker/docker/master/contrib/check-config.sh:
-#        CGROUP_{DEVICE,PIDS,PERF,HUGETLB,NET_PRIO} MEMCG BLK_CGROUP NET_CLS_CGROUP
-#        VETH BRIDGE BRIDGE_NETFILTER NETFILTER_ADVANCED NETFILTER_XT_MATCH_{ADDRTYPE,IPVS}
-#        NF_{NAT_NEEDED,NAT_IPV4,NAT_TFTP,CONNTRACK_TFTP} IP_NF_{NAT,TARGET_MASQUERADE}
-#        USER_NS MEMCG_SWAP MEMCG_SWAP_ENABLED
-#
-#        BLK_DEV_{THROTTLING,THROTTLING_LOW} IOSCHED_CFQ CFQ_GROUP_IOSCHED CFS_BANDWIDTH RT_GROUP_SCHED
-#        IP_VS IP_VS_NFCT IP_VS_RR VXLAN IPVLAN MACVLAN DUMMY
-#        AUFS_FS BTRFS_FS DM_THIN_PROVISIONING OVERLAY_FS
-#
-#        FB
     )
 
 #    QUIET=--quiet
 
     make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
-      $QUIET allnoconfig
-    for f in ${flags[@]}; do
-        scripts/config -e $f
+      $QUIET defconfig
+#      $QUIET allnoconfig
+
+    for f in ${flags_y[@]}; do
+        scripts/config --set-val $f y
     done
 
     make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
