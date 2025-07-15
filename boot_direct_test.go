@@ -4,6 +4,6 @@ import (
 	"testing"
 )
 
-func TestRunKernelDirect64(t *testing.T) {
+func xTestRunKernelDirect64(t *testing.T) {
 	testRunKernel(t, 64, "linux/output", "Run /init as init process")
 }

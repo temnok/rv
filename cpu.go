@@ -13,6 +13,7 @@ type CPUState struct {
 	Priv int
 	PC   int
 	Reg  [32]int
+	FP   [32]float64
 	CSR  CSR
 
 	Reserved        bool
@@ -63,6 +64,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 			CSR: CSR{
 				Misa: xl<<(xlen-2) |
 					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+					//					1<<('f'-'a') | 1<<('d'-'a') |
 					1<<('u'-'a') | 1<<('s'-'a'),
 			},
 		},

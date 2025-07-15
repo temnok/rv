@@ -3,6 +3,10 @@ package rv
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
 const (
+	Fflags = 0x001
+	Frm    = 0x002
+	Fcsr   = 0x003
+
 	Sstatus    = 0x100
 	Sie        = 0x104
 	Stvec      = 0x105
@@ -73,7 +77,7 @@ const (
 )
 
 type CSR struct {
-	Cycle, Cycleh, Time, Timeh int
+	Fcsr, Cycle, Cycleh, Time, Timeh int
 
 	Stvec, Scounteren, Sscratch, Sepc, Scause, Stval, Sip, Satp int
 
@@ -82,15 +86,29 @@ type CSR struct {
 	Mvendorid, Marchid, Mimpid, Mhartid                     int
 }
 
-func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask int) {
+func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 	if write && bits(i, 10, 2) == 3 || cpu.Priv < bits(i, 8, 2) {
-		return nil, 0
+		return
 	}
 
 	csr := &cpu.CSR
 	mask = -1
+	shift = 0
 
 	switch i {
+	case Fflags: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#fcsr
+		reg = &csr.Fcsr
+		mask = 0b_000_11111
+
+	case Frm: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#fcsr
+		reg = &csr.Fcsr
+		mask = 0b_111_00000
+		shift = 5
+
+	case Fcsr: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#fcsr
+		reg = &csr.Fcsr
+		mask = 0b_111_11111
+
 	case Sstatus: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sstatus
 		reg = &csr.Mstatus
 		mask = 1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP
@@ -216,18 +234,18 @@ func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask int) {
 }
 
 func (cpu *CPU) csrRead(i int, val *int) {
-	reg, mask := cpu.csrAddr(i, false)
+	reg, mask, shift := cpu.csrAddr(i, false)
 
 	if reg == nil {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
 
-	*val = *reg & mask
+	*val = (*reg & mask) << shift
 }
 
 func (cpu *CPU) csrWrite(i, val int) {
-	reg, mask := cpu.csrAddr(i, true)
+	reg, mask, shift := cpu.csrAddr(i, true)
 
 	if reg == nil {
 		cpu.trap(ExceptionIllegalIstruction)
@@ -236,5 +254,5 @@ func (cpu *CPU) csrWrite(i, val int) {
 
 	cpu.Updated.CSRAddr = reg
 	cpu.Updated.CSRIndex = i
-	cpu.Updated.CSRValue = *reg&^mask | val&mask
+	cpu.Updated.CSRValue = *reg&^mask | (val<<shift)&mask
 }
