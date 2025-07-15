@@ -49,18 +49,17 @@ if [ ! -d linux ]; then
         SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
     )
 
-    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
-      $QUIET allnoconfig
+    make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
+      allnoconfig
 
     for f in ${flags_y[@]}; do
         scripts/config --set-val $f y
     done
 
-    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
-      $QUIET olddefconfig
+    make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
+      olddefconfig
 
-    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
-      CC="ccache riscv64-linux-gnu-gcc" \
+    make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
       KBUILD_BUILD_USER="builduser" \
       KBUILD_BUILD_HOST="buildhost" \
@@ -73,7 +72,7 @@ fi
 if [ ! -d opensbi ]; then
     echo -n "Building opensbi... "
     rm -rf opensbi.tmp && tar -xf ../_download/opensbi-* && mv opensbi-* opensbi.tmp && cd opensbi.tmp
-    make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
+    make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       PLATFORM=generic PLATFORM_RISCV_XLEN=64 \
       FW_PAYLOAD_PATH=../linux/arch/riscv/boot/Image \
       FW_FDT_PATH=../dtb/rv64.dtb
@@ -87,7 +86,7 @@ if [ ! -d busybox ]; then
     echo -n "Building busybox... "
     rm -rf busybox.tmp && tar -xf ../_download/busybox-* && mv busybox-* busybox.tmp && cd busybox.tmp
     make $QUIET defconfig > /dev/null 2>&1
-    LDFLAGS="--static" make --quiet --jobs=$CPU_COUNT busybox > /dev/null 2>&1
+    LDFLAGS="--static" make $QUIET --jobs=$CPU_COUNT busybox > /dev/null 2>&1
     cd .. && mv busybox.tmp busybox
     benchmark
 fi
