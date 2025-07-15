@@ -21,7 +21,7 @@ if [ ! -d _download ]; then
 
     rm -rf _download.tmp && mkdir _download.tmp && cd _download.tmp
     wget $QUIET --continue \
-      https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.15.3.tar.xz
+      https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.15.6.tar.xz
     wget $QUIET --continue -O opensbi-1.7.tar.gz\
       https://github.com/riscv-software-src/opensbi/archive/refs/tags/v1.7.tar.gz
     cd .. && mv _download.tmp _download
@@ -50,8 +50,7 @@ if [ ! -d linux ]; then
     )
 
     make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- \
-      $QUIET defconfig
-#      $QUIET allnoconfig
+      $QUIET allnoconfig
 
     for f in ${flags_y[@]}; do
         scripts/config --set-val $f y

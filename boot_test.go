@@ -8,41 +8,43 @@ import (
 )
 
 func TestRunKernel32(t *testing.T) {
-	testRunKernel(t, 32)
+	testRunKernel(t, 32, "buildroot/output", "buildroot login: ")
 }
 
 func TestRunKernel64(t *testing.T) {
-	testRunKernel(t, 64)
+	testRunKernel(t, 64, "buildroot/output", "buildroot login: ")
 }
 
-func testRunKernel(t *testing.T, xlen int) {
+func testRunKernel(t *testing.T, xlen int, kernelPath, stopString string) {
 	t.Parallel()
 
 	inR, inW := io.Pipe()
 
 	outW := &matchWriter{
-		t:     t,
-		input: inW,
+		t:          t,
+		stopString: stopString,
+		input:      inW,
 	}
 
-	bootLinux(xlen, "buildroot/output", inR, outW, 200_000_000)
+	bootLinux(xlen, kernelPath, inR, outW, 200_000_000)
 
 	if !outW.success {
-		t.Fatalf("Expected 'buildroot login: ' prompt, got:\n%v", string(outW.output))
+		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))
 	}
 }
 
 type matchWriter struct {
-	t       *testing.T
-	input   io.Writer
-	output  []byte
-	success bool
-	write   func(p []byte) (n int, err error)
+	t          *testing.T
+	stopString string
+	input      io.Writer
+	output     []byte
+	success    bool
+	write      func(p []byte) (n int, err error)
 }
 
 func (m *matchWriter) Write(p []byte) (n int, err error) {
 	m.output = append(m.output, p...)
-	if bytes.HasSuffix(m.output, []byte("buildroot login: ")) {
+	if bytes.HasSuffix(m.output, []byte(m.stopString)) {
 		m.success = true
 		fmt.Fprintf(m.input, "\x03")
 	}
