@@ -30,15 +30,16 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	if cpu.isTrapped() {
+	if cpu.PC == 0x0000000000010614 {
+		//if cpu.isTrapped() {
 		//if cpu.CSR.Cycle == 10 {
-		debugTrapCount++
+		//debugTrapCount++
+		//
+		//if debugTrapCount == 2 {
+		debugDump(cpu)
 
-		if debugTrapCount == 2 {
-			debugDump(cpu)
-
-			return false
-		}
+		return false
+		//}
 	}
 
 	return true

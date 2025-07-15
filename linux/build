@@ -12,3 +12,4 @@ docker run -ti --rm \
 rm -rf output/*
 gzip -9 -n -c work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin > output/rv64.kernel.gz
 cp work/_build/initramfs/initramfs.cpio.gz output/rv64.initramfs.cpio.gz
+

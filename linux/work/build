@@ -37,28 +37,13 @@ if [ ! -d busybox ]; then
     echo -n "Building busybox... "
     rm -rf busybox.tmp && tar -xf ../_download/busybox-* && mv busybox-* busybox.tmp && cd busybox.tmp
 
-    make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
-      defconfig > /dev/null 2>&1
+    CROSS_COMPILE=riscv64-linux-gnu- make \
+        defconfig > /dev/null 2>&1
 
-    LDFLAGS="--static" make \
-      $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
-      --jobs=$CPU_COUNT busybox > /dev/null 2>&1
+    LDFLAGS="--static" CROSS_COMPILE=riscv64-linux-gnu- make \
+        --jobs=$CPU_COUNT busybox #> /dev/null 2>&1
 
     cd .. && mv busybox.tmp busybox
-    benchmark
-fi
-
-if [ ! -d initramfs ]; then
-    echo -n "Building initramfs... "
-    rm -rf initramfs.tmp && mkdir initramfs.tmp && cp -R ../initramfs initramfs.tmp/fs && cd initramfs.tmp
-
-    mkdir -p fs/{bin,etc/ssl/certs,root,sbin,usr/{bin,sbin},home/user}
-    cp ../busybox/busybox fs/bin/
-    chmod +s fs/bin/busybox
-
-    cd fs && find . | cpio --reproducible --quiet --create --owner 0:0 --format newc | gzip -9 -n -c > ../initramfs.cpio.gz && cd ..
-
-    cd .. && mv initramfs.tmp initramfs
     benchmark
 fi
 
@@ -67,8 +52,8 @@ if [ ! -d linux ]; then
     rm -rf linux.tmp && tar -xf ../_download/linux-* && mv linux-* linux.tmp && cd linux.tmp
 
     flags_y=(
-        ARCH_RV64I BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5 DEBUG_KERNEL GDB_SCRIPTS
-        KGDB KGDB_SERIAL_CONSOLE NONPORTABLE RISCV_INTC RISCV_ISA_C
+        ARCH_RV64I BINFMT_ELF BINFMT_MISC BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
+        DEBUG_KERNEL GDB_SCRIPTS KGDB KGDB_SERIAL_CONSOLE NONPORTABLE RISCV_INTC RISCV_ISA_C
         SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
     )
 
@@ -81,8 +66,6 @@ if [ ! -d linux ]; then
 
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       olddefconfig
-
-#    scripts/config --set-str INITRAMFS_SOURCE "$(realpath ../initramfs/fs)"
 
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
@@ -106,6 +89,21 @@ if [ ! -d opensbi ]; then
       FW_FDT_PATH=rv64.dtb > /dev/null 2>&1
 
     cd .. && mv opensbi.tmp opensbi
+    benchmark
+fi
+
+rm -rf initramfs
+if [ ! -d initramfs ]; then
+    echo -n "Building initramfs... "
+    rm -rf initramfs.tmp && mkdir -p initramfs.tmp/fs && cd initramfs.tmp
+
+    mkdir -p fs/{bin,dev,proc,root,sbin,sys,usr/{bin,sbin}}
+    cp ../busybox/busybox fs/bin/
+    cp ../../init fs/
+
+    cd fs && find . | cpio --reproducible --quiet --create --owner 0:0 --format newc | gzip -n -c > ../initramfs.cpio.gz && cd ..
+
+    cd .. && mv initramfs.tmp initramfs
     benchmark
 fi
 

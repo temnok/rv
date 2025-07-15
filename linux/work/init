@@ -1,0 +1,8 @@
+#!/bin/busybox sh
+/bin/busybox --install -s
+dmesg -n 1
+mount -t devtmpfs none /dev
+mount -t proc none /proc
+mount -t sysfs none /sys
+#echo rv > /proc/sys/kernel/hostname
+exec /sbin/init
