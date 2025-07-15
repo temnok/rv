@@ -3,7 +3,7 @@ FROM debian:bookworm
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y \
-    device-tree-compiler gcc-riscv64-linux-gnu libssl-dev make wget xz-utils \
+    device-tree-compiler gcc-riscv64-linux-gnu bzip2 libssl-dev make wget xz-utils \
     # required for opensbi build:
     python3 \
     # required for kernel build:

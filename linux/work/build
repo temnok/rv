@@ -18,23 +18,54 @@ QUIET=--quiet
 
 if [ ! -d _download ]; then
     echo -n "Downloading sources... "
+    rm -rf _build _download.tmp && mkdir _download.tmp && cd _download.tmp
 
-    rm -rf _download.tmp && mkdir _download.tmp && cd _download.tmp
     wget $QUIET --continue \
-      https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.15.6.tar.xz
-    wget $QUIET --continue -O opensbi-1.7.tar.gz\
-      https://github.com/riscv-software-src/opensbi/archive/refs/tags/v1.7.tar.gz
-    cd .. && mv _download.tmp _download
+        https://busybox.net/downloads/busybox-1.36.1.tar.bz2 \
+        https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.15.6.tar.xz
 
+    wget $QUIET --continue -O opensbi-1.7.tar.gz \
+        https://github.com/riscv-software-src/opensbi/archive/refs/tags/v1.7.tar.gz
+
+    cd .. && mv _download.tmp _download
     benchmark
 fi
 
 mkdir -p _build _ccache && cd _build && BUILD_DIR=$(pwd)
 
+if [ ! -d busybox ]; then
+    echo -n "Building busybox... "
+    rm -rf initramfs busybox.tmp && tar -xf ../_download/busybox-* && mv busybox-* busybox.tmp && cd busybox.tmp
+
+    make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
+      defconfig > /dev/null 2>&1
+
+    LDFLAGS="--static" make \
+      $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
+      --jobs=$CPU_COUNT busybox > /dev/null 2>&1
+
+    cd .. && mv busybox.tmp busybox
+    benchmark
+fi
+
+if [ ! -d initramfs ]; then
+    echo -n "Building initramfs... "
+    rm -rf linux initramfs.tmp && mkdir initramfs.tmp && cp -R ../initramfs initramfs.tmp/fs && cd initramfs.tmp
+
+    mkdir -p fs/{bin,etc/ssl/certs,root,sbin,usr/{bin,sbin},home/user}
+    cp ../busybox/busybox fs/bin/
+    chmod +s fs/bin/busybox
+
+    cd fs && find . | cpio --quiet --create --owner 0:0 --format newc | gzip -9 -n -c > ../initramfs.cpio.gz && cd ..
+
+    cd .. && mv initramfs.tmp initramfs
+    benchmark
+fi
+
 if [ ! -d linux ]; then
     echo -n "Building kernel... "
+    rm -rf opensbi linux.tmp && tar -xf ../_download/linux-* && mv linux-* linux.tmp && cd linux.tmp
 
-    rm -rf linux.tmp && tar -xf ../_download/linux-* && mv linux-* linux.tmp && cd linux.tmp
     flags_y=(
         ARCH_RV64I DEBUG_INFO DEBUG_INFO_DWARF5 DEBUG_KERNEL GDB_SCRIPTS
         KGDB KGDB_SERIAL_CONSOLE NONPORTABLE RISCV_INTC RISCV_ISA_C
@@ -50,6 +81,8 @@ if [ ! -d linux ]; then
 
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       olddefconfig
+
+    scripts/config --set-val INITRAMFS_SOURCE $(realpath ../initramfs/initramfs.cpio.gz)
 
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
@@ -76,48 +109,5 @@ if [ ! -d opensbi ]; then
     benchmark
 fi
 
-exit
-
-if [ ! -d busybox ]; then
-    echo -n "Building busybox... "
-    rm -rf busybox.tmp && tar -xf ../_download/busybox-* && mv busybox-* busybox.tmp && cd busybox.tmp
-    make $QUIET defconfig > /dev/null 2>&1
-    LDFLAGS="--static" make $QUIET --jobs=$CPU_COUNT busybox > /dev/null 2>&1
-    cd .. && mv busybox.tmp busybox
-    benchmark
-fi
-
-if [ ! -d iptables ]; then
-    echo -n "Building iptables... "
-    rm -rf iptables.tmp && tar -xf ../_download/iptables-* && mv iptables-* iptables.tmp && cd iptables.tmp
-    LDFLAGS="--static" ./configure --enable-static --disable-shared --disable-nftables > /dev/null
-    make $QUIET --jobs=$CPU_COUNT > /dev/null 2>&1
-    cd .. && mv iptables.tmp iptables
-    benchmark
-fi
-
-if [ ! -d docker ]; then
-    echo -n "Installing docker... "
-    tar -xf ../_download/docker* && cd docker/
-    cd ..
-    benchmark
-fi
-
-echo -n "Creating initramfs... "
-rm -rf initramfs && cp -R ../initramfs ./
-mkdir -p initramfs/{bin,etc/ssl/certs,root,sbin,usr/{bin,sbin},home/user}
-cp busybox/busybox initramfs/bin/ &&
-  chmod +s initramfs/bin/busybox
-# exclude ctr, docker-init, docker-proxy
-cp docker/{containerd,containerd-shim-runc-v2,docker,dockerd,runc} initramfs/usr/bin/
-cp iptables/iptables/xtables-legacy-multi initramfs/sbin/iptables
-cp /etc/ssl/certs/ca-certificates.crt initramfs/etc/ssl/certs/
-
-cd initramfs && find . | cpio $QUIET --create --owner 0:0 --format newc | gzip -c > ../initramfs.cpio.gz && cd ..
-benchmark
-
 echo -n "Total execution time: "
 BM_START=$SCRIPT_START && benchmark
-
-sha256sum -b linux/arch/x86/boot/bzImage
-# b72e11d453dbc08e13bb8fde1ab539209901f811d63da14fb37a7c085371ac9d
