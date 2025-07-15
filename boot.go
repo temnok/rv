@@ -58,6 +58,10 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		ram.Load(dtbAddr, readFile(path+".dtb", ""))
 	}
 
+	if initrdPath := path + ".initramfs.cpio.gz"; existsFile(initrdPath) {
+		ram.Load(0x83000000, readFile(initrdPath, ""))
+	}
+
 	for step := 0; !terminal.Closed; step++ {
 		ok := cpu.Step()
 
