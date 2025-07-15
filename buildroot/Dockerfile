@@ -20,10 +20,10 @@ COPY --chown=user external /home/user/external
 RUN make BR2_EXTERNAL=~/external rv32_defconfig && make source
 RUN make && make linux-rebuild opensbi-rebuild all
 RUN mkdir ~/output && \
-    gzip -c output/images/fw_payload.bin > ~/output/rv32.kernel.gz && \
+    gzip -n -c output/images/fw_payload.bin > ~/output/rv32.kernel.gz && \
     cp output/images/rv32.dtb ~/output/
 
 RUN make BR2_EXTERNAL=~/external clean rv64_defconfig && make source
 RUN make && make linux-rebuild opensbi-rebuild all
-RUN gzip -c output/images/fw_payload.bin > ~/output/rv64.kernel.gz && \
+RUN gzip -n -c output/images/fw_payload.bin > ~/output/rv64.kernel.gz && \
     cp output/images/rv64.dtb ~/output/

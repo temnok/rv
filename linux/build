@@ -10,4 +10,4 @@ docker run -ti --rm \
     bash build
 
 rm -rf output/*
-gzip -c work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin > output/rv64.kernel.gz
+gzip -9 -n -c work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin > output/rv64.kernel.gz
