@@ -4,6 +4,8 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get install -y \
     device-tree-compiler gcc-riscv64-linux-gnu libssl-dev make wget xz-utils \
+    # required for opensbi build:
+    python3 \
     # required for kernel build:
     bc bison flex libelf-dev \
     # required for creating initramfs:

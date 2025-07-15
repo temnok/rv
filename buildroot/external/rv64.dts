@@ -3,7 +3,7 @@
 / {
 	#address-cells = <1>;
 	#size-cells = <1>;
-	compatible = "maxnu,rv64";
+	compatible = "rv64";
 
 	aliases {
 		serial0 = &uart0;

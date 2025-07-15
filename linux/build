@@ -10,5 +10,4 @@ docker run -ti --rm \
     bash build
 
 rm -rf output/*
-cp work/_build/linux/arch/riscv/boot/Image output/rv64.kernel
-cp work/_build/dtb/rv64.dtb output/
+cp work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin output/rv64.kernel
