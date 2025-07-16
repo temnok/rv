@@ -249,7 +249,7 @@ func (cpu *CPU) csrRead(i int, val *int) {
 		return
 	}
 
-	*val = (*reg & mask) << shift
+	*val = (*reg & mask) >> shift
 }
 
 func (cpu *CPU) csrWrite(i, val int) {

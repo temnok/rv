@@ -32,7 +32,7 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	if cpu.PC == cpu.xint(0x800003a0) {
+	if cpu.PC == cpu.xint(0x700001a4) {
 		//if cpu.isTrapped() {
 		//if cpu.CSR.Cycle == 10 {
 		//debugTrapCount++

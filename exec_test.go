@@ -101,6 +101,8 @@ func runTest(t *testing.T, xlen int, file string) {
 				if cpu.Reg[3] == 1 && cpu.Reg[10] == 0 {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
+					debugDump(cpu)
+
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, pc=%08x\n"+
 						"mstatus=%08x, xepc=%08x\n"+
