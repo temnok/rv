@@ -63,7 +63,10 @@ func runTest(t *testing.T, xlen int, file string) {
 			lastPCs = lastPCs[:n]
 		}
 
-		cpu.Step()
+		if !cpu.Step() {
+			debugDump(cpu)
+			break
+		}
 
 		if cpu.isTrapped() {
 			trapCount++

@@ -13,6 +13,6 @@ func signBit(val, i int) int {
 }
 
 func setBits(addr *int, i, n, val int) {
-	mask := 1<<n - 1
-	*addr = *addr&^(mask<<i) | (val&mask)<<i
+	mask := (1<<n - 1) << i
+	*addr = *addr&^mask | val<<i
 }

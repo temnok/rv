@@ -1,6 +1,8 @@
 package rv
 
-import "math"
+import (
+	"math"
+)
 
 const upper32ones = -1 << 32
 
@@ -28,28 +30,44 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd int) {
 
 	switch f7 {
 	case 0b_0000000: // fadd.s
-		cpu.Updated.FRegValue = fp32bits(cpu.fp32(rs1) + cpu.fp32(rs2))
+		a, b := cpu.fp32(rs1), cpu.fp32(rs2)
+		c := a + b
+		cpu.Updated.FRegValue = fp32bits(c)
 
 	case 0b_0000001: // fadd.d
-		cpu.Updated.FRegValue = fp64bits(cpu.fp64(rs1) + cpu.fp64(rs2))
+		a, b := cpu.fp64(rs1), cpu.fp64(rs2)
+		c := a + b
+		cpu.Updated.FRegValue = fp64bits(c)
 
 	case 0b_0000100: // fsub.s
-		cpu.Updated.FRegValue = fp32bits(cpu.fp32(rs1) - cpu.fp32(rs2))
+		a, b := cpu.fp32(rs1), cpu.fp32(rs2)
+		c := a - b
+		cpu.Updated.FRegValue = fp32bits(c)
 
 	case 0b_0000101: // fsub.d
-		cpu.Updated.FRegValue = fp64bits(cpu.fp64(rs1) - cpu.fp64(rs2))
+		a, b := cpu.fp64(rs1), cpu.fp64(rs2)
+		c := a - b
+		cpu.Updated.FRegValue = fp64bits(c)
 
 	case 0b_0001000: // fmul.s
-		cpu.Updated.FRegValue = fp32bits(cpu.fp32(rs1) * cpu.fp32(rs2))
+		a, b := cpu.fp32(rs1), cpu.fp32(rs2)
+		c := a * b
+		cpu.Updated.FRegValue = fp32bits(c)
 
 	case 0b_0001001: // fmul.d
-		cpu.Updated.FRegValue = fp64bits(cpu.fp64(rs1) * cpu.fp64(rs2))
+		a, b := cpu.fp64(rs1), cpu.fp64(rs2)
+		c := a * b
+		cpu.Updated.FRegValue = fp64bits(c)
 
 	case 0b_0001100: // fdiv.s
-		cpu.Updated.FRegValue = fp32bits(cpu.fp32(rs1) / cpu.fp32(rs2))
+		a, b := cpu.fp32(rs1), cpu.fp32(rs2)
+		c := a / b
+		cpu.Updated.FRegValue = fp32bits(c)
 
 	case 0b_0001101: // fdiv.d
-		cpu.Updated.FRegValue = fp64bits(cpu.fp64(rs1) / cpu.fp64(rs2))
+		a, b := cpu.fp64(rs1), cpu.fp64(rs2)
+		c := a / b
+		cpu.Updated.FRegValue = fp64bits(c)
 
 	case 0b_1110000: // fmv.x.w
 		cpu.Updated.RegIndex = rd

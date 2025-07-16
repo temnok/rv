@@ -11,6 +11,7 @@ type CPUUpdatedState struct {
 
 	FRegUpdated          bool
 	FRegIndex, FRegValue int
+	Fflags               int
 
 	CSRAddr            *int
 	CSRIndex, CSRValue int
@@ -64,6 +65,11 @@ func (cpu *CPU) updateState() {
 	if up.FRegUpdated {
 		cpu.FReg[up.FRegIndex] = up.FRegValue
 		up.FRegUpdated = false
+	}
+
+	if up.Fflags != 0 {
+		cpu.CSR.Fcsr |= up.Fflags
+		up.Fflags = 0
 	}
 
 	if up.CSRIndex != 0 {
