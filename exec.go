@@ -21,6 +21,9 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_00000:
 		cpu.execLoad(immI(opcode), rs1, f3, rd)
 
+	case 0b_00001:
+		cpu.execLoadFP(immI(opcode), rs1, f3, rd)
+
 	case 0b_00011:
 		cpu.execFence(immI(opcode), rs1, f3, rd)
 
@@ -37,6 +40,9 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_01000:
 		cpu.execStore(immS(opcode), rs2, rs1, f3)
 
+	case 0b_01001:
+		cpu.execStoreFP(immS(opcode), rs2, rs1, f3)
+
 	case 0b_01011:
 		cpu.execAtomic(f7, rs2, rs1, f3, rd)
 
@@ -49,6 +55,9 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_01101: // lui
 		cpu.Updated.RegIndex = rd
 		cpu.Updated.RegValue = immU(opcode)
+
+	case 0b_10100:
+		cpu.execComputeFP(f7, rs2, rs1, f3, rd)
 
 	case 0b_11000:
 		cpu.execBranch(immB(opcode), rs2, rs1, f3)

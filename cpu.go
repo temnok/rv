@@ -12,9 +12,12 @@ type CPU struct {
 type CPUState struct {
 	Priv int
 	PC   int
-	Reg  [32]int
-	FP   [32]float64
-	CSR  CSR
+
+	Reg [32]int
+
+	FReg [32]int
+
+	CSR CSR
 
 	Reserved        bool
 	ReservedAddress int
@@ -64,7 +67,6 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 			CSR: CSR{
 				Misa: xl<<(xlen-2) |
 					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-					//					1<<('f'-'a') | 1<<('d'-'a') |
 					1<<('u'-'a') | 1<<('s'-'a'),
 			},
 		},
@@ -74,6 +76,11 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 			RegValue: regValue,
 		},
 	}
+
+	//cpu.CSR.Misa |= 1 << ('f' - 'a')
+	//if cpu.xlen64() {
+	//	cpu.CSR.Misa |= 1 << ('d' - 'a')
+	//}
 
 	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)
 	cpu.Updated.PC = cpu.xint(startAddr)

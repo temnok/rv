@@ -63,13 +63,12 @@ func runTest(t *testing.T, xlen int, file string) {
 			lastPCs = lastPCs[:n]
 		}
 
-		prevPC := cpu.PC
 		cpu.Step()
 
 		if cpu.isTrapped() {
 			trapCount++
 
-			lastTraps = append(lastTraps, [2]uint{uint(prevPC), uint(cpu.CSR.Mcause)})
+			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Updated.TrapXcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
@@ -103,12 +102,16 @@ func runTest(t *testing.T, xlen int, file string) {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
-						"priv=%v, cause=%v,  mepc=%08x, mstatus=%08x, "+
-						"gp=%08x, a0=%08x, t0=%08x, t2=%08x, t6=%08x\n",
+						"priv=%v, pc=%08x\n"+
+						"mstatus=%08x, xepc=%08x\n"+
+						"xcause=%08x, xtval=%08x\n"+
+						"a0=%08x\n",
 						cpu.CSR.Cycle, lastPCs, lastTraps,
-						cpu.Priv, cause, uint(cpu.CSR.Mepc), uint(cpu.CSR.Mstatus),
-						uint(cpu.Reg[3]), uint(cpu.Reg[10]),
-						uint(cpu.Reg[5]), uint(cpu.Reg[7]), uint(cpu.Reg[31]))
+						cpu.Updated.TrapPriv, uint(cpu.Updated.TrapPC),
+						uint(cpu.Updated.TrapMstatus), uint(cpu.Updated.TrapXepc),
+						uint(cpu.Updated.TrapXcause), uint(cpu.Updated.TrapXtval),
+						uint(cpu.Reg[10]),
+					)
 				}
 
 				break
