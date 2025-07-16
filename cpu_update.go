@@ -56,6 +56,11 @@ func (cpu *CPU) updateState() {
 		up.RegIndex = 0
 	}
 
+	if up.FRegUpdated || up.CSRIndex == Fflags || up.CSRIndex == Frm || up.CSRIndex == Fcsr {
+		setBits(&cpu.CSR.Mstatus, MstatusFS, 2, FSdirty)
+		cpu.CSR.Mstatus |= 1 << (cpu.XLen - 1) // set SD bit
+	}
+
 	if up.FRegUpdated {
 		cpu.FReg[up.FRegIndex] = up.FRegValue
 		up.FRegUpdated = false

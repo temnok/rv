@@ -50,8 +50,11 @@ const (
 
 const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-	MstatusSXL = 34
-	MstatusUXL = 32
+	MstatusFS   = 13
+	MstatusUXL  = 32
+	MstatusSXL  = 34
+	MstatusSD32 = 31
+	MstatusSD64 = 63
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
 	SatpMODE32 = 31
@@ -74,6 +77,11 @@ const (
 	MipSTI = 5
 	MipMTI = 7
 	MipSEI = 9
+
+	FSoff     = 0b_00
+	FSinitial = 0b_01
+	FSclean   = 0b_10
+	FSdirty   = 0b_11
 )
 
 type CSR struct {

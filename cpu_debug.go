@@ -3,6 +3,7 @@ package rv
 import (
 	"fmt"
 	"github.com/deadsy/rvda"
+	"math"
 	"strings"
 )
 
@@ -16,11 +17,12 @@ func (cpu *CPU) debugStep() bool {
 
 	entry := []int{cpu.PC, opcode}
 
-	if cpu.Updated.RegIndex != 0 {
+	switch {
+	case cpu.Updated.RegIndex != 0:
 		entry = append(entry, cpu.Updated.RegValue)
-	}
-
-	if cpu.Updated.CSRIndex != 0 {
+	case cpu.Updated.FRegUpdated:
+		entry = append(entry, 0, cpu.Updated.FRegValue)
+	case cpu.Updated.CSRIndex != 0:
 		entry = append(entry, cpu.Updated.CSRValue)
 	}
 
@@ -30,7 +32,7 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	if cpu.PC == 0x0000000000010614 {
+	if cpu.PC == cpu.xint(0x800003a0) {
 		//if cpu.isTrapped() {
 		//if cpu.CSR.Cycle == 10 {
 		//debugTrapCount++
@@ -80,14 +82,17 @@ func disassemble(isa *rvda.ISA, entry []int) string {
 		ops = append(ops, "")
 	}
 
-	line = fmt.Sprintf("%-30v %-6v %-16v", parts[0], ops[0], ops[1])
+	line = fmt.Sprintf("%-30v %-7v %-16v", parts[0], ops[0], ops[1])
 
-	if len(entry) > 2 {
+	if len(entry) == 3 {
 		line += fmt.Sprintf("// %x", uint(entry[2]))
-		//
-		//if fmt.Sprintf("%x", uint(entry[2])) != fmt.Sprint(entry[2]) {
-		//	line += fmt.Sprintf(" (%v)", entry[2])
-		//}
+
+		if fmt.Sprintf("%x", uint(entry[2])) != fmt.Sprint(entry[2]) {
+			line += fmt.Sprintf(" (%v)", entry[2])
+		}
+	} else if len(entry) == 4 {
+		line += fmt.Sprintf("// %x (f32=%v, f64=%v)", uint(entry[3]),
+			math.Float32frombits(uint32(entry[3])), math.Float64frombits(uint64(entry[3])))
 	}
 
 	return line
