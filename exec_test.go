@@ -17,7 +17,7 @@ func TestInstructions64(t *testing.T) {
 }
 
 func testInstructions(t *testing.T, xlen int) {
-	matches, err := filepath.Glob(fmt.Sprintf("tests/todo/rv%v*", xlen))
+	matches, err := filepath.Glob(fmt.Sprintf("tests/pass/rv%v*", xlen))
 	if err != nil {
 		t.Fatal(err)
 	}
