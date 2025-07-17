@@ -81,3 +81,19 @@ func (cpu *CPU) updateState() {
 	cpu.ReservedAddress = up.ReservedAddress
 	cpu.ICache = cpu.Updated.ICache
 }
+
+func (cpu *CPU) updateTimers() {
+	if cpu.CSR.Cycle = cpu.xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
+		cpu.CSR.Cycleh++
+	}
+
+	if cpu.CSR.Cycle%10_000 == 0 {
+		if cpu.CSR.Time = cpu.xint(cpu.CSR.Time + 1); cpu.CSR.Time == 0 {
+			cpu.CSR.Timeh++
+		}
+	}
+}
+
+func (cpu *CPU) clearPendingInterrupts() {
+	cpu.CSR.Mip &^= 1<<MipSEI | 1<<MipMTI | 1<<MipMSI
+}
