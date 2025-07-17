@@ -25,6 +25,15 @@ double min64(double a, double b)  { return fixNan64(fmin(a, b), a, b); }
 float  max32(float a, float b)    { return fixNan32(fmaxf(a, b), a, b); }
 double max64(double a, double b)  { return fixNan64(fmax(a, b), a, b); }
 
+float  madd32(float a, float b, float c)     { return a*b + c; }
+double madd64(double a, double b, double c)  { return a*b + c; }
+float  msub32(float a, float b, float c)     { return a*b - c; }
+double msub64(double a, double b, double c)  { return a*b - c; }
+float  nmadd32(float a, float b, float c)    { return -a*b - c; }
+double nmadd64(double a, double b, double c) { return -a*b - c; }
+float  nmsub32(float a, float b, float c)    { return -a*b + c; }
+double nmsub64(double a, double b, double c) { return -a*b + c; }
+
 */
 import "C"
 import (
@@ -54,10 +63,16 @@ var rmToC = []C.int{
 	RmDYN: C.FE_TONEAREST,
 }
 
-func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd int) {
+func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	if f7&1 == 1 && !cpu.xlen64() || bits(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
+	}
+
+	rs3 := 0
+	if op != 0 {
+		rs3 = f7 >> 2
+		f7 = 0b_10000000 | f7&3
 	}
 
 	switch f7 {
@@ -152,6 +167,36 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd int) {
 
 	case 0b_1111001: // fmv.d.x
 		cpu.f64resBits(cpu.Reg[rs1])
+
+	case 0b_10000000:
+		switch op {
+		case 0b_10000: // fmadd.s
+			cpu.f32res(C.madd32(cpu.f32arg3(rs1, rs2, rs3, f3)))
+
+		case 0b_10001: // fmsub.s
+			cpu.f32res(C.msub32(cpu.f32arg3(rs1, rs2, rs3, f3)))
+
+		case 0b_10010: // fnmsub.s
+			cpu.f32res(C.nmsub32(cpu.f32arg3(rs1, rs2, rs3, f3)))
+
+		case 0b_10011: // fnmadd.s
+			cpu.f32res(C.nmadd32(cpu.f32arg3(rs1, rs2, rs3, f3)))
+		}
+
+	case 0b_10000001:
+		switch op {
+		case 0b_10000: // fmadd.d
+			cpu.f64res(C.madd64(cpu.f64arg3(rs1, rs2, rs3, f3)))
+
+		case 0b_10001: // fmsub.d
+			cpu.f64res(C.msub64(cpu.f64arg3(rs1, rs2, rs3, f3)))
+
+		case 0b_10010: // fnmsub.d
+			cpu.f64res(C.nmsub64(cpu.f64arg3(rs1, rs2, rs3, f3)))
+
+		case 0b_10011: // fnmadd.d
+			cpu.f64res(C.nmadd64(cpu.f64arg3(rs1, rs2, rs3, f3)))
+		}
 	}
 
 	if !cpu.Updated.FRegUpdated {
@@ -167,9 +212,19 @@ func (cpu *CPU) f32arg(rs1, rs2, f3 int) (C.float, C.float) {
 	return C.float(cpu.f32(rs1)), C.float(cpu.f32(rs2))
 }
 
+func (cpu *CPU) f32arg3(rs1, rs2, rs3, f3 int) (C.float, C.float, C.float) {
+	cpu.prepareCfenv(f3)
+	return C.float(cpu.f32(rs1)), C.float(cpu.f32(rs2)), C.float(cpu.f32(rs3))
+}
+
 func (cpu *CPU) f64arg(rs1, rs2, f3 int) (C.double, C.double) {
 	cpu.prepareCfenv(f3)
 	return C.double(cpu.f64(rs1)), C.double(cpu.f64(rs2))
+}
+
+func (cpu *CPU) f64arg3(rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
+	cpu.prepareCfenv(f3)
+	return C.double(cpu.f64(rs1)), C.double(cpu.f64(rs2)), C.double(cpu.f64(rs3))
 }
 
 func (cpu *CPU) f32res(res C.float) {

@@ -17,7 +17,7 @@ func (cpu *CPU) exec(opcode int) {
 	f3 := bits(opcode, 12, 3)
 	rd := bits(opcode, 7, 5)
 
-	switch bits(opcode, 2, 5) {
+	switch op := bits(opcode, 2, 5); op {
 	case 0b_00000:
 		cpu.execLoad(immI(opcode), rs1, f3, rd)
 
@@ -56,8 +56,11 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.Updated.RegIndex = rd
 		cpu.Updated.RegValue = immU(opcode)
 
+	case 0b_10000, 0b_10001, 0b_10010, 0b_10011:
+		cpu.execComputeFP(f7, rs2, rs1, f3, rd, op)
+
 	case 0b_10100:
-		cpu.execComputeFP(f7, rs2, rs1, f3, rd)
+		cpu.execComputeFP(f7, rs2, rs1, f3, rd, 0)
 
 	case 0b_11000:
 		cpu.execBranch(immB(opcode), rs2, rs1, f3)
