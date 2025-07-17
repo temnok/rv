@@ -11,7 +11,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_010: // flw
 		if cpu.memRead(cpu.Reg[rs1]+imm, &val, 4); !cpu.isTrapped() {
-			cpu.Updated.FRegValue = upper32ones | val
+			cpu.Updated.FRegValue = f32boxingBits | val
 		}
 
 	case 0b_011: // fld

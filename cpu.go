@@ -65,7 +65,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 			CSR: CSR{
 				Misa: xl<<(xlen-2) |
 					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-					//1<<('f'-'a') | (xlen/64)<<('d'-'a') |
+					1<<('f'-'a') | (xlen/64)<<('d'-'a') |
 					1<<('u'-'a') | 1<<('s'-'a'),
 			},
 		},
@@ -101,10 +101,10 @@ func (cpu *CPU) xuint(val int) uint {
 }
 
 func (cpu *CPU) Step() bool {
-	//return cpu.debugStep()
+	return cpu.debugStep()
 
-	cpu.innerStep()
-	return true
+	//cpu.innerStep()
+	//return true
 }
 
 func (cpu *CPU) innerStep() int {

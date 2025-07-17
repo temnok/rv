@@ -7,13 +7,6 @@ const (
 	Frm    = 0x002
 	Fcsr   = 0x003
 
-	RmRNE = 0b_000
-	RmRTZ = 0b_001
-	RmRDN = 0b_010
-	RmRUP = 0b_011
-	RmRMM = 0b_100
-	RmDYN = 0b_111
-
 	Sstatus    = 0x100
 	Sie        = 0x104
 	Stvec      = 0x105
@@ -56,7 +49,7 @@ const (
 )
 
 const (
-	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_floating_point_control_and_status_register
+	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#bitdef
 	FcsrNX = 0
 	FcsrUF = 1
 	FcsrOF = 2
