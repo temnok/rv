@@ -152,15 +152,92 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.f64res(C.sqrt64(cpu.f64arg(rs1, 0, f3)))
 		}
 
-	case 0b_1110000: // fmv.x.w
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = int(int32(cpu.FReg[rs1]))
-		return
+	case 0b_1010000: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_compare_instructions
+		switch f3 {
+		case 0b_000: // fle.s
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = 0
+			if a, b := cpu.f32(rs1), cpu.f32(rs2); a != a || b != b {
+				cpu.Updated.Fflags = 1 << FcsrNV
+			} else if a <= b {
+				cpu.Updated.RegValue = 1
+			}
+			return
 
-	case 0b_1110001: // fmv.x.d
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = cpu.FReg[rs1]
-		return
+		case 0b_001: // flt.s
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = 0
+			if a, b := cpu.f32(rs1), cpu.f32(rs2); a != a || b != b {
+				cpu.Updated.Fflags = 1 << FcsrNV
+			} else if a < b {
+				cpu.Updated.RegValue = 1
+			}
+			return
+
+		case 0b_010: // feq.s
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = 0
+			if a, b := cpu.f32(rs1), cpu.f32(rs2); isSNaN32(a) || isSNaN32(b) {
+				cpu.Updated.Fflags = 1 << FcsrNV
+			} else if a == b {
+				cpu.Updated.RegValue = 1
+			}
+			return
+		}
+
+	case 0b_1010001:
+		switch f3 {
+		case 0b_000: // fle.d
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = 0
+			if a, b := cpu.f64(rs1), cpu.f64(rs2); a != a || b != b {
+				cpu.Updated.Fflags = 1 << FcsrNV
+			} else if a <= b {
+				cpu.Updated.RegValue = 1
+			}
+			return
+
+		case 0b_001: // flt.d
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = 0
+			if a, b := cpu.f64(rs1), cpu.f64(rs2); a != a || b != b {
+				cpu.Updated.Fflags = 1 << FcsrNV
+			} else if a < b {
+				cpu.Updated.RegValue = 1
+			}
+			return
+
+		case 0b_010: // feq.d
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = 0
+			if a, b := cpu.f64(rs1), cpu.f64(rs2); isSNaN64(a) || isSNaN64(b) {
+				cpu.Updated.Fflags = 1 << FcsrNV
+			} else if a == b {
+				cpu.Updated.RegValue = 1
+			}
+			return
+
+		}
+
+	case 0b_1110000:
+		switch rs2<<3 | f3 {
+		case 0b_00000_000: // fmv.x.w
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = int(int32(cpu.FReg[rs1]))
+			return
+
+		case 0b_00000_001: // fclass.s
+		}
+
+	case 0b_1110001:
+		switch rs2<<3 | f3 {
+		case 0b_00000_000: // fmv.x.d
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = cpu.FReg[rs1]
+			return
+
+		case 0b_00000_001: // fclass.d
+		}
 
 	case 0b_1111000: // fmv.w.x
 		cpu.f32resBits(cpu.Reg[rs1])
@@ -199,12 +276,11 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 		}
 	}
 
-	if !cpu.Updated.FRegUpdated {
+	if cpu.Updated.FRegUpdated {
+		cpu.Updated.FRegIndex = rd
+	} else {
 		cpu.trap(ExceptionIllegalIstruction)
-		return
 	}
-
-	cpu.Updated.FRegIndex = rd
 }
 
 func (cpu *CPU) f32arg(rs1, rs2, f3 int) (C.float, C.float) {
@@ -236,6 +312,12 @@ func (cpu *CPU) f32res(res C.float) {
 func (cpu *CPU) f64res(res C.double) {
 	cpu.Updated.FRegUpdated = true
 	cpu.Updated.FRegValue = f64bits(float64(res))
+	cpu.setUpdatedFflags()
+}
+
+func (cpu *CPU) fResI(rd int, res C.int) {
+	cpu.Updated.RegIndex = rd
+	cpu.Updated.RegValue = cpu.xint(int(res))
 	cpu.setUpdatedFflags()
 }
 
@@ -299,4 +381,12 @@ func (cpu *CPU) setUpdatedFflags() {
 	if ex&C.FE_INVALID != 0 {
 		cpu.Updated.Fflags |= 1 << FcsrNV
 	}
+}
+
+func isSNaN32(a float32) bool {
+	return a != a && math.Float32bits(a)&(1<<22) == 0
+}
+
+func isSNaN64(a float64) bool {
+	return a != a && math.Float64bits(a)&(1<<51) == 0
 }
