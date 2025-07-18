@@ -158,7 +158,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.Updated.RegIndex = rd
 			cpu.Updated.RegValue = 0
 			if a, b := cpu.f32(rs1), cpu.f32(rs2); a != a || b != b {
-				cpu.Updated.Fflags = 1 << FcsrNV
+				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a <= b {
 				cpu.Updated.RegValue = 1
 			}
@@ -168,7 +168,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.Updated.RegIndex = rd
 			cpu.Updated.RegValue = 0
 			if a, b := cpu.f32(rs1), cpu.f32(rs2); a != a || b != b {
-				cpu.Updated.Fflags = 1 << FcsrNV
+				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a < b {
 				cpu.Updated.RegValue = 1
 			}
@@ -178,7 +178,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.Updated.RegIndex = rd
 			cpu.Updated.RegValue = 0
 			if a, b := cpu.f32(rs1), cpu.f32(rs2); isSNaN32(a) || isSNaN32(b) {
-				cpu.Updated.Fflags = 1 << FcsrNV
+				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a == b {
 				cpu.Updated.RegValue = 1
 			}
@@ -191,7 +191,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.Updated.RegIndex = rd
 			cpu.Updated.RegValue = 0
 			if a, b := cpu.f64(rs1), cpu.f64(rs2); a != a || b != b {
-				cpu.Updated.Fflags = 1 << FcsrNV
+				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a <= b {
 				cpu.Updated.RegValue = 1
 			}
@@ -201,7 +201,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.Updated.RegIndex = rd
 			cpu.Updated.RegValue = 0
 			if a, b := cpu.f64(rs1), cpu.f64(rs2); a != a || b != b {
-				cpu.Updated.Fflags = 1 << FcsrNV
+				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a < b {
 				cpu.Updated.RegValue = 1
 			}
@@ -211,7 +211,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			cpu.Updated.RegIndex = rd
 			cpu.Updated.RegValue = 0
 			if a, b := cpu.f64(rs1), cpu.f64(rs2); isSNaN64(a) || isSNaN64(b) {
-				cpu.Updated.Fflags = 1 << FcsrNV
+				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a == b {
 				cpu.Updated.RegValue = 1
 			}
@@ -227,6 +227,9 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			return
 
 		case 0b_00000_001: // fclass.s
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = classify32(cpu.f32(rs1))
+			return
 		}
 
 	case 0b_1110001:
@@ -237,6 +240,9 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			return
 
 		case 0b_00000_001: // fclass.d
+			cpu.Updated.RegIndex = rd
+			cpu.Updated.RegValue = classify64(cpu.f64(rs1))
+			return
 		}
 
 	case 0b_1111000: // fmv.w.x
@@ -363,23 +369,23 @@ func (cpu *CPU) setUpdatedFflags() {
 	ex := C.fetestexcept(C.FE_ALL_EXCEPT)
 
 	if ex&C.FE_INEXACT != 0 {
-		cpu.Updated.Fflags |= 1 << FcsrNX
+		cpu.Updated.Fflags |= 1 << FflagsNX
 	}
 
 	if ex&C.FE_UNDERFLOW != 0 {
-		cpu.Updated.Fflags |= 1 << FcsrUF
+		cpu.Updated.Fflags |= 1 << FflagsUF
 	}
 
 	if ex&C.FE_OVERFLOW != 0 {
-		cpu.Updated.Fflags |= 1 << FcsrOF
+		cpu.Updated.Fflags |= 1 << FflagsOF
 	}
 
 	if ex&C.FE_DIVBYZERO != 0 {
-		cpu.Updated.Fflags |= 1 << FcsrDZ
+		cpu.Updated.Fflags |= 1 << FflagsDZ
 	}
 
 	if ex&C.FE_INVALID != 0 {
-		cpu.Updated.Fflags |= 1 << FcsrNV
+		cpu.Updated.Fflags |= 1 << FflagsNV
 	}
 }
 
@@ -389,4 +395,84 @@ func isSNaN32(a float32) bool {
 
 func isSNaN64(a float64) bool {
 	return a != a && math.Float64bits(a)&(1<<51) == 0
+}
+
+func classify32(a float32) int {
+	const smallestNormal = 1.1754943508222875e-38 // 2**-126
+
+	i := 0
+
+	switch {
+	case math.IsInf(float64(a), -1):
+		i = 0
+
+	case a <= -smallestNormal:
+		i = 1
+
+	case a < 0:
+		i = 2
+
+	case math.Signbit(float64(a)):
+		i = 3
+
+	case a == 0:
+		i = 4
+
+	case a < smallestNormal:
+		i = 5
+
+	case float64(a) < math.Inf(1):
+		i = 6
+
+	case a > 0:
+		i = 7
+
+	case isSNaN32(a):
+		i = 8
+
+	default:
+		i = 9
+	}
+
+	return 1 << i
+}
+
+func classify64(a float64) int {
+	const smallestNormal = 2.2250738585072014e-308 // 2**-1022
+
+	i := 0
+
+	switch {
+	case math.IsInf(a, -1):
+		i = 0
+
+	case a <= -smallestNormal:
+		i = 1
+
+	case a < 0:
+		i = 2
+
+	case math.Signbit(a):
+		i = 3
+
+	case a == 0:
+		i = 4
+
+	case a < smallestNormal:
+		i = 5
+
+	case a < math.Inf(1):
+		i = 6
+
+	case a > 0:
+		i = 7
+
+	case isSNaN64(a):
+		i = 8
+
+	default:
+		i = 9
+	}
+
+	return 1 << i
 }

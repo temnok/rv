@@ -50,12 +50,12 @@ const (
 
 const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#bitdef
-	FcsrNX = 0
-	FcsrUF = 1
-	FcsrOF = 2
-	FcsrDZ = 3
-	FcsrNV = 4
-	FcsrRM = 5
+	FflagsNX = 0
+	FflagsUF = 1
+	FflagsOF = 2
+	FflagsDZ = 3
+	FflagsNV = 4
+	FcsrRM   = 5
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	MstatusFS   = 13
