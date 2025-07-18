@@ -7,8 +7,7 @@ import (
 	"testing"
 )
 
-// TODO
-func xTestRunKernel32(t *testing.T) {
+func TestRunKernel32(t *testing.T) {
 	testRunKernel(t, 32, "buildroot/output", "buildroot login: ")
 }
 
