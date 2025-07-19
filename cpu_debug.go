@@ -18,11 +18,11 @@ func (cpu *CPU) debugStep() bool {
 	entry := []int{cpu.PC, opcode}
 
 	switch {
-	case cpu.Updated.RegIndex != 0:
+	case cpu.Updated.RegIndex > 0:
 		entry = append(entry, cpu.Updated.RegValue)
-	case cpu.Updated.FRegUpdated:
+	case cpu.Updated.FRegIndex >= 0:
 		entry = append(entry, 0, cpu.Updated.FRegValue)
-	case cpu.Updated.CSRIndex != 0:
+	case cpu.Updated.CSRIndex >= 0:
 		entry = append(entry, cpu.Updated.CSRValue)
 	}
 

@@ -52,19 +52,19 @@ func (cpu *CPU) updateState() {
 
 	cpu.PC = up.PC
 
-	if up.RegIndex != 0 {
+	if up.RegIndex > 0 {
 		cpu.Reg[up.RegIndex] = up.RegValue
-		up.RegIndex = 0
+		up.RegIndex = -1
 	}
 
-	if up.FRegUpdated || up.CSRIndex == Fflags || up.CSRIndex == Frm || up.CSRIndex == Fcsr {
+	if up.FRegIndex >= 0 || up.CSRIndex == Fflags || up.CSRIndex == Frm || up.CSRIndex == Fcsr {
 		setBits(&cpu.CSR.Mstatus, MstatusFS, 2, FSdirty)
 		cpu.CSR.Mstatus |= 1 << (cpu.XLen - 1) // set SD bit
 	}
 
-	if up.FRegUpdated {
+	if up.FRegIndex >= 0 {
 		cpu.FReg[up.FRegIndex] = up.FRegValue
-		up.FRegUpdated = false
+		up.FRegIndex = -1
 	}
 
 	if up.Fflags != 0 {
@@ -72,9 +72,9 @@ func (cpu *CPU) updateState() {
 		up.Fflags = 0
 	}
 
-	if up.CSRIndex != 0 {
+	if up.CSRIndex >= 0 {
 		*up.CSRAddr = up.CSRValue
-		up.CSRIndex = 0
+		up.CSRIndex = -1
 	}
 
 	cpu.Reserved = up.Reserved

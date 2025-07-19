@@ -71,9 +71,14 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 		},
 
 		Updated: CPUUpdatedState{
-			RegIndex: regIndex,
-			RegValue: regValue,
+			RegIndex: -1,
+			CSRIndex: -1,
 		},
+	}
+
+	if regIndex > 0 {
+		cpu.Updated.RegIndex = regIndex
+		cpu.Updated.RegValue = regValue
 	}
 
 	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)
