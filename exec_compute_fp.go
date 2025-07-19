@@ -122,13 +122,13 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_0010000:
 		switch f3 {
 		case 0b_000: // fsgnj.s
-			cpu.f32resBits(cpu.FReg[rs1]&^f32signMask | cpu.FReg[rs2]&f32signMask)
+			cpu.f32resBits(cpu.f32bits(rs1)&^f32signMask | cpu.f32bits(rs2)&f32signMask)
 
 		case 0b_001: // fsgnjn.s
-			cpu.f32resBits(cpu.FReg[rs1]&^f32signMask | (^cpu.FReg[rs2])&f32signMask)
+			cpu.f32resBits(cpu.f32bits(rs1)&^f32signMask | (^cpu.f32bits(rs2))&f32signMask)
 
 		case 0b_010: // fsgnjx.s
-			cpu.f32resBits(cpu.FReg[rs1] ^ cpu.FReg[rs2]&f32signMask)
+			cpu.f32resBits(cpu.f32bits(rs1) ^ cpu.f32bits(rs2)&f32signMask)
 		}
 
 	case 0b_0010001:
@@ -453,7 +453,16 @@ func (cpu *CPU) f64resBits(bits int) {
 }
 
 func (cpu *CPU) f32(i int) float32 {
-	return math.Float32frombits(uint32(cpu.FReg[i]))
+	return math.Float32frombits(uint32(cpu.f32bits(i)))
+}
+
+// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#nanboxing
+func (cpu *CPU) f32bits(i int) int {
+	val := cpu.FReg[i]
+	if val>>32 != -1 {
+		return -1<<32 | 0x7fc00000
+	}
+	return val
 }
 
 func (cpu *CPU) f64(i int) float64 {
