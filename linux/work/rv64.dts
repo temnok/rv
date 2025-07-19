@@ -12,9 +12,6 @@
 	chosen {
 		bootargs = "no4lvl earlycon=sifive,0x3000000 console=ttySIF0";
 		stdout-path = "/soc/serial@3000000";
-
-		linux,initrd-start = <0x87000000>;
-		linux,initrd-end = <0x88000000>;
 	};
 
 	memory@80000000 {
