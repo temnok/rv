@@ -6,18 +6,17 @@ type CPUUpdatedState struct {
 	TrapMstatus, TrapXepc int
 	TrapXcause, TrapXtval int
 
-	PC                 int
-	RegIndex, RegValue int
+	PC         int
+	XReg, XVal int
 
-	FRegUpdated          bool
-	FRegIndex, FRegValue int
-	Fflags               int
+	FReg, FVal int
+	Fflags     int
 
-	CSRAddr            *int
-	CSRIndex, CSRValue int
+	CReg, CVal int
+	CRegPtr    *int
 
-	Reserved        bool
-	ReservedAddress int
+	Reserved     bool
+	ReservedAddr int
 
 	ICache Cache
 }
@@ -52,19 +51,19 @@ func (cpu *CPU) updateState() {
 
 	cpu.PC = up.PC
 
-	if up.RegIndex > 0 {
-		cpu.Reg[up.RegIndex] = up.RegValue
-		up.RegIndex = -1
+	if up.XReg > 0 {
+		cpu.X[up.XReg] = up.XVal
+		up.XReg = -1
 	}
 
-	if up.FRegIndex >= 0 || up.CSRIndex == Fflags || up.CSRIndex == Frm || up.CSRIndex == Fcsr {
+	if up.FReg >= 0 || up.CReg == Fflags || up.CReg == Frm || up.CReg == Fcsr {
 		setBits(&cpu.CSR.Mstatus, MstatusFS, 2, FSdirty)
 		cpu.CSR.Mstatus |= 1 << (cpu.XLen - 1) // set SD bit
 	}
 
-	if up.FRegIndex >= 0 {
-		cpu.FReg[up.FRegIndex] = up.FRegValue
-		up.FRegIndex = -1
+	if up.FReg >= 0 {
+		cpu.F[up.FReg] = up.FVal
+		up.FReg = -1
 	}
 
 	if up.Fflags != 0 {
@@ -72,13 +71,13 @@ func (cpu *CPU) updateState() {
 		up.Fflags = 0
 	}
 
-	if up.CSRIndex >= 0 {
-		*up.CSRAddr = up.CSRValue
-		up.CSRIndex = -1
+	if up.CReg >= 0 {
+		*up.CRegPtr = up.CVal
+		up.CReg = -1
 	}
 
 	cpu.Reserved = up.Reserved
-	cpu.ReservedAddress = up.ReservedAddress
+	cpu.ReservedAddr = up.ReservedAddr
 	cpu.ICache = cpu.Updated.ICache
 }
 

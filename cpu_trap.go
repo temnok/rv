@@ -23,7 +23,7 @@ func (cpu *CPU) trapEnter(cause, tval int) {
 	}
 
 	effectivePriv := PrivM
-	if cpu.Priv < PrivM && bit(deleg, causeID) == 1 {
+	if cpu.Priv <= PrivS && bit(deleg, causeID) == 1 {
 		effectivePriv = PrivS
 	}
 
@@ -39,14 +39,14 @@ func (cpu *CPU) trapEnter(cause, tval int) {
 	case PrivM:
 		mie := bit(cpu.CSR.Mstatus, MstatusMIE)
 		cpu.Updated.TrapMstatus = cpu.CSR.Mstatus&^(3<<MstatusMPP|1<<MstatusMPIE|1<<MstatusMIE) |
-			(cpu.Priv<<MstatusMPP | mie<<MstatusMPIE)
+			cpu.Priv<<MstatusMPP | mie<<MstatusMPIE
 
 		tvec = cpu.CSR.Mtvec
 
 	case PrivS:
 		sie := bit(cpu.CSR.Mstatus, MstatusSIE)
 		cpu.Updated.TrapMstatus = cpu.CSR.Mstatus&^(1<<MstatusSPP|1<<MstatusSPIE|1<<MstatusSIE) |
-			(cpu.Priv<<MstatusSPP | sie<<MstatusSPIE)
+			cpu.Priv<<MstatusSPP | sie<<MstatusSPIE
 
 		tvec = cpu.CSR.Stvec
 	}

@@ -13,12 +13,12 @@ type CPUState struct {
 	Priv int
 	PC   int
 
-	Reg, FReg [32]int
+	X, F [32]int
 
 	CSR CSR
 
-	Reserved        bool
-	ReservedAddress int
+	Reserved     bool
+	ReservedAddr int
 
 	ICache Cache
 }
@@ -71,14 +71,14 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 		},
 
 		Updated: CPUUpdatedState{
-			RegIndex: -1,
-			CSRIndex: -1,
+			XReg: -1,
+			CReg: -1,
 		},
 	}
 
 	if regIndex > 0 {
-		cpu.Updated.RegIndex = regIndex
-		cpu.Updated.RegValue = regValue
+		cpu.Updated.XReg = regIndex
+		cpu.Updated.XVal = regValue
 	}
 
 	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)

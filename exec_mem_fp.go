@@ -10,8 +10,8 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 
 	switch f3 {
 	case 0b_010: // flw
-		if cpu.memRead(cpu.Reg[rs1]+imm, &val, 4); !cpu.isTrapped() {
-			cpu.Updated.FRegValue = f32boxingBits | val
+		if cpu.memRead(cpu.X[rs1]+imm, &val, 4); !cpu.isTrapped() {
+			cpu.Updated.FVal = f32boxingBits | val
 		}
 
 	case 0b_011: // fld
@@ -20,8 +20,8 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 			return
 		}
 
-		if cpu.memRead(cpu.Reg[rs1]+imm, &val, 8); !cpu.isTrapped() {
-			cpu.Updated.FRegValue = val
+		if cpu.memRead(cpu.X[rs1]+imm, &val, 8); !cpu.isTrapped() {
+			cpu.Updated.FVal = val
 		}
 
 	default:
@@ -29,8 +29,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 		return
 	}
 
-	cpu.Updated.FRegUpdated = true
-	cpu.Updated.FRegIndex = rd
+	cpu.Updated.FReg = rd
 }
 
 func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
@@ -41,7 +40,7 @@ func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
 
 	switch f3 {
 	case 0b_010: // fsw
-		cpu.memWrite(cpu.Reg[rs1]+imm, cpu.FReg[rs2], 4)
+		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 4)
 
 	case 0b_011: // fsd
 		if !cpu.xlen64() {
@@ -49,7 +48,7 @@ func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
 			return
 		}
 
-		cpu.memWrite(cpu.Reg[rs1]+imm, cpu.FReg[rs2], 8)
+		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 8)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

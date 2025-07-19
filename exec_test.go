@@ -92,7 +92,7 @@ func runTest(t *testing.T, xlen int, file string) {
 
 			t.Errorf("timeout: trapCount=%v, priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				trapCount, cpu.Priv, cpu.CSR.Mcause, uint(cpu.Reg[31]), lastPCs, lastTraps, addresses)
+				trapCount, cpu.Priv, cpu.CSR.Mcause, uint(cpu.X[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 
@@ -101,7 +101,7 @@ func runTest(t *testing.T, xlen int, file string) {
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {
 
-				if cpu.Reg[3] == 1 && cpu.Reg[10] == 0 {
+				if cpu.X[3] == 1 && cpu.X[10] == 0 {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
 					debugDump(cpu)
@@ -115,7 +115,7 @@ func runTest(t *testing.T, xlen int, file string) {
 						cpu.Updated.TrapPriv, uint(cpu.Updated.TrapPC),
 						uint(cpu.Updated.TrapMstatus), uint(cpu.Updated.TrapXepc),
 						uint(cpu.Updated.TrapXcause), uint(cpu.Updated.TrapXtval),
-						uint(cpu.Reg[10]),
+						uint(cpu.X[10]),
 					)
 				}
 

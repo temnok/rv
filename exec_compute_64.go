@@ -8,25 +8,25 @@ func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 
 	switch f3 {
 	case 0b_000: // addiw
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) + int32(imm))
+		cpu.Updated.XReg = rd
+		cpu.Updated.XVal = int(int32(cpu.X[rs1]) + int32(imm))
 		return
 
 	case 0b_001: // slliw
 		if imm < 32 {
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) << int32(imm))
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = int(int32(cpu.X[rs1]) << int32(imm))
 			return
 		}
 
 	case 0b_101:
 		if imm < 32 { // srliw
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = int(int32(uint32(cpu.Reg[rs1]) >> uint32(imm)))
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = int(int32(uint32(cpu.X[rs1]) >> uint32(imm)))
 			return
 		} else if imm &^= 0b0100000_00000; imm < 32 { // sraiw
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) >> int32(imm))
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = int(int32(cpu.X[rs1]) >> int32(imm))
 			return
 		}
 	}
@@ -53,27 +53,27 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 
 	switch op {
 	case 0b_000: // addw
-		cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) + int32(cpu.Reg[rs2]))
+		cpu.Updated.XVal = int(int32(cpu.X[rs1]) + int32(cpu.X[rs2]))
 
 	case 0b_1_000: // subw
-		cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) - int32(cpu.Reg[rs2]))
+		cpu.Updated.XVal = int(int32(cpu.X[rs1]) - int32(cpu.X[rs2]))
 
 	case 0b_001: // sllw
-		shamt := int32(cpu.Reg[rs2]) & 31
-		cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) << shamt)
+		shamt := int32(cpu.X[rs2]) & 31
+		cpu.Updated.XVal = int(int32(cpu.X[rs1]) << shamt)
 
 	case 0b_101: // srlw
-		shamt := uint32(cpu.Reg[rs2]) & 31
-		cpu.Updated.RegValue = int(int32(uint32(cpu.Reg[rs1]) >> shamt))
+		shamt := uint32(cpu.X[rs2]) & 31
+		cpu.Updated.XVal = int(int32(uint32(cpu.X[rs1]) >> shamt))
 
 	case 0b_1_101: // sraw
-		shamt := int32(cpu.Reg[rs2]) & 31
-		cpu.Updated.RegValue = int(int32(cpu.Reg[rs1]) >> shamt)
+		shamt := int32(cpu.X[rs2]) & 31
+		cpu.Updated.XVal = int(int32(cpu.X[rs1]) >> shamt)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
 
-	cpu.Updated.RegIndex = rd
+	cpu.Updated.XReg = rd
 }

@@ -34,8 +34,8 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execComputeI64(immI(opcode), rs1, f3, rd)
 
 	case 0b_00101: // auipc
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = cpu.xint(cpu.PC + immU(opcode))
+		cpu.Updated.XReg = rd
+		cpu.Updated.XVal = cpu.xint(cpu.PC + immU(opcode))
 
 	case 0b_01000:
 		cpu.execStore(immS(opcode), rs2, rs1, f3)
@@ -53,8 +53,8 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execComputeR64(f7, rs2, rs1, f3, rd)
 
 	case 0b_01101: // lui
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = immU(opcode)
+		cpu.Updated.XReg = rd
+		cpu.Updated.XVal = immU(opcode)
 
 	case 0b_10000, 0b_10001, 0b_10010, 0b_10011:
 		cpu.execComputeFP(f7, rs2, rs1, f3, rd, op)
@@ -66,13 +66,13 @@ func (cpu *CPU) exec(opcode int) {
 		cpu.execBranch(immB(opcode), rs2, rs1, f3)
 
 	case 0b_11001: // jalr
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = cpu.PC + opcodeSize
-		cpu.Updated.PC = cpu.xint((cpu.Reg[rs1] + immI(opcode)) &^ 1)
+		cpu.Updated.XReg = rd
+		cpu.Updated.XVal = cpu.PC + opcodeSize
+		cpu.Updated.PC = cpu.xint((cpu.X[rs1] + immI(opcode)) &^ 1)
 
 	case 0b_11011: // jal
-		cpu.Updated.RegIndex = rd
-		cpu.Updated.RegValue = cpu.PC + opcodeSize
+		cpu.Updated.XReg = rd
+		cpu.Updated.XVal = cpu.PC + opcodeSize
 		cpu.Updated.PC = cpu.xint(cpu.PC + immJ(opcode))
 
 	case 0b_11100:

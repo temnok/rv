@@ -11,8 +11,8 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	width := int(4) << (f3 & 1)
 
-	addr := cpu.Reg[rs1]
-	val := cpu.Reg[rs2]
+	addr := cpu.X[rs1]
+	val := cpu.X[rs2]
 
 	var old int
 	if f5 != 0b_00011 { // for all except sc
@@ -35,11 +35,11 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	case 0b_00010: // lr
 		cpu.Updated.Reserved = true
-		cpu.Updated.ReservedAddress = addr
+		cpu.Updated.ReservedAddr = addr
 		write = false
 
 	case 0b_00011: // sc
-		if cpu.Reserved && cpu.ReservedAddress == addr {
+		if cpu.Reserved && cpu.ReservedAddr == addr {
 			old = 0
 		} else {
 			old = 1
@@ -91,6 +91,6 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.Updated.RegIndex = rd
-	cpu.Updated.RegValue = old
+	cpu.Updated.XReg = rd
+	cpu.Updated.XVal = old
 }

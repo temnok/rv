@@ -134,13 +134,13 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_0010001:
 		switch f3 {
 		case 0b_000: // fsgnj.d
-			cpu.f64resBits(rd, cpu.FReg[rs1]&^f64signMask|cpu.FReg[rs2]&f64signMask)
+			cpu.f64resBits(rd, cpu.F[rs1]&^f64signMask|cpu.F[rs2]&f64signMask)
 
 		case 0b_001: // fsgnjn.d
-			cpu.f64resBits(rd, cpu.FReg[rs1]&^f64signMask|(^cpu.FReg[rs2])&f64signMask)
+			cpu.f64resBits(rd, cpu.F[rs1]&^f64signMask|(^cpu.F[rs2])&f64signMask)
 
 		case 0b_010: // fsgnjx.d
-			cpu.f64resBits(rd, cpu.FReg[rs1]^cpu.FReg[rs2]&f64signMask)
+			cpu.f64resBits(rd, cpu.F[rs1]^cpu.F[rs2]&f64signMask)
 		}
 
 	case 0b_0010100:
@@ -186,60 +186,60 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_1010000: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_compare_instructions
 		switch f3 {
 		case 0b_000: // fle.s
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = 0
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = 0
 			if a, b := cpu.f32(rs1), cpu.f32(rs2); a != a || b != b {
 				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a <= b {
-				cpu.Updated.RegValue = 1
+				cpu.Updated.XVal = 1
 			}
 
 		case 0b_001: // flt.s
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = 0
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = 0
 			if a, b := cpu.f32(rs1), cpu.f32(rs2); a != a || b != b {
 				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a < b {
-				cpu.Updated.RegValue = 1
+				cpu.Updated.XVal = 1
 			}
 
 		case 0b_010: // feq.s
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = 0
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = 0
 			if a, b := cpu.f32(rs1), cpu.f32(rs2); isSNaN32(a) || isSNaN32(b) {
 				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a == b {
-				cpu.Updated.RegValue = 1
+				cpu.Updated.XVal = 1
 			}
 		}
 
 	case 0b_1010001:
 		switch f3 {
 		case 0b_000: // fle.d
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = 0
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = 0
 			if a, b := cpu.f64(rs1), cpu.f64(rs2); a != a || b != b {
 				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a <= b {
-				cpu.Updated.RegValue = 1
+				cpu.Updated.XVal = 1
 			}
 
 		case 0b_001: // flt.d
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = 0
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = 0
 			if a, b := cpu.f64(rs1), cpu.f64(rs2); a != a || b != b {
 				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a < b {
-				cpu.Updated.RegValue = 1
+				cpu.Updated.XVal = 1
 			}
 
 		case 0b_010: // feq.d
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = 0
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = 0
 			if a, b := cpu.f64(rs1), cpu.f64(rs2); isSNaN64(a) || isSNaN64(b) {
 				cpu.Updated.Fflags = 1 << FflagsNV
 			} else if a == b {
-				cpu.Updated.RegValue = 1
+				cpu.Updated.XVal = 1
 			}
 		}
 
@@ -307,30 +307,30 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_1110000:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.w
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = int(int32(cpu.FReg[rs1]))
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = int(int32(cpu.F[rs1]))
 
 		case 0b_00000_001: // fclass.s
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = classify32(cpu.f32(rs1))
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = classify32(cpu.f32(rs1))
 		}
 
 	case 0b_1110001:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.d
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = cpu.FReg[rs1]
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = cpu.F[rs1]
 
 		case 0b_00000_001: // fclass.d
-			cpu.Updated.RegIndex = rd
-			cpu.Updated.RegValue = classify64(cpu.f64(rs1))
+			cpu.Updated.XReg = rd
+			cpu.Updated.XVal = classify64(cpu.f64(rs1))
 		}
 
 	case 0b_1111000: // fmv.w.x
-		cpu.f32resBits(rd, cpu.Reg[rs1])
+		cpu.f32resBits(rd, cpu.X[rs1])
 
 	case 0b_1111001: // fmv.d.x
-		cpu.f64resBits(rd, cpu.Reg[rs1])
+		cpu.f64resBits(rd, cpu.X[rs1])
 
 	case 0b_10000000:
 		switch op {
@@ -363,14 +363,14 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 		}
 	}
 
-	if cpu.Updated.RegIndex < 0 && cpu.Updated.FRegIndex < 0 {
+	if cpu.Updated.XReg < 0 && cpu.Updated.FReg < 0 {
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 }
 
 func (cpu *CPU) fargI(rs1, f3 int) int {
 	cpu.prepareCfenv(f3)
-	return cpu.Reg[rs1]
+	return cpu.X[rs1]
 }
 
 func (cpu *CPU) f32arg(rs1, f3 int) C.float {
@@ -404,35 +404,31 @@ func (cpu *CPU) f64arg3(rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
 }
 
 func (cpu *CPU) f32res(rd int, res C.float) {
-	cpu.Updated.FRegUpdated = true
-	cpu.Updated.FRegIndex = rd
-	cpu.Updated.FRegValue = f32bits(float32(res))
+	cpu.Updated.FReg = rd
+	cpu.Updated.FVal = f32bits(float32(res))
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) f64res(rd int, res C.double) {
-	cpu.Updated.FRegUpdated = true
-	cpu.Updated.FRegIndex = rd
-	cpu.Updated.FRegValue = f64bits(float64(res))
+	cpu.Updated.FReg = rd
+	cpu.Updated.FVal = f64bits(float64(res))
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) fResI(rd, res int) {
-	cpu.Updated.RegIndex = rd
-	cpu.Updated.RegValue = cpu.xint(res)
+	cpu.Updated.XReg = rd
+	cpu.Updated.XVal = cpu.xint(res)
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) f32resBits(rd, bits int) {
-	cpu.Updated.FRegUpdated = true
-	cpu.Updated.FRegIndex = rd
-	cpu.Updated.FRegValue = f32boxingBits | bits
+	cpu.Updated.FReg = rd
+	cpu.Updated.FVal = f32boxingBits | bits
 }
 
 func (cpu *CPU) f64resBits(rd, bits int) {
-	cpu.Updated.FRegUpdated = true
-	cpu.Updated.FRegIndex = rd
-	cpu.Updated.FRegValue = bits
+	cpu.Updated.FReg = rd
+	cpu.Updated.FVal = bits
 }
 
 func (cpu *CPU) f32(i int) float32 {
@@ -441,7 +437,7 @@ func (cpu *CPU) f32(i int) float32 {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#nanboxing
 func (cpu *CPU) f32bits(i int) int {
-	val := cpu.FReg[i]
+	val := cpu.F[i]
 	if val>>32 != -1 {
 		return -1<<32 | 0x7fc00000
 	}
@@ -449,7 +445,7 @@ func (cpu *CPU) f32bits(i int) int {
 }
 
 func (cpu *CPU) f64(i int) float64 {
-	return math.Float64frombits(uint64(cpu.FReg[i]))
+	return math.Float64frombits(uint64(cpu.F[i]))
 }
 
 func f32bits(val float32) int {

@@ -268,7 +268,7 @@ func (cpu *CPU) csrWrite(i, val int) {
 		return
 	}
 
-	cpu.Updated.CSRAddr = reg
-	cpu.Updated.CSRIndex = i
-	cpu.Updated.CSRValue = *reg&^mask | (val<<shift)&mask
+	cpu.Updated.CRegPtr = reg
+	cpu.Updated.CReg = i
+	cpu.Updated.CVal = *reg&^mask | (val<<shift)&mask
 }

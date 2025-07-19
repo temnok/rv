@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
-	a, b := int32(cpu.Reg[rs1]), int32(cpu.Reg[rs2])
+	a, b := int32(cpu.X[rs1]), int32(cpu.X[rs2])
 	var c int32
 
 	switch f3 {
@@ -41,6 +41,6 @@ func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
 		return
 	}
 
-	cpu.Updated.RegIndex = rd
-	cpu.Updated.RegValue = int(c)
+	cpu.Updated.XReg = rd
+	cpu.Updated.XVal = int(c)
 }
