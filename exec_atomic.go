@@ -91,6 +91,5 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.Updated.XReg = rd
-	cpu.Updated.XVal = old
+	cpu.xSet(rd, old)
 }

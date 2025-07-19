@@ -105,6 +105,11 @@ func (cpu *CPU) xuint(val int) uint {
 	return uint(uint32(val))
 }
 
+func (cpu *CPU) xSet(rd, val int) {
+	cpu.Updated.XReg = rd
+	cpu.Updated.XVal = cpu.xint(val)
+}
+
 func (cpu *CPU) Step() bool {
 	//return cpu.debugStep()
 

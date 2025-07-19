@@ -310,23 +310,19 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_1110000:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.w
-			cpu.Updated.XReg = rd
-			cpu.Updated.XVal = int(int32(cpu.F[rs1]))
+			cpu.xSet(rd, int(int32(cpu.F[rs1])))
 
 		case 0b_00000_001: // fclass.s
-			cpu.Updated.XReg = rd
-			cpu.Updated.XVal = classify32(cpu.f32(rs1))
+			cpu.xSet(rd, fclass_s(cpu.f32(rs1)))
 		}
 
 	case 0b_1110001:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.d
-			cpu.Updated.XReg = rd
-			cpu.Updated.XVal = cpu.F[rs1]
+			cpu.xSet(rd, cpu.F[rs1])
 
 		case 0b_00000_001: // fclass.d
-			cpu.Updated.XReg = rd
-			cpu.Updated.XVal = classify64(cpu.f64(rs1))
+			cpu.xSet(rd, fclass_d(cpu.f64(rs1)))
 		}
 
 	case 0b_1111000: // fmv.w.x
@@ -503,7 +499,7 @@ func isSNaN64(a float64) bool {
 	return a != a && math.Float64bits(a)&(1<<51) == 0
 }
 
-func classify32(a float32) int {
+func fclass_s(a float32) int {
 	const smallestNormal = 1.1754943508222875e-38 // 2**-126
 
 	i := 0
@@ -543,7 +539,7 @@ func classify32(a float32) int {
 	return 1 << i
 }
 
-func classify64(a float64) int {
+func fclass_d(a float64) int {
 	const smallestNormal = 2.2250738585072014e-308 // 2**-1022
 
 	i := 0
