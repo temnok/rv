@@ -134,7 +134,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			}
 
 		case 0b_100:
-			switch bit(opcode, 12)<<2 | bitsOr(ra)<<1 | bitsOr(rb) {
+			switch bit(opcode, 12)<<2 | orBit(ra)<<1 | orBit(rb) {
 			case 0b_0_1_0: // c.jr
 				return encodeI(0, ra, 0, 0, 25) // jalr
 

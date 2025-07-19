@@ -17,10 +17,18 @@ func setBits(addr *int, i, n, val int) {
 	*addr = *addr&^mask | val<<i
 }
 
-func bitsOr(val int) int {
+func orBit(val int) int {
 	if val == 0 {
 		return 0
 	} else {
 		return 1
+	}
+}
+
+func boolBit(val bool) int {
+	if val {
+		return 1
+	} else {
+		return 0
 	}
 }

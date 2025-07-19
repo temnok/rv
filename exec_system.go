@@ -63,10 +63,8 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		if cpu.csrWrite(csr, s); !cpu.isTrapped() {
-			cpu.Updated.XReg = rd
-			cpu.Updated.XVal = val
-		}
+		cpu.csrWrite(csr, s)
+		cpu.xset(rd, val)
 
 	case 0b_10: // csrrs
 		if cpu.csrRead(csr, &val); cpu.isTrapped() {
@@ -79,8 +77,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		cpu.Updated.XReg = rd
-		cpu.Updated.XVal = val
+		cpu.xset(rd, val)
 
 	case 0b_11: // csrrc
 		if cpu.csrRead(csr, &val); cpu.isTrapped() {
@@ -93,8 +90,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		cpu.Updated.XReg = rd
-		cpu.Updated.XVal = val
+		cpu.xset(rd, val)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

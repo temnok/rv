@@ -41,6 +41,5 @@ func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
 		return
 	}
 
-	cpu.Updated.XReg = rd
-	cpu.Updated.XVal = int(c)
+	cpu.xset(rd, int(c))
 }

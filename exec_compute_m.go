@@ -66,6 +66,5 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.Updated.XReg = rd
-	cpu.Updated.XVal = cpu.xint(c)
+	cpu.xset(rd, c)
 }
