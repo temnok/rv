@@ -16,3 +16,11 @@ func setBits(addr *int, i, n, val int) {
 	mask := (1<<n - 1) << i
 	*addr = *addr&^mask | val<<i
 }
+
+func bitsOr(val int) int {
+	if val == 0 {
+		return 0
+	} else {
+		return 1
+	}
+}
