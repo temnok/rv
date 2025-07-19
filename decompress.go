@@ -24,38 +24,43 @@ func (cpu *CPU) decompressOpcode(xlen, opcode int) int {
 	rb8 := 8 | (rb & 7)
 
 	switch op := bits(opcode, 0, 2); op {
-	case 0b_00:
+	case 0b_00: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table0
 		switch f3 {
-		case 0b_000:
+		case 0b_000: // c.addi4spn
 			if imm := immCIW(opcode); imm != 0 {
 				return encodeI(imm, 2, 0b_000, rb8, 0b_00100) // addi
 			}
 
+		case 0b_001: // c.fld
+			return encodeI(immCL3(opcode), ra8, 0b_011, rb8, 0b_00001)
+
 		case 0b_010: // c.lw
-			return encodeI(immCL(opcode), ra8, 0b_010, rb8, 0b_00000) // lw
+			return encodeI(immCL(opcode), ra8, 0b_010, rb8, 0b_00000)
 
 		case 0b_011:
 			if xlen64 { // c.ld
-				return encodeI(immCL3(opcode), ra8, 0b_011, rb8, 0b_00000) // ld
+				return encodeI(immCL3(opcode), ra8, 0b_011, rb8, 0b_00000)
 			} else { // c.flw
-				return encodeI(immCL(opcode), ra8, 0b_011, rb8, 0b_00001) // flw
+				return encodeI(immCL(opcode), ra8, 0b_010, rb8, 0b_00001)
 			}
 
 		case 0b_101: // c.fsd
 			if xlen64 {
-				return encodeS(immCL3(opcode), rb8, ra8, 0b_011, 0b_01001) // fsd
+				return encodeS(immCL3(opcode), rb8, ra8, 0b_011, 0b_01001)
 			}
 
 		case 0b_110: // c.sw
-			return encodeS(immCL(opcode), rb8, ra8, 0b_010, 0b_01000) // sw
+			return encodeS(immCL(opcode), rb8, ra8, 0b_010, 0b_01000)
 
-		case 0b_111: // c.sd
-			if xlen64 {
-				return encodeS(immCL3(opcode), rb8, ra8, 0b_011, 0b_01000) // sd
+		case 0b_111:
+			if xlen64 { // c.sd
+				return encodeS(immCL3(opcode), rb8, ra8, 0b_011, 0b_01000)
+			} else { // c.fsw
+				return encodeS(immCL(opcode), rb8, ra8, 0b_010, 0b_01001)
 			}
 		}
 
-	case 0b_01:
+	case 0b_01: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table1
 		switch f3 {
 		case 0b_000: // c.addi
 			return encodeI(immCI(opcode), ra, 0, ra, 4)
@@ -131,17 +136,26 @@ func (cpu *CPU) decompressOpcode(xlen, opcode int) int {
 			return encodeB(immCB(opcode), 0, ra8, 1, 24) // bne
 		}
 
-	case 2:
+	case 2: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table2
 		switch f3 {
 		case 0b_000: // c.slli
-			return encodeR(0, immCI(opcode)&(xlen-1), ra, 1, ra, 4) // slli
+			return encodeR(0, immCI(opcode)&(xlen-1), ra, 1, ra, 0b_00100) // slli
+
+		case 0b_001: // c.fldsp
+			return encodeI(immCI3(opcode), 2, 0b_011, ra, 0b_00001) // fld
 
 		case 0b_010: // c.lwsp
-			return encodeI(immCI2(opcode), 2, 2, ra, 0) // lw
+			if ra != 0 {
+				return encodeI(immCI2(opcode), 2, 0b_010, ra, 0b_00000) // lw
+			}
 
-		case 0b_011: // c.ldsp
-			if xlen64 {
-				return encodeI(immCI3(opcode), 2, 3, ra, 0) // ld
+		case 0b_011:
+			if xlen64 { // c.ldsp
+				if ra != 0 {
+					return encodeI(immCI3(opcode), 2, 0b_011, ra, 0b_00000) // ld
+				}
+			} else { // c.flwsp
+				return encodeI(immCI2(opcode), 2, 0b_010, ra, 0b_00001) // flw
 			}
 
 		case 0b_100:
@@ -162,12 +176,17 @@ func (cpu *CPU) decompressOpcode(xlen, opcode int) int {
 				return encodeR(0, rb, ra, 0, ra, 12)
 			}
 
-		case 0b_110: // c.swsp
-			return encodeS(immCSS(opcode), rb, 2, 2, 8) // sw
+		case 0b_101: // c.fsdsp
+			return encodeS(immCSS3(opcode), rb, 2, 0b_011, 0b_01001) // fsd
 
-		case 0b_111: // c.sdsp
-			if xlen64 {
-				return encodeS(immCSS3(opcode), rb, 2, 3, 8) // sd
+		case 0b_110: // c.swsp
+			return encodeS(immCSS(opcode), rb, 2, 0b_010, 0b_01000) // sw
+
+		case 0b_111:
+			if xlen64 { // c.sdsp
+				return encodeS(immCSS3(opcode), rb, 2, 0b_011, 0b_01000) // sd
+			} else { // c.fswsp
+				return encodeS(immCSS(opcode), rb, 2, 0b_010, 0b_01001) // fsw
 			}
 		}
 	}
