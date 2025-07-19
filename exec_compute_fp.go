@@ -18,8 +18,8 @@ float  mul32(float a, float b)    { return a * b; }
 double mul64(double a, double b)  { return a * b; }
 float  div32(float a, float b)    { return a / b; }
 double div64(double a, double b)  { return a / b; }
-float  sqrt32(float a, float b)   { return sqrtf(a); }
-double sqrt64(double a, double b) { return sqrt(a); }
+float  sqrt32(float a)            { return sqrtf(a); }
+double sqrt64(double a)           { return sqrt(a); }
 float  min32(float a, float b)    { return fixNan32(fminf(a, b), a, b); }
 double min64(double a, double b)  { return fixNan64(fmin(a, b), a, b); }
 float  max32(float a, float b)    { return fixNan32(fmaxf(a, b), a, b); }
@@ -33,6 +33,25 @@ float  nmadd32(float a, float b, float c)    { return -a*b - c; }
 double nmadd64(double a, double b, double c) { return -a*b - c; }
 float  nmsub32(float a, float b, float c)    { return -a*b + c; }
 double nmsub64(double a, double b, double c) { return -a*b + c; }
+
+double   fcvt_d_s(float a)     { return isnan(a)? nan64() : (double)a; }
+double   fcvt_d_l(int64_t a)   { return (double)a; }
+double   fcvt_d_lu(uint64_t a) { return (double)a; }
+double   fcvt_d_w(int32_t a)   { return (double)a; }
+double   fcvt_d_wu(uint32_t a) { return (double)a; }
+int64_t  fcvt_l_d(double a)    { return isnan(a)? INT64_MAX : (int64_t)a; }
+int64_t  fcvt_l_s(float a)     { return isnan(a)? INT64_MAX : (int64_t)a; }
+uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX : (uint64_t)a; }
+uint64_t fcvt_lu_s(float a)    { return isnan(a)? UINT64_MAX : (uint64_t)a; }
+float    fcvt_s_d(double a)    { return isnan(a)? nan32() : (float)a; }
+float    fcvt_s_l(int64_t a)   { return (float)a; }
+float    fcvt_s_lu(uint64_t a) { return (float)a; }
+float    fcvt_s_w(int32_t a)   { return (float)a; }
+float    fcvt_s_wu(uint32_t a) { return (float)a; }
+int32_t  fcvt_w_d(double a)    { return isnan(a)? INT32_MAX : (int32_t)a; }
+int32_t  fcvt_w_s(float a)     { return isnan(a)? INT32_MAX : (int32_t)a; }
+uint32_t fcvt_wu_d(double a)   { return isnan(a)? UINT32_MAX : (uint32_t)a; }
+uint32_t fcvt_wu_s(float a)    { return isnan(a)? UINT32_MAX : (uint32_t)a; }
 
 */
 import "C"
@@ -77,28 +96,28 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 
 	switch f7 {
 	case 0b_0000000: // fadd.s
-		cpu.f32res(C.add32(cpu.f32arg(rs1, rs2, f3)))
+		cpu.f32res(C.add32(cpu.f32arg2(rs1, rs2, f3)))
 
 	case 0b_0000001: // fadd.d
-		cpu.f64res(C.add64(cpu.f64arg(rs1, rs2, f3)))
+		cpu.f64res(C.add64(cpu.f64arg2(rs1, rs2, f3)))
 
 	case 0b_0000100: // fsub.s
-		cpu.f32res(C.sub32(cpu.f32arg(rs1, rs2, f3)))
+		cpu.f32res(C.sub32(cpu.f32arg2(rs1, rs2, f3)))
 
 	case 0b_0000101: // fsub.d
-		cpu.f64res(C.sub64(cpu.f64arg(rs1, rs2, f3)))
+		cpu.f64res(C.sub64(cpu.f64arg2(rs1, rs2, f3)))
 
 	case 0b_0001000: // fmul.s
-		cpu.f32res(C.mul32(cpu.f32arg(rs1, rs2, f3)))
+		cpu.f32res(C.mul32(cpu.f32arg2(rs1, rs2, f3)))
 
 	case 0b_0001001: // fmul.d
-		cpu.f64res(C.mul64(cpu.f64arg(rs1, rs2, f3)))
+		cpu.f64res(C.mul64(cpu.f64arg2(rs1, rs2, f3)))
 
 	case 0b_0001100: // fdiv.s
-		cpu.f32res(C.div32(cpu.f32arg(rs1, rs2, f3)))
+		cpu.f32res(C.div32(cpu.f32arg2(rs1, rs2, f3)))
 
 	case 0b_0001101: // fdiv.d
-		cpu.f64res(C.div64(cpu.f64arg(rs1, rs2, f3)))
+		cpu.f64res(C.div64(cpu.f64arg2(rs1, rs2, f3)))
 
 	case 0b_0010000:
 		switch f3 {
@@ -127,29 +146,41 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_0010100:
 		switch f3 {
 		case 0b_000: // fmin.s
-			cpu.f32res(C.min32(cpu.f32arg(rs1, rs2, -1)))
+			cpu.f32res(C.min32(cpu.f32arg2(rs1, rs2, -1)))
 
 		case 0b_001: // fmax.s
-			cpu.f32res(C.max32(cpu.f32arg(rs1, rs2, -1)))
+			cpu.f32res(C.max32(cpu.f32arg2(rs1, rs2, -1)))
 		}
 
 	case 0b_0010101:
 		switch f3 {
 		case 0b_000: // fmin.d
-			cpu.f64res(C.min64(cpu.f64arg(rs1, rs2, -1)))
+			cpu.f64res(C.min64(cpu.f64arg2(rs1, rs2, -1)))
 
 		case 0b_001: // fmax.d
-			cpu.f64res(C.max64(cpu.f64arg(rs1, rs2, -1)))
+			cpu.f64res(C.max64(cpu.f64arg2(rs1, rs2, -1)))
+		}
+
+	case 0b_0100000:
+		switch rs2 {
+		case 0b_00001: // fcvt.s.d
+			cpu.f32res(C.fcvt_s_d(cpu.f64arg(rs1, f3)))
+		}
+
+	case 0b_0100001:
+		switch rs2 {
+		case 0b_00000: // fcvt.d.s
+			cpu.f64res(C.fcvt_d_s(cpu.f32arg(rs1, f3)))
 		}
 
 	case 0b_0101100: // fsqrt.s
 		if rs2 == 0 {
-			cpu.f32res(C.sqrt32(cpu.f32arg(rs1, 0, f3)))
+			cpu.f32res(C.sqrt32(cpu.f32arg(rs1, f3)))
 		}
 
 	case 0b_0101101: // fsqrt.d
 		if rs2 == 0 {
-			cpu.f64res(C.sqrt64(cpu.f64arg(rs1, 0, f3)))
+			cpu.f64res(C.sqrt64(cpu.f64arg(rs1, f3)))
 		}
 
 	case 0b_1010000: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_compare_instructions
@@ -217,6 +248,75 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 			}
 			return
 
+		}
+
+	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_conversion_and_move_instructions
+	case 0b_1100000:
+		switch rs2 {
+		case 0b_00000: // fcvt.w.s
+			cpu.fResI(rd, int(C.fcvt_w_s(cpu.f32arg(rs1, f3))))
+			return
+
+		case 0b_00001: // fcvt.wu.s
+			cpu.fResI(rd, int(int32(C.fcvt_wu_s(cpu.f32arg(rs1, f3)))))
+			return
+
+		case 0b_00010: // fcvt.l.s
+			cpu.fResI(rd, int(C.fcvt_l_s(cpu.f32arg(rs1, f3))))
+			return
+
+		case 0b_00011: // fcvt.lu.s
+			cpu.fResI(rd, int(C.fcvt_lu_s(cpu.f32arg(rs1, f3))))
+			return
+		}
+
+	case 0b_1100001:
+		switch rs2 {
+		case 0b_00000: // fcvt.w.d
+			cpu.fResI(rd, int(C.fcvt_w_d(cpu.f64arg(rs1, f3))))
+			return
+
+		case 0b_00001: // fcvt.wu.d
+			cpu.fResI(rd, int(int32(C.fcvt_wu_d(cpu.f64arg(rs1, f3)))))
+			return
+
+		case 0b_00010: // fcvt.l.d
+			cpu.fResI(rd, int(C.fcvt_l_d(cpu.f64arg(rs1, f3))))
+			return
+
+		case 0b_00011: // fcvt.lu.d
+			cpu.fResI(rd, int(C.fcvt_lu_d(cpu.f64arg(rs1, f3))))
+			return
+		}
+
+	case 0b_1101000:
+		switch rs2 {
+		case 0b_00000: // fcvt.s.w
+			cpu.f32res(C.fcvt_s_w(C.int32_t(cpu.fargI(rs1, f3))))
+
+		case 0b_00001: // fcvt.s.wu
+			cpu.f32res(C.fcvt_s_wu(C.uint32_t(cpu.fargI(rs1, f3))))
+
+		case 0b_00010: // fcvt.s.l
+			cpu.f32res(C.fcvt_s_l(C.int64_t(cpu.fargI(rs1, f3))))
+
+		case 0b_00011: // fcvt.s.lu
+			cpu.f32res(C.fcvt_s_lu(C.uint64_t(cpu.fargI(rs1, f3))))
+		}
+
+	case 0b_1101001:
+		switch rs2 {
+		case 0b_00000: // fcvt.d.w
+			cpu.f64res(C.fcvt_d_w(C.int32_t(cpu.fargI(rs1, f3))))
+
+		case 0b_00001: // fcvt.d.wu
+			cpu.f64res(C.fcvt_d_wu(C.uint32_t(cpu.fargI(rs1, f3))))
+
+		case 0b_00010: // fcvt.d.l
+			cpu.f64res(C.fcvt_d_l(C.int64_t(cpu.fargI(rs1, f3))))
+
+		case 0b_00011: // fcvt.d.lu
+			cpu.f64res(C.fcvt_d_lu(C.uint64_t(cpu.fargI(rs1, f3))))
 		}
 
 	case 0b_1110000:
@@ -289,7 +389,17 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	}
 }
 
-func (cpu *CPU) f32arg(rs1, rs2, f3 int) (C.float, C.float) {
+func (cpu *CPU) fargI(rs1, f3 int) int {
+	cpu.prepareCfenv(f3)
+	return cpu.Reg[rs1]
+}
+
+func (cpu *CPU) f32arg(rs1, f3 int) C.float {
+	cpu.prepareCfenv(f3)
+	return C.float(cpu.f32(rs1))
+}
+
+func (cpu *CPU) f32arg2(rs1, rs2, f3 int) (C.float, C.float) {
 	cpu.prepareCfenv(f3)
 	return C.float(cpu.f32(rs1)), C.float(cpu.f32(rs2))
 }
@@ -299,7 +409,12 @@ func (cpu *CPU) f32arg3(rs1, rs2, rs3, f3 int) (C.float, C.float, C.float) {
 	return C.float(cpu.f32(rs1)), C.float(cpu.f32(rs2)), C.float(cpu.f32(rs3))
 }
 
-func (cpu *CPU) f64arg(rs1, rs2, f3 int) (C.double, C.double) {
+func (cpu *CPU) f64arg(rs1, f3 int) C.double {
+	cpu.prepareCfenv(f3)
+	return C.double(cpu.f64(rs1))
+}
+
+func (cpu *CPU) f64arg2(rs1, rs2, f3 int) (C.double, C.double) {
 	cpu.prepareCfenv(f3)
 	return C.double(cpu.f64(rs1)), C.double(cpu.f64(rs2))
 }
@@ -321,9 +436,9 @@ func (cpu *CPU) f64res(res C.double) {
 	cpu.setUpdatedFflags()
 }
 
-func (cpu *CPU) fResI(rd int, res C.int) {
+func (cpu *CPU) fResI(rd int, res int) {
 	cpu.Updated.RegIndex = rd
-	cpu.Updated.RegValue = cpu.xint(int(res))
+	cpu.Updated.RegValue = cpu.xint(res)
 	cpu.setUpdatedFflags()
 }
 
