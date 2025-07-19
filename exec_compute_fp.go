@@ -192,36 +192,30 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 		switch f3 {
 		case 0b_000: // fle.s
 			a, b := cpu.f32(rs1), cpu.f32(rs2)
-			cpu.xset(rd, boolBit(a <= b))
-			cpu.Updated.Fflags = boolBit(isNaN32(a) || isNaN32(b)) << FflagsNV
+			cpu.fsetCmp(rd, a <= b, isNaN32(a) || isNaN32(b))
 
 		case 0b_001: // flt.s
 			a, b := cpu.f32(rs1), cpu.f32(rs2)
-			cpu.xset(rd, boolBit(a < b))
-			cpu.Updated.Fflags = boolBit(isNaN32(a) || isNaN32(b)) << FflagsNV
+			cpu.fsetCmp(rd, a < b, isNaN32(a) || isNaN32(b))
 
 		case 0b_010: // feq.s
 			a, b := cpu.f32(rs1), cpu.f32(rs2)
-			cpu.xset(rd, boolBit(a == b))
-			cpu.Updated.Fflags = boolBit(isSNaN32(a) || isSNaN32(b)) << FflagsNV
+			cpu.fsetCmp(rd, a == b, isSNaN32(a) || isSNaN32(b))
 		}
 
 	case 0b_1010001:
 		switch f3 {
 		case 0b_000: // fle.d
 			a, b := cpu.f64(rs1), cpu.f64(rs2)
-			cpu.xset(rd, boolBit(a <= b))
-			cpu.Updated.Fflags = boolBit(isNaN64(a) || isNaN64(b)) << FflagsNV
+			cpu.fsetCmp(rd, a <= b, isNaN64(a) || isNaN64(b))
 
 		case 0b_001: // flt.d
 			a, b := cpu.f64(rs1), cpu.f64(rs2)
-			cpu.xset(rd, boolBit(a < b))
-			cpu.Updated.Fflags = boolBit(isNaN64(a) || isNaN64(b)) << FflagsNV
+			cpu.fsetCmp(rd, a < b, isNaN64(a) || isNaN64(b))
 
 		case 0b_010: // feq.d
 			a, b := cpu.f64(rs1), cpu.f64(rs2)
-			cpu.xset(rd, boolBit(a == b))
-			cpu.Updated.Fflags = boolBit(isSNaN64(a) || isSNaN64(b)) << FflagsNV
+			cpu.fsetCmp(rd, a == b, isSNaN64(a) || isSNaN64(b))
 		}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_conversion_and_move_instructions
@@ -395,6 +389,17 @@ func (cpu *CPU) fxget(rs1, f3 int) int {
 func (cpu *CPU) fxset(rd, res int) {
 	cpu.xset(rd, res)
 	cpu.setUpdatedFflags()
+}
+
+func (cpu *CPU) fsetCmp(rd int, res, nv bool) {
+	if res {
+		cpu.xset(rd, 1)
+	} else {
+		cpu.xset(rd, 0)
+	}
+	if nv {
+		cpu.Updated.Fflags |= 1 << FflagsNV
+	}
 }
 
 func (cpu *CPU) f32setBits(rd, bits int) {

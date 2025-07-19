@@ -24,11 +24,3 @@ func orBit(val int) int {
 		return 1
 	}
 }
-
-func boolBit(val bool) int {
-	if val {
-		return 1
-	} else {
-		return 0
-	}
-}
