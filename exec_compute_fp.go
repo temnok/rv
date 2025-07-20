@@ -2,6 +2,7 @@ package rv
 
 /*
 #cgo LDFLAGS: -lm
+
 #include <fenv.h>
 #include <math.h>
 #include <stdint.h>
@@ -23,10 +24,10 @@ double fdiv_d(double a, double b)  { return a / b; }
 float  fsqrt_s(float a)            { return sqrtf(a); }
 double fsqrt_d(double a)           { return sqrt(a); }
 
-float  fmin_s(float a, float b)    { return fixNan32(fminf(a, b), a, b); }
-float  fmax_s(float a, float b)    { return fixNan32(fmaxf(a, b), a, b); }
-double fmin_d(double a, double b)  { return fixNan64(fmin(a, b), a, b); }
-double fmax_d(double a, double b)  { return fixNan64(fmax(a, b), a, b); }
+float  fmin_s(float a, float b)    { return a==0 && b==0? (copysign(1, a)<0? a : b) : fixNan32(fminf(a, b), a, b); }
+float  fmax_s(float a, float b)    { return a==0 && b==0? (copysign(1, a)>0? a : b) : fixNan32(fmaxf(a, b), a, b); }
+double fmin_d(double a, double b)  { return a==0 && b==0? (copysign(1, a)<0? a : b) : fixNan64(fmin(a, b), a, b); }
+double fmax_d(double a, double b)  { return a==0 && b==0? (copysign(1, a)>0? a : b) : fixNan64(fmax(a, b), a, b); }
 
 float  fmadd_s(float a, float b, float c)     { return a*b + c; }
 float  fmsub_s(float a, float b, float c)     { return a*b - c; }
@@ -48,14 +49,24 @@ double   fcvt_d_lu(uint64_t a) { return (double)a; }
 double   fcvt_d_w(int32_t a)   { return (double)a; }
 double   fcvt_d_wu(uint32_t a) { return (double)a; }
 
-int32_t  fcvt_w_s(float a)     { return isnan(a)? INT32_MAX : (int32_t)a; }
-uint32_t fcvt_wu_s(float a)    { return isnan(a)? UINT32_MAX : (uint32_t)a; }
-int64_t  fcvt_l_s(float a)     { return isnan(a)? INT64_MAX : (int64_t)a; }
-uint64_t fcvt_lu_s(float a)    { return isnan(a)? UINT64_MAX : (uint64_t)a; }
-int32_t  fcvt_w_d(double a)    { return isnan(a)? INT32_MAX : (int32_t)a; }
-uint32_t fcvt_wu_d(double a)   { return isnan(a)? UINT32_MAX : (uint32_t)a; }
-int64_t  fcvt_l_d(double a)    { return isnan(a)? INT64_MAX : (int64_t)a; }
-uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX : (uint64_t)a; }
+void ce() { feclearexcept(FE_INEXACT); feraiseexcept(FE_INVALID); }
+
+int32_t  fcvt_w_s(float a)     { return isnan(a)? INT32_MAX :
+	(a = rintf(a)) <= INT32_MIN? ce(), INT32_MIN : a >= INT32_MAX? ce(), INT32_MAX : a; }
+uint32_t fcvt_wu_s(float a)    { return isnan(a)? UINT32_MAX :
+	(a = rintf(a)) < 0? ce(), 0 : a >= UINT32_MAX? ce(), UINT32_MAX : a; }
+int64_t  fcvt_l_s(float a)     { return isnan(a)? INT64_MAX :
+	(a = rint(a)) <= INT64_MIN? ce(), INT64_MIN : a >= INT64_MAX? ce(), INT64_MAX : a; }
+uint64_t fcvt_lu_s(float a)    { return isnan(a)? UINT64_MAX :
+	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : a; }
+int32_t  fcvt_w_d(double a)    { return isnan(a)? INT32_MAX :
+	(a = rintf(a)) <= INT32_MIN? ce(), INT32_MIN : a >= INT32_MAX? ce(), INT32_MAX : a; }
+uint32_t fcvt_wu_d(double a)   { return isnan(a)? UINT32_MAX :
+	(a = rintf(a)) < 0? ce(), 0 : a >= UINT32_MAX? ce(), UINT32_MAX : a; }
+int64_t  fcvt_l_d(double a)    { return isnan(a)? INT64_MAX :
+	(a = rint(a)) <= INT64_MIN? ce(), INT64_MIN : a >= INT64_MAX? ce(), INT64_MAX : a; }
+uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX :
+	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : a; }
 
 int fle_s(float a, float b) { return a <= b; }
 
@@ -69,6 +80,9 @@ const (
 	f32boxingBits = -1 << 32
 	f32signMask   = 1 << 31
 	f64signMask   = -1 << 63
+
+	nan32bits = -1<<32 | 0x7fc00000
+	nan64bits = 0x7ff8000000000000
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rm
 	RmRNE = 0b_000
@@ -373,12 +387,20 @@ func (cpu *CPU) f64arg3(rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
 func (cpu *CPU) f32set(rd int, res C.float) {
 	cpu.Updated.FReg = rd
 	cpu.Updated.FVal = f32boxingBits | int(math.Float32bits(float32(res)))
+	if uint(cpu.Updated.FVal) == 0xffffffffffc00000 {
+		cpu.Updated.FVal &^= f32signMask
+	}
+
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) f64set(rd int, res C.double) {
 	cpu.Updated.FReg = rd
 	cpu.Updated.FVal = int(math.Float64bits(float64(res)))
+	if uint(cpu.Updated.FVal) == 0xfff8000000000000 {
+		cpu.Updated.FVal &^= f64signMask
+	}
+
 	cpu.setUpdatedFflags()
 }
 
@@ -421,7 +443,7 @@ func (cpu *CPU) f32(i int) float32 {
 func (cpu *CPU) f32bits(i int) int {
 	val := cpu.F[i]
 	if val>>32 != -1 {
-		return -1<<32 | 0x7fc00000
+		return nan32bits
 	}
 	return val
 }
