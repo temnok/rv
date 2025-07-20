@@ -11,3 +11,5 @@ docker run -ti --rm \
 
 rm -rf output/*
 gzip -9 -n -c work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin > output/rv64.kernel.gz
+
+sha256sum -b work/_build/{busybox/busybox,initramfs/initramfs.cpio,kernel/arch/riscv/boot/Image,opensbi/build/platform/generic/firmware/fw_payload.bin,../../output/rv64.kernel.gz} > output/build-artifacts-sha.txt

@@ -37,6 +37,8 @@ if [ ! -d busybox ]; then
     echo -n "Building busybox... "
     rm -rf busybox.tmp && tar -xf ../_download/busybox-* && mv busybox-* busybox.tmp && cd busybox.tmp
 
+    export KCONFIG_NOTIMESTAMP=1
+
     CROSS_COMPILE=riscv64-linux-gnu- make $QUIET \
         defconfig > /dev/null 2>&1
 
@@ -61,6 +63,8 @@ if [ ! -d initramfs.nobuild ]; then
         cpio --reset-access-time --reproducible --quiet \
             --create --owner 0:0 --format newc > ../initramfs.cpio
     cd ..
+
+    touch -t 197001010000.00 initramfs.cpio
 
     cd ..
     benchmark

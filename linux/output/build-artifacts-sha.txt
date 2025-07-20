@@ -1,0 +1,5 @@
+2cf6929acc626e48521bac4e9b932527aaadba955cafcadcef287c6c6990ff68 *work/_build/busybox/busybox
+c8fe9fb0ad419c1022fdc2b1aec3bd764b12126ee13332aeec247d15b1c1dd1a *work/_build/initramfs/initramfs.cpio
+577453aa303dca60bd8362075edb19bb6ec5da9950bcb7fb7d94956cb60cd3cb *work/_build/kernel/arch/riscv/boot/Image
+6e156a28307430c2ec515ef7a4db8a3a43565fc94e11d06c64ea866f310bf679 *work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin
+a841488e21a30664b642984f071d40a17d2c8dbf8c28b1d98c2300178858a904 *work/_build/../../output/rv64.kernel.gz
