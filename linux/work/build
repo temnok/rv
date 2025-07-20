@@ -47,30 +47,34 @@ if [ ! -d busybox ]; then
     benchmark
 fi
 
-rm -rf initramfs
-if [ ! -d initramfs ]; then
+if [ ! -d initramfs.nobuild ]; then
     echo -n "Building initramfs... "
-    rm -rf initramfs.tmp && mkdir -p initramfs.tmp/fs && cd initramfs.tmp
+    rm -rf initramfs && mkdir -p initramfs/fs/bin
+    cd initramfs
 
-    mkdir -p fs/bin && cp ../busybox/busybox fs/bin/
     cp -R ../../fs ./
+    cp ../busybox/busybox fs/bin/
 
     cd fs
-    find . | cpio --reproducible --quiet --create --owner 0:0 --format newc > ../initramfs.cpio
+    find . -exec touch -t 197001010000.00 {} +
+    find . | \
+        cpio --reset-access-time --reproducible --quiet \
+            --create --owner 0:0 --format newc > ../initramfs.cpio
     cd ..
 
-    cd .. && mv initramfs.tmp initramfs
+    cd ..
     benchmark
 fi
 
-if [ ! -d linux.nobuild ]; then
+if [ ! -d kernel.nobuild ]; then
     echo -n "Building kernel... "
 
-    if [ ! -d linux ]; then
-        tar -xf ../_download/linux-* && mv linux-* linux
+    if [ ! -d kernel ]; then
+        tar -xf ../_download/linux-* && mv linux-* kernel
     fi
 
-    cd linux
+    cd kernel
+    rm -rf arch/riscv/boot/Image
 
     flags_y=(
         ARCH_RV64I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
@@ -113,7 +117,7 @@ if [ ! -d opensbi.nobuild ]; then
 
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       PLATFORM=generic PLATFORM_RISCV_XLEN=64 \
-      FW_PAYLOAD_PATH=../linux/arch/riscv/boot/Image \
+      FW_PAYLOAD_PATH=../kernel/arch/riscv/boot/Image \
       FW_FDT_PATH=rv64.dtb > /dev/null 2>&1
 
     cd ..
