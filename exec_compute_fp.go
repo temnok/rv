@@ -68,8 +68,6 @@ int64_t  fcvt_l_d(double a)    { return isnan(a)? INT64_MAX :
 uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX :
 	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : (uint64_t)a; }
 
-int fle_s(float a, float b) { return a <= b; }
-
 */
 import "C"
 import (
@@ -82,7 +80,6 @@ const (
 	f64signMask   = -1 << 63
 
 	nan32bits = -1<<32 | 0x7fc00000
-	nan64bits = 0x7ff8000000000000
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rm
 	RmRNE = 0b_000
