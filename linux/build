@@ -6,10 +6,15 @@ docker/build
 
 docker run -ti --rm \
     -v $(pwd)/work:/home/user/work \
+    --user $(id -u):$(id -g) \
     rv-linux-build \
     bash build
 
 rm -rf output/*
 gzip -9 -n -c work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin > output/rv64.kernel.gz
 
-sha256sum -b work/_build/{busybox/busybox,initramfs/initramfs.cpio,kernel/arch/riscv/boot/Image,opensbi/build/platform/generic/firmware/fw_payload.bin,../../output/rv64.kernel.gz} > output/build-artifacts-sha.txt
+sha256sum -b work/_build/busybox/busybox \
+  work/_build/initramfs/initramfs.cpio \
+  work/_build/kernel/arch/riscv/boot/Image\
+  work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin\
+  output/rv64.kernel.gz > output/build-artifacts-sha.txt

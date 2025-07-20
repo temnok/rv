@@ -1,6 +1,7 @@
 package rv
 
 /*
+#cgo LDFLAGS: -lm
 #include <fenv.h>
 #include <math.h>
 #include <stdint.h>
