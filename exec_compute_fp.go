@@ -52,21 +52,21 @@ double   fcvt_d_wu(uint32_t a) { return (double)a; }
 void ce() { feclearexcept(FE_INEXACT); feraiseexcept(FE_INVALID); }
 
 int32_t  fcvt_w_s(float a)     { return isnan(a)? INT32_MAX :
-	(a = rintf(a)) <= INT32_MIN? ce(), INT32_MIN : a >= INT32_MAX? ce(), INT32_MAX : a; }
+	(a = rintf(a)) <= INT32_MIN? ce(), INT32_MIN : a >= INT32_MAX? ce(), INT32_MAX : (int32_t)a; }
 uint32_t fcvt_wu_s(float a)    { return isnan(a)? UINT32_MAX :
-	(a = rintf(a)) < 0? ce(), 0 : a >= UINT32_MAX? ce(), UINT32_MAX : a; }
+	(a = rintf(a)) < 0? ce(), 0 : a >= UINT32_MAX? ce(), UINT32_MAX : (uint32_t)a; }
 int64_t  fcvt_l_s(float a)     { return isnan(a)? INT64_MAX :
-	(a = rint(a)) <= INT64_MIN? ce(), INT64_MIN : a >= INT64_MAX? ce(), INT64_MAX : a; }
+	(a = rint(a)) <= INT64_MIN? ce(), INT64_MIN : a >= INT64_MAX? ce(), INT64_MAX : (int64_t)a; }
 uint64_t fcvt_lu_s(float a)    { return isnan(a)? UINT64_MAX :
-	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : a; }
+	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : (uint64_t)a; }
 int32_t  fcvt_w_d(double a)    { return isnan(a)? INT32_MAX :
-	(a = rintf(a)) <= INT32_MIN? ce(), INT32_MIN : a >= INT32_MAX? ce(), INT32_MAX : a; }
+	(a = rintf(a)) <= INT32_MIN? ce(), INT32_MIN : a >= INT32_MAX? ce(), INT32_MAX : (int32_t)a; }
 uint32_t fcvt_wu_d(double a)   { return isnan(a)? UINT32_MAX :
-	(a = rintf(a)) < 0? ce(), 0 : a >= UINT32_MAX? ce(), UINT32_MAX : a; }
+	(a = rintf(a)) < 0? ce(), 0 : a >= UINT32_MAX? ce(), UINT32_MAX : (uint32_t)a; }
 int64_t  fcvt_l_d(double a)    { return isnan(a)? INT64_MAX :
-	(a = rint(a)) <= INT64_MIN? ce(), INT64_MIN : a >= INT64_MAX? ce(), INT64_MAX : a; }
+	(a = rint(a)) <= INT64_MIN? ce(), INT64_MIN : a >= INT64_MAX? ce(), INT64_MAX : (int64_t)a; }
 uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX :
-	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : a; }
+	(a = rint(a)) < 0? ce(), 0 : a >= UINT64_MAX? ce(), UINT64_MAX : (uint64_t)a; }
 
 int fle_s(float a, float b) { return a <= b; }
 
