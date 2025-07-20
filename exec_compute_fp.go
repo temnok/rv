@@ -561,3 +561,35 @@ func fclass_d(a float64) int {
 
 	return 1 << i
 }
+
+func fcvt_l_d(a float64) int {
+	return int(C.fcvt_l_d(C.double(a)))
+}
+
+func fcvt_l_s(a float32) int {
+	return int(C.fcvt_l_s(C.float(a)))
+}
+
+func fcvt_lu_d(a float64) int {
+	return int(C.fcvt_lu_d(C.double(a)))
+}
+
+func fcvt_lu_s(a float32) int {
+	return int(C.fcvt_lu_s(C.float(a)))
+}
+
+func fcvt_w_d(a float64) int {
+	return int(C.fcvt_w_d(C.double(a)))
+}
+
+func fcvt_w_s(a float32) int {
+	return int(C.fcvt_w_s(C.float(a)))
+}
+
+func fcvt_wu_d(a float64) int {
+	return int(C.fcvt_wu_d(C.double(a)))
+}
+
+func fcvt_wu_s(a float32) int {
+	return int(C.fcvt_wu_s(C.float(a)))
+}
