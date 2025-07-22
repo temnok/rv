@@ -39,10 +39,14 @@ if [ ! -d busybox ]; then
 
     export KCONFIG_NOTIMESTAMP=1
 
-    CROSS_COMPILE=riscv64-linux-gnu- make $QUIET \
+#    CFLAGS="-mabi=lp64" CROSS_COMPILE=riscv64-unknown-linux-gnu- \
+    CROSS_COMPILE=riscv64-linux-gnu-
+        make $QUIET \
         defconfig > /dev/null 2>&1
 
-    LDFLAGS="--static" CROSS_COMPILE=riscv64-linux-gnu- make $QUIET \
+#    LDFLAGS="--static" CROSS_COMPILE=riscv64-unknown-linux-gnu- \
+    LDFLAGS="--static" CROSS_COMPILE=riscv64-linux-gnu- \
+        make $QUIET \
         --jobs=$CPU_COUNT busybox > /dev/null 2>&1
 
     cd .. && mv busybox.tmp busybox
@@ -88,6 +92,8 @@ if [ ! -d kernel.nobuild ]; then
         INITRAMFS_COMPRESSION_NONE
     )
 
+#    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+#        CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
         allnoconfig
 
@@ -97,9 +103,13 @@ if [ ! -d kernel.nobuild ]; then
 
     scripts/config --set-val INITRAMFS_SOURCE \"../initramfs/initramfs.cpio\"
 
+#    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+#        CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
         olddefconfig
 
+#    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+#        CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
         KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
         KBUILD_BUILD_USER="builduser" \
@@ -119,6 +129,8 @@ if [ ! -d opensbi.nobuild ]; then
     cd opensbi
     dtc $QUIET -O dtb -o rv64.dtb ../../rv64.dts
 
+#    make $QUIET \
+#      CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
     make $QUIET ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- CC="ccache riscv64-linux-gnu-gcc" \
       PLATFORM=generic PLATFORM_RISCV_XLEN=64 \
       FW_PAYLOAD_PATH=../kernel/arch/riscv/boot/Image \

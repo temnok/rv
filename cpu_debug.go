@@ -32,11 +32,10 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	//if cpu.PC == 0x80000254 {
-	//	debugDump(cpu)
-	//	fmt.Printf("Fcsr=%x\r\n", cpu.CSR.Fcsr)
-	//	return false
-	//}
+	if cpu.isTrapped() && cpu.PC == 0xe0498 {
+		debugDump(cpu)
+		return false
+	}
 
 	return true
 }
