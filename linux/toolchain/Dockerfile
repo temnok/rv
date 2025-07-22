@@ -53,10 +53,6 @@ RUN git clone --depth 1 --single-branch --branch 2025.07.16 \
     cd .. && \
     rm -rf toolchain-source
 
-USER root
-RUN apt install -y gcc-riscv64-linux-gnu
-USER user
-
 ENV PATH="$PATH:/home/user/toolchain/bin"
 WORKDIR /home/user/work
 ENV CCACHE_DIR=/home/user/work/_ccache

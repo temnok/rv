@@ -2,7 +2,7 @@
 set -e
 cd $(dirname "$0")
 
-toolchain/build > /dev/null 2>&1
+toolchain/build
 
 docker run -ti --rm \
     -v $(pwd)/work:/home/user/work \

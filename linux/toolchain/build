@@ -4,5 +4,4 @@ cd $(dirname "$0")
 
 docker build \
     --tag rv-toolchain \
-    --progress=plain \
     $(pwd)
