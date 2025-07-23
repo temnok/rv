@@ -31,9 +31,8 @@ if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     wget $QUIET https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
 fi
 
-if [ ! -f kernel-${VERSION_KERNEL}.tar.xz ]; then
+if [ ! -f linux-${VERSION_KERNEL}.tar.xz ]; then
     wget $QUIET https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${VERSION_KERNEL}.tar.xz
-    mv linux-${VERSION_KERNEL}.tar.xz kernel-${VERSION_KERNEL}.tar.xz
 fi
 
 if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
@@ -75,6 +74,47 @@ find . -exec touch -t 197001010000.00 {} +
 find . ! -path . | sort | cpio \
     --reproducible --quiet --create --owner +0:+0 --format newc \
     > ~/output/initramfs.cpio
+
+cd ~
+benchmark
+
+################################################################################
+
+echo -n "Building kernel... "
+tar -xf cache/download/linux-* && mv linux-* build/kernel
+
+cd build/kernel
+
+flags_y=(
+    ARCH_RV64I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
+    DEBUG_KERNEL DEVTMPFS DEVTMPFS_MOUNT GDB_SCRIPTS KGDB KGDB_SERIAL_CONSOLE NONPORTABLE
+    RISCV_INTC RISCV_ISA_C SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
+
+    INITRAMFS_COMPRESSION_NONE
+)
+
+make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+    CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    allnoconfig
+
+for f in ${flags_y[@]}; do
+    scripts/config --set-val $f y
+done
+
+scripts/config --set-val INITRAMFS_SOURCE \"/home/user/output/initramfs.cpio\"
+
+make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+    CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    olddefconfig
+
+make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+    CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
+    KBUILD_BUILD_USER="builduser" \
+    KBUILD_BUILD_HOST="buildhost" \
+    $QUIET --jobs=$CPU_COUNT Image
+
+mv arch/riscv/boot/Image ~/output/kernel
 
 cd ~
 benchmark

@@ -4,15 +4,15 @@ cd $(dirname "$0")
 
 ../toolchain/build
 
-rm -rf container.cid output/*
+rm -rf tmp output/* && mkdir tmp
 
 docker run -ti \
-    --cidfile container.cid \
+    --cidfile tmp/.cid \
     --volume $(pwd)/input:/home/user/input \
     --mount type=volume,src=biko-cache,dst=/home/user/cache \
     rv-toolchain \
     bash input/build
 
-docker cp --quiet $(cat container.cid):/home/user/output/sha256.txt output/
+docker cp --quiet $(cat tmp/.cid):/home/user/output/sha256.txt output/
 
-docker rm $(cat container.cid) > /dev/null && rm -rf container.cid
+docker rm $(cat tmp/.cid) > /dev/null && rm -rf tmp
