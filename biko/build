@@ -8,11 +8,12 @@ rm -rf tmp output/* && mkdir tmp
 
 docker run -ti \
     --cidfile tmp/.cid \
-    --volume $(pwd)/input:/home/user/input \
+    --volume $(pwd)/input:/home/user/input:ro \
     --mount type=volume,src=biko-cache,dst=/home/user/cache \
     rv-toolchain \
     bash input/build
 
 docker cp --quiet $(cat tmp/.cid):/home/user/output/sha256.txt output/
+docker cp --quiet $(cat tmp/.cid):/home/user/output/rv64.gz output/
 
 docker rm $(cat tmp/.cid) > /dev/null && rm -rf tmp

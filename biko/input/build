@@ -112,9 +112,37 @@ make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
     KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
     KBUILD_BUILD_USER="builduser" \
     KBUILD_BUILD_HOST="buildhost" \
-    $QUIET --jobs=$CPU_COUNT Image
+    $QUIET \
+    --jobs=$CPU_COUNT \
+    Image
 
 mv arch/riscv/boot/Image ~/output/kernel
+
+cd ~
+benchmark
+
+################################################################################
+
+echo -n "Building opensbi... "
+tar -xf cache/download/opensbi-* && mv opensbi-* build/opensbi
+cd build/opensbi
+
+dtc $QUIET \
+  -O dtb \
+  -o rv64.dtb \
+  ~/input/rv64.dts
+
+make $QUIET \
+  CC="ccache riscv64-unknown-linux-gnu-gcc" \
+  CROSS_COMPILE=riscv64-unknown-linux-gnu- \
+  --jobs=$CPU_COUNT \
+  PLATFORM=generic \
+  PLATFORM_RISCV_XLEN=64 \
+  FW_PAYLOAD_PATH=~/output/kernel \
+  FW_FDT_PATH=rv64.dtb \
+  > /dev/null 2>&1
+
+gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/rv64.gz
 
 cd ~
 benchmark

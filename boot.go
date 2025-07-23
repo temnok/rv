@@ -34,9 +34,9 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	dtbReg, dtbAddr := 11, ramBaseAddr+0x0200_0000
 
 	path := fmt.Sprintf("%v/rv%v", dir, xlen)
-	kernelPath := path + ".kernel"
+	kernelPath := path + ".gz"
 	if !existsFile(kernelPath) {
-		kernelPath += ".gz"
+		kernelPath = path + ".kernel.gz"
 	}
 
 	if dtbPath := path + ".dtb"; !existsFile(dtbPath) {

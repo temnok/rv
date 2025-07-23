@@ -5,5 +5,5 @@ import (
 )
 
 func TestRunKernelDirect64(t *testing.T) {
-	testRunKernel(t, 64, "linux/output", "user@rv64")
+	testRunKernel(t, 64, "biko/output", "user@rv")
 }
