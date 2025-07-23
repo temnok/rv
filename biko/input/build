@@ -47,7 +47,7 @@ benchmark
 ################################################################################
 
 echo -n "Building busybox... "
-rm -rf build/busybox && tar -xf cache/download/busybox-* && mv busybox-* build/busybox
+tar -xf cache/download/busybox-* && mv busybox-* build/busybox
 cd build/busybox
 
 export KCONFIG_NOTIMESTAMP=1
@@ -62,6 +62,20 @@ LDFLAGS="--static" CFLAGS="-mabi=lp64" make \
     busybox > /dev/null 2>&1
 
 mv busybox ~/output
+cd ~
+benchmark
+
+################################################################################
+
+echo -n "Building initramfs... "
+cp -R input/initramfs build/initramfs && cd build/initramfs
+mkdir bin && cp ~/output/busybox bin/
+
+find . -exec touch -t 197001010000.00 {} +
+find . ! -path . | sort | cpio \
+    --reproducible --quiet --create --owner +0:+0 --format newc \
+    > ~/output/initramfs.cpio
+
 cd ~
 benchmark
 
