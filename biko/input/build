@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_START=$(date +%s)
+BM_START=$SCRIPT_START
+CPU_COUNT=$(nproc)
+QUIET=--quiet
+
+export CCACHE_DIR=/home/user/cache/cc
+
+function benchmark {
+  BM_END=$(date +%s)
+  echo $((($BM_END-$BM_START)/60))m $((($BM_END-$BM_START)%60))s
+  BM_START=$BM_END
+}
+
+echo "Using CPUs: $CPU_COUNT"
+
+rm -rf build output && mkdir -p build output cache/{download,cc}
+
+################################################################################
+
+echo -n "Downloading sources... "
+cd cache/download
+
+VERSION_BUSYBOX=1.36.1
+VERSION_KERNEL=6.15.7
+VERSION_OPENSBI=1.7
+
+if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
+    wget $QUIET https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
+fi
+
+if [ ! -f kernel-${VERSION_KERNEL}.tar.xz ]; then
+    wget $QUIET https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${VERSION_KERNEL}.tar.xz
+    mv linux-${VERSION_KERNEL}.tar.xz kernel-${VERSION_KERNEL}.tar.xz
+fi
+
+if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
+    wget $QUIET https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
+    mv v${VERSION_OPENSBI}.tar.gz opensbi-${VERSION_OPENSBI}.tar.gz
+fi
+
+cd ~
+benchmark
+
+################################################################################
+
+echo -n "Building busybox... "
+rm -rf build/busybox && tar -xf cache/download/busybox-* && mv busybox-* build/busybox
+cd build/busybox
+
+export KCONFIG_NOTIMESTAMP=1
+
+LDFLAGS="--static" CFLAGS="-mabi=lp64" CROSS_COMPILE=riscv64-unknown-linux-gnu- \
+    make $QUIET \
+    defconfig > /dev/null 2>&1
+
+LDFLAGS="--static" CFLAGS="-mabi=lp64" CROSS_COMPILE=riscv64-unknown-linux-gnu- \
+    make $QUIET \
+    --jobs=$CPU_COUNT busybox > /dev/null 2>&1
+
+mv busybox ~/output
+cd ~
+benchmark
+
+################################################################################
+
+sha256sum -b output/* > output/sha256.txt
+
+echo -n "Total execution time: "
+BM_START=$SCRIPT_START && benchmark

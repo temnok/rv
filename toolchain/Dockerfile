@@ -54,5 +54,5 @@ RUN git clone --depth 1 --single-branch --branch 2025.07.16 \
     rm -rf toolchain-source
 
 ENV PATH="$PATH:/home/user/toolchain/bin"
-WORKDIR /home/user/work
-ENV CCACHE_DIR=/home/user/work/_ccache
+
+RUN mkdir cache

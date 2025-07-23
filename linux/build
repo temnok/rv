@@ -4,11 +4,13 @@ cd $(dirname "$0")
 
 rm -rf output/*
 
-toolchain/build
+../toolchain/build
 
 docker run -ti --rm \
     -v $(pwd)/work:/home/user/work \
     --user $(id -u):$(id -g) \
+    -w /home/user/work \
+    -e CCACHE_DIR=/home/user/work/_ccache \
     rv-toolchain \
     bash build
 
