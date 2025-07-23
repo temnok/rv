@@ -80,7 +80,7 @@ if [ ! -d kernel.nobuild ]; then
     fi
 
     cd kernel
-    rm -rf arch/riscv/boot/Image
+    #rm -rf arch/riscv/boot/Image usr/initramfs_data.o usr/initramfs_inc_data
 
     flags_y=(
         ARCH_RV64I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
@@ -90,7 +90,8 @@ if [ ! -d kernel.nobuild ]; then
         INITRAMFS_COMPRESSION_NONE
     )
 
-    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+        CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
         allnoconfig
 
     for f in ${flags_y[@]}; do
@@ -99,10 +100,12 @@ if [ ! -d kernel.nobuild ]; then
 
     scripts/config --set-val INITRAMFS_SOURCE \"../initramfs/initramfs.cpio\"
 
-    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+        CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
         olddefconfig
 
-    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
+        CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
         KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
         KBUILD_BUILD_USER="builduser" \
         KBUILD_BUILD_HOST="buildhost" \
