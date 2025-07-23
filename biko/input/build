@@ -52,13 +52,14 @@ cd build/busybox
 
 export KCONFIG_NOTIMESTAMP=1
 
-LDFLAGS="--static" CFLAGS="-mabi=lp64" CROSS_COMPILE=riscv64-unknown-linux-gnu- \
-    make $QUIET \
-    defconfig > /dev/null 2>&1
+make $QUIET defconfig > /dev/null 2>&1
 
-LDFLAGS="--static" CFLAGS="-mabi=lp64" CROSS_COMPILE=riscv64-unknown-linux-gnu- \
-    make $QUIET \
-    --jobs=$CPU_COUNT busybox > /dev/null 2>&1
+LDFLAGS="--static" CFLAGS="-mabi=lp64" make \
+    CC="ccache riscv64-unknown-linux-gnu-gcc" \
+    CROSS_COMPILE=riscv64-unknown-linux-gnu- \
+    --jobs=$CPU_COUNT \
+    $QUIET \
+    busybox > /dev/null 2>&1
 
 mv busybox ~/output
 cd ~

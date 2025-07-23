@@ -4,7 +4,9 @@ cd $(dirname "$0")
 
 ../toolchain/build
 
-rm -rf container.cid && docker run -ti \
+rm -rf container.cid output/*
+
+docker run -ti \
     --cidfile container.cid \
     --volume $(pwd)/input:/home/user/input \
     --mount type=volume,src=biko-cache,dst=/home/user/cache \
