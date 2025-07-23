@@ -2,6 +2,8 @@
 set -e
 cd $(dirname "$0")
 
+rm -rf output/*
+
 toolchain/build
 
 docker run -ti --rm \
@@ -10,7 +12,6 @@ docker run -ti --rm \
     rv-toolchain \
     bash build
 
-rm -rf output/*
 gzip -9 -n -c work/_build/opensbi/build/platform/generic/firmware/fw_payload.bin > output/rv64.kernel.gz
 
 sha256sum -b \

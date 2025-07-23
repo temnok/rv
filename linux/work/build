@@ -61,9 +61,9 @@ if [ ! -d initramfs.nobuild ]; then
 
     cd fs
     find . -exec touch -t 197001010000.00 {} +
-    find . | \
-        cpio --reset-access-time --reproducible --quiet \
-            --create --owner 0:0 --format newc > ../initramfs.cpio
+    find . ! -path . | sort | \
+        cpio --reproducible --quiet --create --owner +0:+0 \
+        --format newc > ../initramfs.cpio
     cd ..
 
     touch -t 197001010000.00 initramfs.cpio
@@ -75,12 +75,14 @@ fi
 if [ ! -d kernel.nobuild ]; then
     echo -n "Building kernel... "
 
+    rm -rf kernel
+
     if [ ! -d kernel ]; then
         tar -xf ../_download/linux-* && mv linux-* kernel
     fi
 
     cd kernel
-    #rm -rf arch/riscv/boot/Image usr/initramfs_data.o usr/initramfs_inc_data
+    rm -rf arch/riscv/boot/Image usr/{.built-in.a.cmd,.initramfs_data.o.cmd,.initramfs_inc_data.cmd,built-in.a,initramfs_data.o,initramfs_inc_data}
 
     flags_y=(
         ARCH_RV64I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
