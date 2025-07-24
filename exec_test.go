@@ -43,7 +43,7 @@ func runTest(t *testing.T, xlen int, file string) {
 
 	ramBaseAddr := 0x8000_0000
 
-	cpu.Init(xlen, Bus{ram}, ramBaseAddr, 0, 0)
+	cpu.Init(xlen, Bus{ram}, ramBaseAddr)
 	ram.Init(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 

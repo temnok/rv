@@ -3,7 +3,6 @@ package rv
 import (
 	"bytes"
 	"compress/gzip"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"golang.org/x/term"
@@ -31,7 +30,6 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	)
 
 	ramBaseAddr := 0x8000_0000
-	dtbReg, dtbAddr := 11, ramBaseAddr+0x0200_0000
 
 	path := fmt.Sprintf("%v/rv%v", dir, xlen)
 	kernelPath := dir + "/biko.gz"
@@ -39,12 +37,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		kernelPath = path + ".kernel.gz"
 	}
 
-	if dtbPath := path + ".dtb"; !existsFile(dtbPath) {
-		dtbReg = 0
-		dtbAddr = 0
-	}
-
-	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr, dtbReg, dtbAddr)
+	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr)
 	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
@@ -52,11 +45,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	terminal := newTerminal(in, out)
 	uart.Init(&plic, 0x0300_0000, 1, terminal.callback)
 
-	ram.Load(ramBaseAddr, readFile(kernelPath, ""))
-
-	if dtbAddr != 0 {
-		ram.Load(dtbAddr, readFile(path+".dtb", ""))
-	}
+	ram.Load(ramBaseAddr, readFile(kernelPath))
 
 	for step := 0; !terminal.Closed; step++ {
 		ok := cpu.Step()
@@ -75,16 +64,12 @@ func existsFile(path string) bool {
 	return err == nil
 }
 
-func readFile(path, checksum string) []byte {
+func readFile(path string) []byte {
 	content := check1(os.ReadFile(path))
 
 	if strings.HasSuffix(path, ".gz") {
 		r := check1(gzip.NewReader(bytes.NewReader(content)))
 		content = check1(io.ReadAll(r))
-	}
-
-	if cs := fmt.Sprintf("%x", sha256.Sum256(content)); checksum != "" && checksum != cs {
-		panic(path + " checksum check failed, expected " + cs)
 	}
 
 	return content

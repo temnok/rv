@@ -52,7 +52,7 @@ const (
 	AccessWrite   = 3
 )
 
-func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
+func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 	xl := xlen / 32
 
 	*cpu = CPU{
@@ -74,11 +74,6 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr, regIndex, regValue int) {
 			XReg: -1,
 			CReg: -1,
 		},
-	}
-
-	if regIndex > 0 {
-		cpu.Updated.XReg = regIndex
-		cpu.Updated.XVal = regValue
 	}
 
 	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)

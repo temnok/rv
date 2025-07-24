@@ -8,11 +8,11 @@ import (
 )
 
 func TestRunKernel32(t *testing.T) {
-	testRunKernel(t, 32, "buildroot/output", "buildroot login: ")
+	testRunKernel(t, 32, "biko/output-32", "user@rv")
 }
 
 func TestRunKernel64(t *testing.T) {
-	testRunKernel(t, 64, "buildroot/output", "buildroot login: ")
+	testRunKernel(t, 64, "biko/output-64", "user@rv")
 }
 
 func testRunKernel(t *testing.T, xlen int, kernelPath, stopString string) {
