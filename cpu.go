@@ -65,7 +65,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 			CSR: CSR{
 				Misa: xl<<(xlen-2) |
 					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-					1<<('f'-'a') | (xlen/64)<<('d'-'a') |
+					1<<('f'-'a') | ('d' - 'a') |
 					1<<('u'-'a') | 1<<('s'-'a'),
 			},
 		},
@@ -82,6 +82,10 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 
 func (cpu *CPU) xlen64() bool {
 	return cpu.XLen == 64
+}
+
+func (cpu *CPU) extD() bool {
+	return cpu.CSR.Misa&1<<('d'-'a') != 0
 }
 
 func (cpu *CPU) xint(val int) int {

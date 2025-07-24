@@ -100,7 +100,7 @@ var rmToC = []C.int{
 }
 
 func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
-	if f7&1 == 1 && !cpu.xlen64() || bits(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff {
+	if f7&1 == 1 && !cpu.extD() || cpu.fpDisabled() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}

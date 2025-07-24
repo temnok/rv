@@ -1,7 +1,11 @@
 package rv
 
+func (cpu *CPU) fpDisabled() bool {
+	return bits(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff
+}
+
 func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
-	if bits(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff {
+	if cpu.fpDisabled() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
@@ -15,7 +19,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 		}
 
 	case 0b_011: // fld
-		if !cpu.xlen64() {
+		if !cpu.extD() {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
@@ -33,7 +37,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 }
 
 func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
-	if bits(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff {
+	if cpu.fpDisabled() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
@@ -43,7 +47,7 @@ func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
 		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 4)
 
 	case 0b_011: // fsd
-		if !cpu.xlen64() {
+		if !cpu.extD() {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
