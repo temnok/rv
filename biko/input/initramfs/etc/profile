@@ -1,2 +1,2 @@
-PATH=/sbin:/usr/sbin:/bin:/usr/bin
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/go/bin
 PS1='\u@\h:\w$ '

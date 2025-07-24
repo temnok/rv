@@ -42,6 +42,7 @@ cd cache/download
 VERSION_BUSYBOX=1.36.1
 VERSION_KERNEL=6.15.7
 VERSION_OPENSBI=1.7
+#VERSION_GO=1.24.5
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     wget $QUIET https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
@@ -54,6 +55,10 @@ fi
 if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
     wget $QUIET https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
     mv v${VERSION_OPENSBI}.tar.gz opensbi-${VERSION_OPENSBI}.tar.gz
+fi
+
+if [[ "${VERSION_GO}" != "" ]] && [ ! -f go${VERSION_GO}.linux-riscv64.tar.gz ]; then
+    wget $QUIET https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
 fi
 
 cd ~
@@ -85,6 +90,11 @@ benchmark
 echo -n "Building initramfs... "
 mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs && cd build/initramfs/fs
 mkdir bin && cp ~/build/busybox/busybox bin/
+
+if [[ "${VERSION_GO}" != "" ]] && [[ "${RV_XLEN}" == "64" ]]; then
+    mkdir -p /usr/local
+    tar -C /usr/local -xzf cache/download/go*
+fi
 
 find . -exec touch -t 197001010000.00 {} +
 find . ! -path . | sort | cpio \

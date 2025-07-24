@@ -2,6 +2,6 @@
 set -e
 cd $(dirname "$0")
 
-../toolchain/build
+#../toolchain/build
 RV_XLEN=32 ./build-arch
 RV_XLEN=64 ./build-arch

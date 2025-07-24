@@ -38,7 +38,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	}
 
 	cpu.Init(xlen, Bus{&ram, &clint, &plic, &uart}, ramBaseAddr)
-	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
+	ram.Init(&cpu, ramBaseAddr, 256*1024*1024)
 	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
 
