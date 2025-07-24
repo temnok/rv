@@ -32,10 +32,10 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	if cpu.isTrapped() {
-		debugDump(cpu)
-		return false
-	}
+	//if cpu.isTrapped() {
+	//	debugDump(cpu)
+	//	return false
+	//}
 
 	return true
 }
