@@ -34,7 +34,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	dtbReg, dtbAddr := 11, ramBaseAddr+0x0200_0000
 
 	path := fmt.Sprintf("%v/rv%v", dir, xlen)
-	kernelPath := path + ".gz"
+	kernelPath := dir + "/biko.gz"
 	if !existsFile(kernelPath) {
 		kernelPath = path + ".kernel.gz"
 	}
@@ -56,10 +56,6 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 
 	if dtbAddr != 0 {
 		ram.Load(dtbAddr, readFile(path+".dtb", ""))
-	}
-
-	if initrdPath := path + ".initramfs.cpio.gz"; existsFile(initrdPath) {
-		ram.Load(0x87000000, readFile(initrdPath, ""))
 	}
 
 	for step := 0; !terminal.Closed; step++ {

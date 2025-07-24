@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+set -e
+cd $(dirname "$0")
+
+rm -rf tmp output-${RV_XLEN} && mkdir tmp
+
+docker run -ti \
+    --cidfile tmp/.cid \
+    --volume $(pwd)/input:/home/user/input:ro \
+    --mount type=volume,src=biko-cache,dst=/home/user/cache \
+    --env RV_XLEN=${RV_XLEN} \
+    rv-toolchain \
+    bash input/build
+
+docker cp --quiet $(cat tmp/.cid):/home/user/output output-${RV_XLEN}
+
+docker rm $(cat tmp/.cid) > /dev/null && rm -rf tmp

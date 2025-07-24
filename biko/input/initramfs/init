@@ -6,6 +6,6 @@ mount -t devtmpfs none /dev
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devpts devpts /dev/pts
-echo rv64 > /proc/sys/kernel/hostname
+echo rv > /proc/sys/kernel/hostname
 chown user:user /home/user
 exec /sbin/init

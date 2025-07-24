@@ -14,7 +14,23 @@ function benchmark {
   BM_START=$BM_END
 }
 
-echo "Using CPUs: $CPU_COUNT"
+################################################################################
+
+if [[ "${RV_XLEN}" == "32" ]]; then
+    RV_ABI=ilp${RV_XLEN}
+else
+    RV_XLEN=64
+    RV_ABI=lp${RV_XLEN}
+fi
+
+export ARCH=riscv
+export CC="ccache riscv64-unknown-linux-gnu-gcc"
+export CFLAGS="-march=rv${RV_XLEN}imac -mabi=${RV_ABI}"
+export CROSS_COMPILE=riscv64-unknown-linux-gnu-
+
+echo
+echo "Target ${CFLAGS}"
+echo "Using CPUs: ${CPU_COUNT}"
 
 rm -rf build output && mkdir -p build output cache/{download,cc}
 
@@ -49,16 +65,17 @@ echo -n "Building busybox... "
 tar -xf cache/download/busybox-* && mv busybox-* build/busybox
 cd build/busybox
 
-export KCONFIG_NOTIMESTAMP=1
+KCONFIG_NOTIMESTAMP=1 \
+    make $QUIET \
+        defconfig \
+        > /dev/null 2>&1
 
-make $QUIET defconfig > /dev/null 2>&1
-
-LDFLAGS="--static" CFLAGS="-mabi=lp64" make \
-    CC="ccache riscv64-unknown-linux-gnu-gcc" \
-    CROSS_COMPILE=riscv64-unknown-linux-gnu- \
-    --jobs=$CPU_COUNT \
-    $QUIET \
-    busybox > /dev/null 2>&1
+LDFLAGS="--static ${CFLAGS}" \
+    make $QUIET \
+        CC="${CC}" \
+        --jobs=$CPU_COUNT \
+        busybox \
+        > /dev/null 2>&1
 
 cd ~
 benchmark
@@ -85,15 +102,14 @@ tar -xf cache/download/linux-* && mv linux-* build/kernel
 cd build/kernel
 
 flags_y=(
-    ARCH_RV64I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
+    ARCH_RV${RV_XLEN}I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
     DEBUG_KERNEL DEVTMPFS DEVTMPFS_MOUNT GDB_SCRIPTS KGDB KGDB_SERIAL_CONSOLE NONPORTABLE
     RISCV_INTC RISCV_ISA_C SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
 
     INITRAMFS_COMPRESSION_NONE
 )
 
-make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
-    CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+make $QUIET \
     allnoconfig
 
 for f in ${flags_y[@]}; do
@@ -102,16 +118,14 @@ done
 
 scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs.cpio\"
 
-make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
-    CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+make $QUIET \
     olddefconfig
 
-make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
-    CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
+make $QUIET \
+    CC="${CC}" \
+    KBUILD_BUILD_HOST="buildhost" \
     KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
     KBUILD_BUILD_USER="builduser" \
-    KBUILD_BUILD_HOST="buildhost" \
-    $QUIET \
     --jobs=$CPU_COUNT \
     Image
 
@@ -124,22 +138,23 @@ echo -n "Building opensbi... "
 tar -xf cache/download/opensbi-* && mv opensbi-* build/opensbi
 cd build/opensbi
 
+sed "s/rv64/rv${RV_XLEN}/g" ~/input/rv.dts > rv.dts
+
 dtc $QUIET \
   -O dtb \
-  -o rv64.dtb \
-  ~/input/rv64.dts
+  -o rv.dtb \
+  rv.dts
 
 make $QUIET \
-  CC="ccache riscv64-unknown-linux-gnu-gcc" \
-  CROSS_COMPILE=riscv64-unknown-linux-gnu- \
-  --jobs=$CPU_COUNT \
-  PLATFORM=generic \
-  PLATFORM_RISCV_XLEN=64 \
+  CC="${CC}" \
+  FW_FDT_PATH=rv.dtb \
   FW_PAYLOAD_PATH=~/build/kernel/arch/riscv/boot/Image \
-  FW_FDT_PATH=rv64.dtb \
+  PLATFORM=generic \
+  PLATFORM_RISCV_XLEN=${RV_XLEN} \
+  --jobs=$CPU_COUNT \
   > /dev/null 2>&1
 
-gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/rv64.gz
+gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/biko.gz
 
 cd ~
 benchmark
@@ -150,7 +165,7 @@ sha256sum -b \
   build/busybox/busybox \
   build/initramfs/initramfs.cpio \
   build/kernel/arch/riscv/boot/Image \
-  output/rv64.gz > output/sha256.txt
+  output/biko.gz > output/sha256.txt
 
 echo -n "Total execution time: "
 BM_START=$SCRIPT_START && benchmark
