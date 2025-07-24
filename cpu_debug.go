@@ -32,7 +32,7 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	if cpu.isTrapped() && cpu.PC == 0xe0498 {
+	if cpu.isTrapped() {
 		debugDump(cpu)
 		return false
 	}

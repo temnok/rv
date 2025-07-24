@@ -21,6 +21,7 @@ const (
 	Satp = 0x180
 
 	Mstatus    = 0x300
+	Mstatush   = 0x310
 	Misa       = 0x301
 	Medeleg    = 0x302
 	Mideleg    = 0x303
@@ -97,9 +98,9 @@ type CSR struct {
 
 	Stvec, Scounteren, Sscratch, Sepc, Scause, Stval, Sip, Satp int
 
-	Mstatus, Misa, Medeleg, Mideleg, Mie, Mtvec, Mcounteren int
-	Mscratch, Mepc, Mcause, Mtval, Mip                      int
-	Mvendorid, Marchid, Mimpid, Mhartid                     int
+	Mstatus, Mstatush, Misa, Medeleg, Mideleg, Mie, Mtvec, Mcounteren int
+	Mscratch, Mepc, Mcause, Mtval, Mip                                int
+	Mvendorid, Marchid, Mimpid, Mhartid                               int
 }
 
 func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
@@ -171,6 +172,12 @@ func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 		reg = &csr.Mstatus
 		if write {
 			mask = ^(3<<MstatusSXL | 3<<MstatusUXL)
+		}
+
+	case Mstatush: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
+		reg = &csr.Mstatush
+		if write {
+			mask = 0
 		}
 
 	case Misa: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
