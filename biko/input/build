@@ -60,20 +60,19 @@ LDFLAGS="--static" CFLAGS="-mabi=lp64" make \
     $QUIET \
     busybox > /dev/null 2>&1
 
-mv busybox ~/output
 cd ~
 benchmark
 
 ################################################################################
 
 echo -n "Building initramfs... "
-cp -R input/initramfs build/initramfs && cd build/initramfs
-mkdir bin && cp ~/output/busybox bin/
+mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs && cd build/initramfs/fs
+mkdir bin && cp ~/build/busybox/busybox bin/
 
 find . -exec touch -t 197001010000.00 {} +
 find . ! -path . | sort | cpio \
     --reproducible --quiet --create --owner +0:+0 --format newc \
-    > ~/output/initramfs.cpio
+    > ../initramfs.cpio
 
 cd ~
 benchmark
@@ -101,7 +100,7 @@ for f in ${flags_y[@]}; do
     scripts/config --set-val $f y
 done
 
-scripts/config --set-val INITRAMFS_SOURCE \"/home/user/output/initramfs.cpio\"
+scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs.cpio\"
 
 make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
     CROSS_COMPILE=riscv64-unknown-linux-gnu- CC="ccache riscv64-unknown-linux-gnu-gcc" \
@@ -115,8 +114,6 @@ make $QUIET ARCH=riscv CFLAGS="-march=rv64imafdc -mabi=lp64d" \
     $QUIET \
     --jobs=$CPU_COUNT \
     Image
-
-mv arch/riscv/boot/Image ~/output/kernel
 
 cd ~
 benchmark
@@ -138,7 +135,7 @@ make $QUIET \
   --jobs=$CPU_COUNT \
   PLATFORM=generic \
   PLATFORM_RISCV_XLEN=64 \
-  FW_PAYLOAD_PATH=~/output/kernel \
+  FW_PAYLOAD_PATH=~/build/kernel/arch/riscv/boot/Image \
   FW_FDT_PATH=rv64.dtb \
   > /dev/null 2>&1
 
@@ -149,7 +146,11 @@ benchmark
 
 ################################################################################
 
-sha256sum -b output/* > output/sha256.txt
+sha256sum -b \
+  build/busybox/busybox \
+  build/initramfs/initramfs.cpio \
+  build/kernel/arch/riscv/boot/Image \
+  output/rv64.gz > output/sha256.txt
 
 echo -n "Total execution time: "
 BM_START=$SCRIPT_START && benchmark
