@@ -17,15 +17,17 @@ function benchmark {
 ################################################################################
 
 if [[ "${RV_XLEN}" == "32" ]]; then
-    RV_ABI=ilp${RV_XLEN}
+    RV_ARCH=rv32imac
+    RV_ABI=ilp32
 else
     RV_XLEN=64
-    RV_ABI=lp${RV_XLEN}
+    RV_ARCH=rv64imac
+    RV_ABI=lp64
 fi
 
 export ARCH=riscv
 export CC="ccache riscv64-unknown-linux-gnu-gcc"
-export CFLAGS="-march=rv${RV_XLEN}imac -mabi=${RV_ABI}"
+export CFLAGS="-march=${RV_ARCH} -mabi=${RV_ABI}"
 export CROSS_COMPILE=riscv64-unknown-linux-gnu-
 
 echo
@@ -67,7 +69,7 @@ benchmark
 ################################################################################
 
 echo -n "Building busybox... "
-tar -xf cache/download/busybox-* && mv busybox-* build/busybox
+tar -xf cache/download/busybox-${VERSION_BUSYBOX}.tar.bz2 && mv busybox-* build/busybox
 cd build/busybox
 
 KCONFIG_NOTIMESTAMP=1 \
@@ -107,7 +109,7 @@ benchmark
 ################################################################################
 
 echo -n "Building kernel... "
-tar -xf cache/download/linux-* && mv linux-* build/kernel
+tar -xf cache/download/linux-${VERSION_KERNEL}.tar.xz && mv linux-* build/kernel
 
 cd build/kernel
 
@@ -145,7 +147,7 @@ benchmark
 ################################################################################
 
 echo -n "Building opensbi... "
-tar -xf cache/download/opensbi-* && mv opensbi-* build/opensbi
+tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
 cd build/opensbi
 
 sed "s/rv64/rv${RV_XLEN}/g" ~/input/rv.dts > rv.dts
