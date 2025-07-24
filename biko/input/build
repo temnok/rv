@@ -92,8 +92,8 @@ mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs && cd build
 mkdir bin && cp ~/build/busybox/busybox bin/
 
 if [[ "${VERSION_GO}" != "" ]] && [[ "${RV_XLEN}" == "64" ]]; then
-    mkdir -p /usr/local
-    tar -C /usr/local -xzf cache/download/go*
+    mkdir -p usr/local
+    tar -C usr/local -xf ~/cache/download/go*
 fi
 
 find . -exec touch -t 197001010000.00 {} +
