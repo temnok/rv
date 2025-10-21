@@ -1,4 +1,4 @@
-package rv
+package imm
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#immtypes
 
 func TestImmB(t *testing.T) {
-	testImm(t, "immB", immB, 12+1, immTestData{
+	testImm(t, "B", B, 12+1, immTestData{
 		0b_0000000_0000000000000_0001_0_0000000: 0b_000000000001_0,
 		0b_0000000_0000000000000_0010_0_0000000: 0b_000000000010_0,
 		0b_0000000_0000000000000_0100_0_0000000: 0b_000000000100_0,
@@ -25,7 +25,7 @@ func TestImmB(t *testing.T) {
 }
 
 func TestImmI(t *testing.T) {
-	testImm(t, "immI", immI, 12, immTestData{
+	testImm(t, "I", I, 12, immTestData{
 		0b_000000000001_00000000000000000000: 0b_000000000001,
 		0b_000000000010_00000000000000000000: 0b_000000000010,
 		0b_000000000100_00000000000000000000: 0b_000000000100,
@@ -43,7 +43,7 @@ func TestImmI(t *testing.T) {
 }
 
 func TestImmJ(t *testing.T) {
-	testImm(t, "immJ", immJ, 20+1, immTestData{
+	testImm(t, "J", J, 20+1, immTestData{
 		0b_0_0000000001_0_00000000_000000000000: 0b_00000000000000000001_0,
 		0b_0_0000000010_0_00000000_000000000000: 0b_00000000000000000010_0,
 		0b_0_0000000100_0_00000000_000000000000: 0b_00000000000000000100_0,
@@ -69,7 +69,7 @@ func TestImmJ(t *testing.T) {
 }
 
 func TestImmS(t *testing.T) {
-	testImm(t, "immS", immS, 12, immTestData{
+	testImm(t, "S", S, 12, immTestData{
 		0b_0000000_0000000000000_00001_0000000: 0b_000000000001,
 		0b_0000000_0000000000000_00010_0000000: 0b_000000000010,
 		0b_0000000_0000000000000_00100_0000000: 0b_000000000100,
@@ -87,7 +87,7 @@ func TestImmS(t *testing.T) {
 }
 
 func TestImmU(t *testing.T) {
-	testImm(t, "immU", immU, 20+12, immTestData{
+	testImm(t, "U", U, 20+12, immTestData{
 		0b_00000000000000000001_000000000000: 0b_00000000000000000001_000000000000,
 		0b_00000000000000000010_000000000000: 0b_00000000000000000010_000000000000,
 		0b_00000000000000000100_000000000000: 0b_00000000000000000100_000000000000,

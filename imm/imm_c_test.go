@@ -1,4 +1,4 @@
-package rv
+package imm
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-form
 
 func TestImmCB(t *testing.T) {
-	testImm(t, "immCB", immCB, 8+1, immTestData{
+	testImm(t, "CB", CB, 8+1, immTestData{
 		0b_0_00_000_00_01_0_00: 0b_00000001_0,
 		0b_0_00_000_00_10_0_00: 0b_00000010_0,
 		0b_0_01_000_00_00_0_00: 0b_00000100_0,
@@ -22,7 +22,7 @@ func TestImmCB(t *testing.T) {
 }
 
 func TestImmCI(t *testing.T) {
-	testImm(t, "immCI", immCI, 6, immTestData{
+	testImm(t, "CI", CI, 6, immTestData{
 		0b_0_00000_00001_00: 0b_000001,
 		0b_0_00000_00010_00: 0b_000010,
 		0b_0_00000_00100_00: 0b_000100,
@@ -35,7 +35,7 @@ func TestImmCI(t *testing.T) {
 }
 
 func TestUimmCI2(t *testing.T) {
-	testImmUnsigned(t, "immCI2", immCI2, 6+2, immTestData{
+	testImmUnsigned(t, "CI2", CI2, 6+2, immTestData{
 		0b_0_00000_001_00_00: 0b_000001_00,
 		0b_0_00000_010_00_00: 0b_000010_00,
 		0b_0_00000_100_00_00: 0b_000100_00,
@@ -48,7 +48,7 @@ func TestUimmCI2(t *testing.T) {
 }
 
 func TestImmCI4(t *testing.T) {
-	testImm(t, "immCI4", immCI4, 6+4, immTestData{
+	testImm(t, "CI4", CI4, 6+4, immTestData{
 		0b_0_00000_1_0_00_0_00: 0b_000001_0000,
 		0b_0_00000_0_0_00_1_00: 0b_000010_0000,
 		0b_0_00000_0_1_00_0_00: 0b_000100_0000,
@@ -61,7 +61,7 @@ func TestImmCI4(t *testing.T) {
 }
 
 func TestImmCIW(t *testing.T) {
-	testImmUnsigned(t, "immCIW", immCIW, 8+2, immTestData{
+	testImmUnsigned(t, "CIW", CIW, 8+2, immTestData{
 		0b_00_0000_1_0_00000: 0b_00000001_00,
 		0b_00_0000_0_1_00000: 0b_00000010_00,
 		0b_01_0000_0_0_00000: 0b_00000100_00,
@@ -76,7 +76,7 @@ func TestImmCIW(t *testing.T) {
 }
 
 func TestImmCJ(t *testing.T) {
-	testImm(t, "ImmCJ", immCJ, 11+1, immTestData{
+	testImm(t, "CJ", CJ, 11+1, immTestData{
 		0b_0_0_00_0_0_0_001_0_00: 0b_00000000001_0,
 		0b_0_0_00_0_0_0_010_0_00: 0b_00000000010_0,
 		0b_0_0_00_0_0_0_100_0_00: 0b_00000000100_0,
@@ -94,7 +94,7 @@ func TestImmCJ(t *testing.T) {
 }
 
 func TestUimmCL(t *testing.T) {
-	testImmUnsigned(t, "immCL", immCL, 5+2, immTestData{
+	testImmUnsigned(t, "CL", CL, 5+2, immTestData{
 		0b_000_000_1_0_00000: 0b_00001_00,
 		0b_001_000_0_0_00000: 0b_00010_00,
 		0b_010_000_0_0_00000: 0b_00100_00,
@@ -106,7 +106,7 @@ func TestUimmCL(t *testing.T) {
 }
 
 func TestUimmCSS(t *testing.T) {
-	testImmUnsigned(t, "immCSS", immCSS, 6+2, immTestData{
+	testImmUnsigned(t, "CSS", CSS, 6+2, immTestData{
 		0b_0001_00_0000000: 0b_000001_00,
 		0b_0010_00_0000000: 0b_000010_00,
 		0b_0100_00_0000000: 0b_000100_00,

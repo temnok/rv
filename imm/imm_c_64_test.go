@@ -1,9 +1,9 @@
-package rv
+package imm
 
 import "testing"
 
 func TestImmCI3(t *testing.T) {
-	testImmUnsigned(t, "immCI3", immCI3, 6+3, immTestData{
+	testImmUnsigned(t, "CI3", CI3, 6+3, immTestData{
 		0b_0_00000_01_000_00: 0b_000001_000,
 		0b_0_00000_10_000_00: 0b_000010_000,
 		0b_1_00000_00_000_00: 0b_000100_000,
@@ -15,7 +15,7 @@ func TestImmCI3(t *testing.T) {
 }
 
 func TestImmCL3(t *testing.T) {
-	testImmUnsigned(t, "immCL3", immCL3, 5+3, immTestData{
+	testImmUnsigned(t, "CL3", CL3, 5+3, immTestData{
 		0b_001_000_00_00000: 0b_00001_000,
 		0b_010_000_00_00000: 0b_00010_000,
 		0b_100_000_00_00000: 0b_00100_000,
@@ -26,7 +26,7 @@ func TestImmCL3(t *testing.T) {
 }
 
 func TestImmCSS3(t *testing.T) {
-	testImmUnsigned(t, "immCSS3", immCSS3, 6+3, immTestData{
+	testImmUnsigned(t, "CSS3", CSS3, 6+3, immTestData{
 		0b_001_000_0000000: 0b_000001_000,
 		0b_010_000_0000000: 0b_000010_000,
 		0b_100_000_0000000: 0b_000100_000,

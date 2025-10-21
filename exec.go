@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/instr"
+import (
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/instr"
+)
 
 func (cpu *CPU) exec(opcode int) {
 	opcodeSize := 4
@@ -21,21 +24,21 @@ func (cpu *CPU) exec(opcode int) {
 
 	switch op := bits(opcode, 2, 5); op {
 	case 0b_00000:
-		cpu.execLoad(immI(opcode), rs1, f3, rd)
+		cpu.execLoad(imm.I(opcode), rs1, f3, rd)
 	case 0b_00001:
-		cpu.execLoadFP(immI(opcode), rs1, f3, rd)
+		cpu.execLoadFP(imm.I(opcode), rs1, f3, rd)
 	case 0b_00011:
-		cpu.execFence(immI(opcode), rs1, f3, rd)
+		cpu.execFence(imm.I(opcode), rs1, f3, rd)
 	case 0b_00100:
-		cpu.execComputeI(immI(opcode), rs1, f3, rd)
+		cpu.execComputeI(imm.I(opcode), rs1, f3, rd)
 	case 0b_00110:
-		cpu.execComputeI64(immI(opcode), rs1, f3, rd)
+		cpu.execComputeI64(imm.I(opcode), rs1, f3, rd)
 	case 0b_00101:
-		instr.Auipc(&cpu.State, rd, immU(opcode))
+		instr.Auipc(&cpu.State, rd, imm.U(opcode))
 	case 0b_01000:
-		cpu.execStore(immS(opcode), rs2, rs1, f3)
+		cpu.execStore(imm.S(opcode), rs2, rs1, f3)
 	case 0b_01001:
-		cpu.execStoreFP(immS(opcode), rs2, rs1, f3)
+		cpu.execStoreFP(imm.S(opcode), rs2, rs1, f3)
 	case 0b_01011:
 		cpu.execAtomic(f7, rs2, rs1, f3, rd)
 	case 0b_01100:
@@ -43,19 +46,19 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_01110:
 		cpu.execComputeR64(f7, rs2, rs1, f3, rd)
 	case 0b_01101:
-		instr.Lui(&cpu.State, rd, immU(opcode))
+		instr.Lui(&cpu.State, rd, imm.U(opcode))
 	case 0b_10000, 0b_10001, 0b_10010, 0b_10011:
 		cpu.execComputeFP(f7, rs2, rs1, f3, rd, op)
 	case 0b_10100:
 		cpu.execComputeFP(f7, rs2, rs1, f3, rd, 0)
 	case 0b_11000:
-		cpu.execBranch(immB(opcode), rs2, rs1, f3)
+		cpu.execBranch(imm.B(opcode), rs2, rs1, f3)
 	case 0b_11001:
-		instr.Jalr(&cpu.State, opcodeSize, rd, rs1, immI(opcode))
+		instr.Jalr(&cpu.State, opcodeSize, rd, rs1, imm.I(opcode))
 	case 0b_11011:
-		instr.Jal(&cpu.State, opcodeSize, rd, immJ(opcode))
+		instr.Jal(&cpu.State, opcodeSize, rd, imm.J(opcode))
 	case 0b_11100:
-		cpu.execSystem(immI(opcode), rs1, f3, rd)
+		cpu.execSystem(imm.I(opcode), rs1, f3, rd)
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
 	}
