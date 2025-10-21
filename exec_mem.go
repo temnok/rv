@@ -6,15 +6,15 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_000: // lb
 		cpu.memRead(cpu.X[rs1]+imm, &val, 1)
-		cpu.XRegSet(rd, int(int8(val)))
+		cpu.Xset(rd, int(int8(val)))
 
 	case 0b_001: // lh
 		cpu.memRead(cpu.X[rs1]+imm, &val, 2)
-		cpu.XRegSet(rd, int(int16(val)))
+		cpu.Xset(rd, int(int16(val)))
 
 	case 0b_010: // lw
 		cpu.memRead(cpu.X[rs1]+imm, &val, 4)
-		cpu.XRegSet(rd, int(int32(val)))
+		cpu.Xset(rd, int(int32(val)))
 
 	case 0b_011: // ld
 		if !cpu.XLen64() {
@@ -23,15 +23,15 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		}
 
 		cpu.memRead(cpu.X[rs1]+imm, &val, 8)
-		cpu.XRegSet(rd, val)
+		cpu.Xset(rd, val)
 
 	case 0b_100: // lbu
 		cpu.memRead(cpu.X[rs1]+imm, &val, 1)
-		cpu.XRegSet(rd, int(uint8(val)))
+		cpu.Xset(rd, int(uint8(val)))
 
 	case 0b_101: // lhu
 		cpu.memRead(cpu.X[rs1]+imm, &val, 2)
-		cpu.XRegSet(rd, int(uint16(val)))
+		cpu.Xset(rd, int(uint16(val)))
 
 	case 0b_110: // lwu
 		if !cpu.XLen64() {
@@ -40,7 +40,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		}
 
 		cpu.memRead(cpu.X[rs1]+imm, &val, 4)
-		cpu.XRegSet(rd, int(uint32(val)))
+		cpu.Xset(rd, int(uint32(val)))
 	}
 
 	if cpu.Update.XReg < 0 && !cpu.isTrapped() {

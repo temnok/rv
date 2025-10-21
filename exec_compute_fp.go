@@ -294,19 +294,19 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_1110000:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.w
-			cpu.XRegSet(rd, int(int32(cpu.F[rs1])))
+			cpu.Xset(rd, int(int32(cpu.F[rs1])))
 
 		case 0b_00000_001: // fclass.s
-			cpu.XRegSet(rd, fclass_s(cpu.f32(rs1)))
+			cpu.Xset(rd, fclass_s(cpu.f32(rs1)))
 		}
 
 	case 0b_1110001:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.d
-			cpu.XRegSet(rd, cpu.F[rs1])
+			cpu.Xset(rd, cpu.F[rs1])
 
 		case 0b_00000_001: // fclass.d
-			cpu.XRegSet(rd, fclass_d(cpu.f64(rs1)))
+			cpu.Xset(rd, fclass_d(cpu.f64(rs1)))
 		}
 
 	case 0b_1111000: // fmv.w.x
@@ -407,15 +407,15 @@ func (cpu *CPU) fxget(rs1, f3 int) int {
 }
 
 func (cpu *CPU) fxset(rd, res int) {
-	cpu.XRegSet(rd, res)
+	cpu.Xset(rd, res)
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) fsetCmp(rd int, res, nv bool) {
 	if res {
-		cpu.XRegSet(rd, 1)
+		cpu.Xset(rd, 1)
 	} else {
-		cpu.XRegSet(rd, 0)
+		cpu.Xset(rd, 0)
 	}
 	if nv {
 		cpu.Update.Fflags |= 1 << FflagsNV

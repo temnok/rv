@@ -26,7 +26,7 @@ func (cpu *State) Xuint(val int) uint {
 	return uint(uint32(val))
 }
 
-func (cpu *State) XRegSet(rd, val int) {
+func (cpu *State) Xset(rd, val int) {
 	cpu.Update.XReg = rd
 	cpu.Update.XVal = cpu.Xint(val)
 }

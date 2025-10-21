@@ -3,5 +3,5 @@ package instr
 import "github.com/temnok/rv/state"
 
 func Or(cpu *state.State, rd, rs1, rs2 int) {
-	cpu.XRegSet(rd, cpu.X[rs1]|cpu.X[rs2])
+	cpu.Xset(rd, cpu.X[rs1]|cpu.X[rs2])
 }

@@ -91,5 +91,5 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.XRegSet(rd, old)
+	cpu.Xset(rd, old)
 }

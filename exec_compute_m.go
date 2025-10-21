@@ -66,5 +66,5 @@ func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.XRegSet(rd, c)
+	cpu.Xset(rd, c)
 }
