@@ -45,7 +45,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 		Bus: bus,
 
 		State: state.State{
-			Permanent: state.Permanent{
+			Fixed: state.Fixed{
 				XLen: xlen,
 			},
 

@@ -1,5 +1,5 @@
 package state
 
-type Permanent struct {
+type Fixed struct {
 	XLen int
 }

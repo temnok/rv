@@ -1,7 +1,7 @@
 package state
 
 type State struct {
-	Permanent
+	Fixed
 	Static
 	Update Updated
 }
