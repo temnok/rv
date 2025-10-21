@@ -30,3 +30,7 @@ func (cpu *State) XRegSet(rd, val int) {
 	cpu.Update.XReg = rd
 	cpu.Update.XVal = cpu.Xint(val)
 }
+
+func (cpu *State) PCAdd(imm int) {
+	cpu.Update.PC = cpu.Xint(cpu.PC + imm)
+}

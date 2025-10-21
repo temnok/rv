@@ -1,32 +1,22 @@
 package rv
 
+import "github.com/temnok/rv/instr"
+
 func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
-	cond := false
-
 	switch f3 {
-	case 0b_000: // beq
-		cond = cpu.X[rs1] == cpu.X[rs2]
-
-	case 0b_001: // bne
-		cond = cpu.X[rs1] != cpu.X[rs2]
-
-	case 0b_100: // blt
-		cond = cpu.X[rs1] < cpu.X[rs2]
-
-	case 0b_101: // bge
-		cond = cpu.X[rs1] >= cpu.X[rs2]
-
-	case 0b_110: // bltu
-		cond = cpu.Xuint(cpu.X[rs1]) < cpu.Xuint(cpu.X[rs2])
-
-	case 0b_111: // bgeu
-		cond = cpu.Xuint(cpu.X[rs1]) >= cpu.Xuint(cpu.X[rs2])
-
+	case 0b_000:
+		instr.Beq(&cpu.State, rs1, rs2, imm)
+	case 0b_001:
+		instr.Bne(&cpu.State, rs1, rs2, imm)
+	case 0b_100:
+		instr.Blt(&cpu.State, rs1, rs2, imm)
+	case 0b_101:
+		instr.Bge(&cpu.State, rs1, rs2, imm)
+	case 0b_110:
+		instr.Bltu(&cpu.State, rs1, rs2, imm)
+	case 0b_111:
+		instr.Bgeu(&cpu.State, rs1, rs2, imm)
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
-	}
-
-	if cond {
-		cpu.Update.PC = cpu.Xint(cpu.PC + imm)
 	}
 }
