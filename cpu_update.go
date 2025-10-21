@@ -61,12 +61,12 @@ func (cpu *CPU) updateState() {
 }
 
 func (cpu *CPU) updateTimers() {
-	if cpu.CSR.Cycle = cpu.xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
+	if cpu.CSR.Cycle = cpu.Xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
 		cpu.CSR.Cycleh++
 	}
 
 	if cpu.CSR.Cycle%10_000 == 0 {
-		if cpu.CSR.Time = cpu.xint(cpu.CSR.Time + 1); cpu.CSR.Time == 0 {
+		if cpu.CSR.Time = cpu.Xint(cpu.CSR.Time + 1); cpu.CSR.Time == 0 {
 			cpu.CSR.Timeh++
 		}
 	}

@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
-	if cpu.xlen64() {
+	if cpu.XLen64() {
 		switch f3 {
 		case 0b_000: // addiw
 			cpu.XRegSet(rd, int(int32(cpu.X[rs1])+int32(imm)))
@@ -26,7 +26,7 @@ func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 }
 
 func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
-	if !cpu.xlen64() {
+	if !cpu.XLen64() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}

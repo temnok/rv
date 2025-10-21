@@ -9,7 +9,7 @@ func (cpu *CPU) exec(opcode int) {
 			return
 		}
 	}
-	cpu.Update.PC = cpu.xint(cpu.PC + opcodeSize)
+	cpu.Update.PC = cpu.Xint(cpu.PC + opcodeSize)
 
 	f7 := bits(opcode, 25, 7)
 	rs2 := bits(opcode, 20, 5)
@@ -65,11 +65,11 @@ func (cpu *CPU) exec(opcode int) {
 
 	case 0b_11001: // jalr
 		cpu.XRegSet(rd, cpu.PC+opcodeSize)
-		cpu.Update.PC = cpu.xint((cpu.X[rs1] + immI(opcode)) &^ 1)
+		cpu.Update.PC = cpu.Xint((cpu.X[rs1] + immI(opcode)) &^ 1)
 
 	case 0b_11011: // jal
 		cpu.XRegSet(rd, cpu.PC+opcodeSize)
-		cpu.Update.PC = cpu.xint(cpu.PC + immJ(opcode))
+		cpu.Update.PC = cpu.Xint(cpu.PC + immJ(opcode))
 
 	case 0b_11100:
 		cpu.execSystem(immI(opcode), rs1, f3, rd)

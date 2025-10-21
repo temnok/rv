@@ -3,9 +3,8 @@ package rv
 import "github.com/temnok/rv/state"
 
 type CPU struct {
-	XLen int
-	Bus  Bus
-	TLB  TLB
+	Bus Bus
+	TLB TLB
 
 	state.State
 }
@@ -43,10 +42,13 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 	xl := xlen / 32
 
 	*cpu = CPU{
-		XLen: xlen,
-		Bus:  bus,
+		Bus: bus,
 
 		State: state.State{
+			Permanent: state.Permanent{
+				XLen: xlen,
+			},
+
 			Static: state.Static{
 				Priv: PrivM,
 
@@ -65,37 +67,12 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 		},
 	}
 
-	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)
-	cpu.Update.PC = cpu.xint(startAddr)
-}
-
-func (cpu *CPU) xlen64() bool {
-	return cpu.XLen == 64
+	cpu.CSR.Mstatus = cpu.Xint(xl<<MstatusSXL | xl<<MstatusUXL)
+	cpu.Update.PC = cpu.Xint(startAddr)
 }
 
 func (cpu *CPU) extD() bool {
 	return cpu.CSR.Misa&1<<('d'-'a') != 0
-}
-
-func (cpu *CPU) xint(val int) int {
-	if cpu.xlen64() {
-		return val
-	}
-
-	return int(int32(val))
-}
-
-func (cpu *CPU) xuint(val int) uint {
-	if cpu.xlen64() {
-		return uint(val)
-	}
-
-	return uint(uint32(val))
-}
-
-func (cpu *CPU) XRegSet(rd, val int) {
-	cpu.Update.XReg = rd
-	cpu.Update.XVal = cpu.xint(val)
 }
 
 func (cpu *CPU) Step() bool {

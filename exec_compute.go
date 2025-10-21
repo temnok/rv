@@ -1,24 +1,18 @@
 package rv
 
+import "github.com/temnok/rv/instr"
+
 func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 	switch f3 {
-	case 0b_000: // addi
-		cpu.XRegSet(rd, cpu.X[rs1]+imm)
-
-	case 0b_001: // slli
-		if imm < cpu.XLen {
-			cpu.XRegSet(rd, cpu.X[rs1]<<imm)
-		}
-
-	case 0b_010: // slti
-		if cpu.X[rs1] < imm {
-			cpu.XRegSet(rd, 1)
-		} else {
-			cpu.XRegSet(rd, 0)
-		}
+	case 0b_000:
+		instr.Addi(&cpu.State, rd, rs1, imm)
+	case 0b_001:
+		instr.Slli(&cpu.State, rd, rs1, imm)
+	case 0b_010:
+		instr.Slti(&cpu.State, rd, rs1, imm)
 
 	case 0b_011: // sltiu
-		if cpu.xuint(cpu.X[rs1]) < cpu.xuint(imm) {
+		if cpu.Xuint(cpu.X[rs1]) < cpu.Xuint(imm) {
 			cpu.XRegSet(rd, 1)
 		} else {
 			cpu.XRegSet(rd, 0)
@@ -29,7 +23,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 
 	case 0b_101:
 		if imm < cpu.XLen { // srli
-			cpu.XRegSet(rd, int(cpu.xuint(cpu.X[rs1])>>cpu.xuint(imm)))
+			cpu.XRegSet(rd, int(cpu.Xuint(cpu.X[rs1])>>cpu.Xuint(imm)))
 		} else if imm &^= 0b_0100000_00000; imm < cpu.XLen { // srai
 			cpu.XRegSet(rd, cpu.X[rs1]>>imm)
 		}
@@ -76,7 +70,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 		}
 
 	case 0b_011: // sltu
-		if cpu.xuint(cpu.X[rs1]) < cpu.xuint(cpu.X[rs2]) {
+		if cpu.Xuint(cpu.X[rs1]) < cpu.Xuint(cpu.X[rs2]) {
 			cpu.XRegSet(rd, 1)
 		} else {
 			cpu.XRegSet(rd, 0)
@@ -86,7 +80,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 		cpu.XRegSet(rd, cpu.X[rs1]^cpu.X[rs2])
 
 	case 0b_101: // srl
-		cpu.XRegSet(rd, int(cpu.xuint(cpu.X[rs1])>>cpu.xuint(cpu.X[rs2]&(cpu.XLen-1))))
+		cpu.XRegSet(rd, int(cpu.Xuint(cpu.X[rs1])>>cpu.Xuint(cpu.X[rs2]&(cpu.XLen-1))))
 
 	case 0b_1_101: // sra
 		cpu.XRegSet(rd, cpu.X[rs1]>>(cpu.X[rs2]&(cpu.XLen-1)))

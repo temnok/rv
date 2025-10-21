@@ -216,17 +216,17 @@ func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 		reg = &csr.Cycle
 
 	case Cycleh:
-		if !cpu.xlen64() {
+		if !cpu.XLen64() {
 			reg = &csr.Cycleh
 		}
 
 	case Timeh: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
-		if !cpu.xlen64() {
+		if !cpu.XLen64() {
 			reg = &csr.Timeh
 		}
 
 	case Instreth:
-		if !cpu.xlen64() {
+		if !cpu.XLen64() {
 			reg = &csr.Cycleh
 		}
 
