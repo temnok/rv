@@ -41,5 +41,5 @@ func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
 		return
 	}
 
-	cpu.xset(rd, int(c))
+	cpu.XRegSet(rd, int(c))
 }

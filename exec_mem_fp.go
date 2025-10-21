@@ -15,7 +15,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_010: // flw
 		if cpu.memRead(cpu.X[rs1]+imm, &val, 4); !cpu.isTrapped() {
-			cpu.Updated.FVal = f32boxingBits | val
+			cpu.Update.FVal = f32boxingBits | val
 		}
 
 	case 0b_011: // fld
@@ -25,7 +25,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 		}
 
 		if cpu.memRead(cpu.X[rs1]+imm, &val, 8); !cpu.isTrapped() {
-			cpu.Updated.FVal = val
+			cpu.Update.FVal = val
 		}
 
 	default:
@@ -33,7 +33,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 		return
 	}
 
-	cpu.Updated.FReg = rd
+	cpu.Update.FReg = rd
 }
 
 func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {

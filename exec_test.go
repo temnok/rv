@@ -71,7 +71,7 @@ func runTest(t *testing.T, xlen int, file string) {
 		if cpu.isTrapped() {
 			trapCount++
 
-			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Updated.TrapXcause)})
+			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Update.TrapXcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
@@ -97,7 +97,7 @@ func runTest(t *testing.T, xlen int, file string) {
 		}
 
 		if cpu.isTrapped() {
-			if cause := cpu.Updated.TrapXcause; cause == ExceptionEnvironmentCallFromUMode ||
+			if cause := cpu.Update.TrapXcause; cause == ExceptionEnvironmentCallFromUMode ||
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {
 
@@ -112,9 +112,9 @@ func runTest(t *testing.T, xlen int, file string) {
 						"xcause=%08x, xtval=%08x\n"+
 						"a0=%08x\n",
 						cpu.CSR.Cycle, lastPCs, lastTraps,
-						cpu.Updated.TrapPriv, uint(cpu.Updated.TrapPC),
-						uint(cpu.Updated.TrapMstatus), uint(cpu.Updated.TrapXepc),
-						uint(cpu.Updated.TrapXcause), uint(cpu.Updated.TrapXtval),
+						cpu.Update.TrapPriv, uint(cpu.Update.TrapPC),
+						uint(cpu.Update.TrapMstatus), uint(cpu.Update.TrapXepc),
+						uint(cpu.Update.TrapXcause), uint(cpu.Update.TrapXtval),
 						uint(cpu.X[10]),
 					)
 				}

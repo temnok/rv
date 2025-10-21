@@ -6,15 +6,15 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_000: // lb
 		cpu.memRead(cpu.X[rs1]+imm, &val, 1)
-		cpu.xset(rd, int(int8(val)))
+		cpu.XRegSet(rd, int(int8(val)))
 
 	case 0b_001: // lh
 		cpu.memRead(cpu.X[rs1]+imm, &val, 2)
-		cpu.xset(rd, int(int16(val)))
+		cpu.XRegSet(rd, int(int16(val)))
 
 	case 0b_010: // lw
 		cpu.memRead(cpu.X[rs1]+imm, &val, 4)
-		cpu.xset(rd, int(int32(val)))
+		cpu.XRegSet(rd, int(int32(val)))
 
 	case 0b_011: // ld
 		if !cpu.xlen64() {
@@ -23,15 +23,15 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		}
 
 		cpu.memRead(cpu.X[rs1]+imm, &val, 8)
-		cpu.xset(rd, val)
+		cpu.XRegSet(rd, val)
 
 	case 0b_100: // lbu
 		cpu.memRead(cpu.X[rs1]+imm, &val, 1)
-		cpu.xset(rd, int(uint8(val)))
+		cpu.XRegSet(rd, int(uint8(val)))
 
 	case 0b_101: // lhu
 		cpu.memRead(cpu.X[rs1]+imm, &val, 2)
-		cpu.xset(rd, int(uint16(val)))
+		cpu.XRegSet(rd, int(uint16(val)))
 
 	case 0b_110: // lwu
 		if !cpu.xlen64() {
@@ -40,10 +40,10 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		}
 
 		cpu.memRead(cpu.X[rs1]+imm, &val, 4)
-		cpu.xset(rd, int(uint32(val)))
+		cpu.XRegSet(rd, int(uint32(val)))
 	}
 
-	if cpu.Updated.XReg < 0 && !cpu.isTrapped() {
+	if cpu.Update.XReg < 0 && !cpu.isTrapped() {
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 }
@@ -80,7 +80,7 @@ func (cpu *CPU) execFence(imm, rs1, f3, rd int) {
 		}
 
 	case 0b_001: // fence.i
-		cpu.Updated.ICache.Clear()
+		cpu.Update.ICache.Clear()
 
 		if imm != 0 || rs1 != 0 || rd != 0 {
 			cpu.trap(ExceptionIllegalIstruction)

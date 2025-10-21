@@ -34,8 +34,8 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 	case 0b_00001: // amoswap
 
 	case 0b_00010: // lr
-		cpu.Updated.Reserved = true
-		cpu.Updated.ReservedAddr = addr
+		cpu.Update.Reserved = true
+		cpu.Update.ReservedAddr = addr
 		write = false
 
 	case 0b_00011: // sc
@@ -44,7 +44,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		} else {
 			old = 1
 		}
-		cpu.Updated.Reserved = false
+		cpu.Update.Reserved = false
 		write = old == 0
 
 	case 0b_00100: // amoxor
@@ -91,5 +91,5 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 	}
 
-	cpu.xset(rd, old)
+	cpu.XRegSet(rd, old)
 }

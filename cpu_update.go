@@ -1,31 +1,10 @@
 package rv
 
-type CPUUpdatedState struct {
-	TrapEnter, TrapExit   bool
-	TrapPriv, TrapPC      int
-	TrapMstatus, TrapXepc int
-	TrapXcause, TrapXtval int
-
-	PC         int
-	XReg, XVal int
-
-	FReg, FVal int
-	Fflags     int
-
-	CReg, CVal int
-	CRegPtr    *int
-
-	Reserved     bool
-	ReservedAddr int
-
-	ICache Cache
-}
-
 func (cpu *CPU) updateState() {
 	cpu.updateTimers()
 	cpu.clearPendingInterrupts()
 
-	up := &cpu.Updated
+	up := &cpu.Update
 
 	if up.TrapEnter || up.TrapExit {
 		cpu.Priv = up.TrapPriv
@@ -78,7 +57,7 @@ func (cpu *CPU) updateState() {
 
 	cpu.Reserved = up.Reserved
 	cpu.ReservedAddr = up.ReservedAddr
-	cpu.ICache = cpu.Updated.ICache
+	cpu.ICache = cpu.Update.ICache
 }
 
 func (cpu *CPU) updateTimers() {

@@ -1,7 +1,7 @@
 package rv
 
 func (cpu *CPU) isTrapped() bool {
-	return cpu.Updated.TrapEnter
+	return cpu.Update.TrapEnter
 }
 
 func (cpu *CPU) trap(cause int) {
@@ -27,33 +27,33 @@ func (cpu *CPU) trapEnter(cause, tval int) {
 		effectivePriv = PrivS
 	}
 
-	cpu.Updated.TrapEnter = true
-	cpu.Updated.TrapPriv = effectivePriv
-	cpu.Updated.TrapXepc = cpu.PC
-	cpu.Updated.TrapXcause = cause
-	cpu.Updated.TrapXtval = tval
+	cpu.Update.TrapEnter = true
+	cpu.Update.TrapPriv = effectivePriv
+	cpu.Update.TrapXepc = cpu.PC
+	cpu.Update.TrapXcause = cause
+	cpu.Update.TrapXtval = tval
 
 	var tvec int
 
 	switch effectivePriv {
 	case PrivM:
 		mie := bit(cpu.CSR.Mstatus, MstatusMIE)
-		cpu.Updated.TrapMstatus = cpu.CSR.Mstatus&^(3<<MstatusMPP|1<<MstatusMPIE|1<<MstatusMIE) |
+		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(3<<MstatusMPP|1<<MstatusMPIE|1<<MstatusMIE) |
 			cpu.Priv<<MstatusMPP | mie<<MstatusMPIE
 
 		tvec = cpu.CSR.Mtvec
 
 	case PrivS:
 		sie := bit(cpu.CSR.Mstatus, MstatusSIE)
-		cpu.Updated.TrapMstatus = cpu.CSR.Mstatus&^(1<<MstatusSPP|1<<MstatusSPIE|1<<MstatusSIE) |
+		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(1<<MstatusSPP|1<<MstatusSPIE|1<<MstatusSIE) |
 			cpu.Priv<<MstatusSPP | sie<<MstatusSPIE
 
 		tvec = cpu.CSR.Stvec
 	}
 
-	cpu.Updated.TrapPC = tvec &^ 3
+	cpu.Update.TrapPC = tvec &^ 3
 	if bit(tvec, 0) == 1 && isInterrupt {
-		cpu.Updated.TrapPC += causeID * 4
+		cpu.Update.TrapPC += causeID * 4
 	}
 }
 
@@ -68,27 +68,27 @@ func (cpu *CPU) trapExit(retPriv int) {
 		return
 	}
 
-	cpu.Updated.TrapExit = true
+	cpu.Update.TrapExit = true
 
 	switch retPriv {
 	case PrivM:
-		cpu.Updated.TrapPC = cpu.CSR.Mepc
-		cpu.Updated.TrapPriv = bits(cpu.CSR.Mstatus, MstatusMPP, 2)
+		cpu.Update.TrapPC = cpu.CSR.Mepc
+		cpu.Update.TrapPriv = bits(cpu.CSR.Mstatus, MstatusMPP, 2)
 
 		mie := bit(cpu.CSR.Mstatus, MstatusMPIE)
-		cpu.Updated.TrapMstatus = cpu.CSR.Mstatus&^(3<<MstatusMPP) |
+		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(3<<MstatusMPP) |
 			(1<<MstatusMPIE | mie<<MstatusMIE)
 
 	case PrivS:
-		cpu.Updated.TrapPC = cpu.CSR.Sepc
-		cpu.Updated.TrapPriv = bits(cpu.CSR.Mstatus, MstatusSPP, 1)
+		cpu.Update.TrapPC = cpu.CSR.Sepc
+		cpu.Update.TrapPriv = bits(cpu.CSR.Mstatus, MstatusSPP, 1)
 
 		sie := bit(cpu.CSR.Mstatus, MstatusSPIE)
-		cpu.Updated.TrapMstatus = cpu.CSR.Mstatus&^(1<<MstatusSPP) |
+		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(1<<MstatusSPP) |
 			(1<<MstatusSPIE | sie<<MstatusSIE)
 	}
 
 	if cpu.Priv != PrivM {
-		cpu.Updated.TrapMstatus &^= 1 << MstatusMPRV
+		cpu.Update.TrapMstatus &^= 1 << MstatusMPRV
 	}
 }

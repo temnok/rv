@@ -294,19 +294,19 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	case 0b_1110000:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.w
-			cpu.xset(rd, int(int32(cpu.F[rs1])))
+			cpu.XRegSet(rd, int(int32(cpu.F[rs1])))
 
 		case 0b_00000_001: // fclass.s
-			cpu.xset(rd, fclass_s(cpu.f32(rs1)))
+			cpu.XRegSet(rd, fclass_s(cpu.f32(rs1)))
 		}
 
 	case 0b_1110001:
 		switch rs2<<3 | f3 {
 		case 0b_00000_000: // fmv.x.d
-			cpu.xset(rd, cpu.F[rs1])
+			cpu.XRegSet(rd, cpu.F[rs1])
 
 		case 0b_00000_001: // fclass.d
-			cpu.xset(rd, fclass_d(cpu.f64(rs1)))
+			cpu.XRegSet(rd, fclass_d(cpu.f64(rs1)))
 		}
 
 	case 0b_1111000: // fmv.w.x
@@ -346,7 +346,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 		}
 	}
 
-	if cpu.Updated.XReg < 0 && cpu.Updated.FReg < 0 {
+	if cpu.Update.XReg < 0 && cpu.Update.FReg < 0 {
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 }
@@ -382,20 +382,20 @@ func (cpu *CPU) f64arg3(rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
 }
 
 func (cpu *CPU) f32set(rd int, res C.float) {
-	cpu.Updated.FReg = rd
-	cpu.Updated.FVal = f32boxingBits | int(math.Float32bits(float32(res)))
-	if uint(cpu.Updated.FVal) == 0xffffffffffc00000 {
-		cpu.Updated.FVal &^= f32signMask
+	cpu.Update.FReg = rd
+	cpu.Update.FVal = f32boxingBits | int(math.Float32bits(float32(res)))
+	if uint(cpu.Update.FVal) == 0xffffffffffc00000 {
+		cpu.Update.FVal &^= f32signMask
 	}
 
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) f64set(rd int, res C.double) {
-	cpu.Updated.FReg = rd
-	cpu.Updated.FVal = int(math.Float64bits(float64(res)))
-	if uint(cpu.Updated.FVal) == 0xfff8000000000000 {
-		cpu.Updated.FVal &^= f64signMask
+	cpu.Update.FReg = rd
+	cpu.Update.FVal = int(math.Float64bits(float64(res)))
+	if uint(cpu.Update.FVal) == 0xfff8000000000000 {
+		cpu.Update.FVal &^= f64signMask
 	}
 
 	cpu.setUpdatedFflags()
@@ -407,29 +407,29 @@ func (cpu *CPU) fxget(rs1, f3 int) int {
 }
 
 func (cpu *CPU) fxset(rd, res int) {
-	cpu.xset(rd, res)
+	cpu.XRegSet(rd, res)
 	cpu.setUpdatedFflags()
 }
 
 func (cpu *CPU) fsetCmp(rd int, res, nv bool) {
 	if res {
-		cpu.xset(rd, 1)
+		cpu.XRegSet(rd, 1)
 	} else {
-		cpu.xset(rd, 0)
+		cpu.XRegSet(rd, 0)
 	}
 	if nv {
-		cpu.Updated.Fflags |= 1 << FflagsNV
+		cpu.Update.Fflags |= 1 << FflagsNV
 	}
 }
 
 func (cpu *CPU) f32setBits(rd, bits int) {
-	cpu.Updated.FReg = rd
-	cpu.Updated.FVal = f32boxingBits | bits
+	cpu.Update.FReg = rd
+	cpu.Update.FVal = f32boxingBits | bits
 }
 
 func (cpu *CPU) f64setBits(rd, bits int) {
-	cpu.Updated.FReg = rd
-	cpu.Updated.FVal = bits
+	cpu.Update.FReg = rd
+	cpu.Update.FVal = bits
 }
 
 func (cpu *CPU) f32(i int) float32 {
@@ -465,23 +465,23 @@ func (cpu *CPU) setUpdatedFflags() {
 	ex := C.fetestexcept(C.FE_ALL_EXCEPT)
 
 	if ex&C.FE_INEXACT != 0 {
-		cpu.Updated.Fflags |= 1 << FflagsNX
+		cpu.Update.Fflags |= 1 << FflagsNX
 	}
 
 	if ex&C.FE_UNDERFLOW != 0 {
-		cpu.Updated.Fflags |= 1 << FflagsUF
+		cpu.Update.Fflags |= 1 << FflagsUF
 	}
 
 	if ex&C.FE_OVERFLOW != 0 {
-		cpu.Updated.Fflags |= 1 << FflagsOF
+		cpu.Update.Fflags |= 1 << FflagsOF
 	}
 
 	if ex&C.FE_DIVBYZERO != 0 {
-		cpu.Updated.Fflags |= 1 << FflagsDZ
+		cpu.Update.Fflags |= 1 << FflagsDZ
 	}
 
 	if ex&C.FE_INVALID != 0 {
-		cpu.Updated.Fflags |= 1 << FflagsNV
+		cpu.Update.Fflags |= 1 << FflagsNV
 	}
 }
 

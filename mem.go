@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/state"
+
 func (cpu *CPU) memFetch(addr int, data *int) {
 	const (
 		xbytes   = 8
@@ -29,7 +31,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	if fullyLoaded := isCompressedInstruction || shift+4 <= xbytes; fullyLoaded {
 		*data = lo
 
-		cpu.Updated.ICache = Cache{
+		cpu.Update.ICache = state.Cache{
 			VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
 
 		return
@@ -49,7 +51,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 		return
 	}
 
-	cpu.Updated.ICache = Cache{
+	cpu.Update.ICache = state.Cache{
 		VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
 
 	*data = val<<16 | bits(lo, 0, 16)

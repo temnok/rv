@@ -18,12 +18,12 @@ func (cpu *CPU) debugStep() bool {
 	entry := []int{cpu.PC, opcode}
 
 	switch {
-	case cpu.Updated.XReg > 0:
-		entry = append(entry, cpu.Updated.XVal)
-	case cpu.Updated.FReg >= 0:
-		entry = append(entry, 0, cpu.Updated.FVal)
-	case cpu.Updated.CReg >= 0:
-		entry = append(entry, cpu.Updated.CVal)
+	case cpu.Update.XReg > 0:
+		entry = append(entry, cpu.Update.XVal)
+	case cpu.Update.FReg >= 0:
+		entry = append(entry, 0, cpu.Update.FVal)
+	case cpu.Update.CReg >= 0:
+		entry = append(entry, cpu.Update.CVal)
 	}
 
 	debugTrace = append(debugTrace, entry)
@@ -49,8 +49,8 @@ func debugDump(cpu *CPU) {
 
 	fmt.Printf("\r\nCycle: %v, trap: %v\r\n", cpu.CSR.Cycle, debugTrapCount)
 
-	up := &cpu.Updated
-	if cpu.Updated.TrapEnter {
+	up := &cpu.Update
+	if cpu.Update.TrapEnter {
 		fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
 			cpu.Priv, uint(up.TrapPriv), uint(up.PC), uint(up.TrapMstatus))
 		fmt.Printf("xepc:%x, xcause:%x, xtval:%x\r\n",

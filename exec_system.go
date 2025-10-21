@@ -33,7 +33,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 		switch bits(imm, 5, 7) {
 		case 0b_0001_001: // sfence.vma
 			cpu.TLB.flush()
-			cpu.Updated.ICache.Clear()
+			cpu.Update.ICache.Clear()
 
 			if cpu.Priv == PrivS && bit(cpu.CSR.Mstatus, MstatusTVM) == 1 {
 				cpu.trap(ExceptionIllegalIstruction)
@@ -64,7 +64,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 		}
 
 		cpu.csrWrite(csr, s)
-		cpu.xset(rd, val)
+		cpu.XRegSet(rd, val)
 
 	case 0b_10: // csrrs
 		if cpu.csrRead(csr, &val); cpu.isTrapped() {
@@ -77,7 +77,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		cpu.xset(rd, val)
+		cpu.XRegSet(rd, val)
 
 	case 0b_11: // csrrc
 		if cpu.csrRead(csr, &val); cpu.isTrapped() {
@@ -90,7 +90,7 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 			}
 		}
 
-		cpu.xset(rd, val)
+		cpu.XRegSet(rd, val)
 
 	default:
 		cpu.trap(ExceptionIllegalIstruction)

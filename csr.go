@@ -93,16 +93,6 @@ const (
 	FSdirty   = 0b_11
 )
 
-type CSR struct {
-	Fcsr, Cycle, Cycleh, Time, Timeh int
-
-	Stvec, Scounteren, Sscratch, Sepc, Scause, Stval, Sip, Satp int
-
-	Mstatus, Mstatush, Misa, Medeleg, Mideleg, Mie, Mtvec, Mcounteren int
-	Mscratch, Mepc, Mcause, Mtval, Mip                                int
-	Mvendorid, Marchid, Mimpid, Mhartid                               int
-}
-
 func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 	if write && bits(i, 10, 2) == 3 || cpu.Priv < bits(i, 8, 2) {
 		return
@@ -275,7 +265,7 @@ func (cpu *CPU) csrWrite(i, val int) {
 		return
 	}
 
-	cpu.Updated.CRegPtr = reg
-	cpu.Updated.CReg = i
-	cpu.Updated.CVal = *reg&^mask | (val<<shift)&mask
+	cpu.Update.CRegPtr = reg
+	cpu.Update.CReg = i
+	cpu.Update.CVal = *reg&^mask | (val<<shift)&mask
 }

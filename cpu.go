@@ -1,26 +1,13 @@
 package rv
 
+import "github.com/temnok/rv/state"
+
 type CPU struct {
 	XLen int
 	Bus  Bus
 	TLB  TLB
 
-	CPUState
-	Updated CPUUpdatedState
-}
-
-type CPUState struct {
-	Priv int
-	PC   int
-
-	X, F [32]int
-
-	CSR CSR
-
-	Reserved     bool
-	ReservedAddr int
-
-	ICache Cache
+	state.State
 }
 
 type ICache struct {
@@ -59,25 +46,27 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 		XLen: xlen,
 		Bus:  bus,
 
-		CPUState: CPUState{
-			Priv: PrivM,
+		State: state.State{
+			Static: state.Static{
+				Priv: PrivM,
 
-			CSR: CSR{
-				Misa: xl<<(xlen-2) |
-					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-					1<<('f'-'a') | ('d' - 'a') |
-					1<<('u'-'a') | 1<<('s'-'a'),
+				CSR: state.CSR{
+					Misa: xl<<(xlen-2) |
+						1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+						1<<('f'-'a') | ('d' - 'a') |
+						1<<('u'-'a') | 1<<('s'-'a'),
+				},
 			},
-		},
 
-		Updated: CPUUpdatedState{
-			XReg: -1,
-			CReg: -1,
+			Update: state.Updated{
+				XReg: -1,
+				CReg: -1,
+			},
 		},
 	}
 
 	cpu.CSR.Mstatus = cpu.xint(xl<<MstatusSXL | xl<<MstatusUXL)
-	cpu.Updated.PC = cpu.xint(startAddr)
+	cpu.Update.PC = cpu.xint(startAddr)
 }
 
 func (cpu *CPU) xlen64() bool {
@@ -104,9 +93,9 @@ func (cpu *CPU) xuint(val int) uint {
 	return uint(uint32(val))
 }
 
-func (cpu *CPU) xset(rd, val int) {
-	cpu.Updated.XReg = rd
-	cpu.Updated.XVal = cpu.xint(val)
+func (cpu *CPU) XRegSet(rd, val int) {
+	cpu.Update.XReg = rd
+	cpu.Update.XVal = cpu.xint(val)
 }
 
 func (cpu *CPU) Step() bool {
