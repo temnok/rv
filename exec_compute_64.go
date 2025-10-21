@@ -1,21 +1,19 @@
 package rv
 
+import "github.com/temnok/rv/instr"
+
 func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 	if cpu.XLen64() {
 		switch f3 {
-		case 0b_000: // addiw
-			cpu.XRegSet(rd, int(int32(cpu.X[rs1])+int32(imm)))
-
-		case 0b_001: // slliw
-			if imm < 32 {
-				cpu.XRegSet(rd, int(int32(cpu.X[rs1])<<int32(imm)))
-			}
-
+		case 0b_000:
+			instr.Addiw(&cpu.State, rd, rs1, imm)
+		case 0b_001:
+			instr.Slliw(&cpu.State, rd, rs1, imm)
 		case 0b_101:
-			if imm < 32 { // srliw
-				cpu.XRegSet(rd, int(int32(uint32(cpu.X[rs1])>>uint32(imm))))
-			} else if imm &^= 0b0100000_00000; imm < 32 { // sraiw
-				cpu.XRegSet(rd, int(int32(cpu.X[rs1])>>int32(imm)))
+			if imm < 32 {
+				instr.Srliw(&cpu.State, rd, rs1, imm)
+			} else if imm &^= 0b0100000_00000; imm < 32 {
+				instr.Sraiw(&cpu.State, rd, rs1, imm)
 			}
 		}
 	}
@@ -43,23 +41,16 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 	}
 
 	switch op {
-	case 0b_000: // addw
-		cpu.XRegSet(rd, int(int32(cpu.X[rs1])+int32(cpu.X[rs2])))
-
-	case 0b_1_000: // subw
-		cpu.XRegSet(rd, int(int32(cpu.X[rs1])-int32(cpu.X[rs2])))
-
-	case 0b_001: // sllw
-		shamt := int32(cpu.X[rs2]) & 31
-		cpu.XRegSet(rd, int(int32(cpu.X[rs1])<<shamt))
-
-	case 0b_101: // srlw
-		shamt := uint32(cpu.X[rs2]) & 31
-		cpu.XRegSet(rd, int(int32(uint32(cpu.X[rs1])>>shamt)))
-
-	case 0b_1_101: // sraw
-		shamt := int32(cpu.X[rs2]) & 31
-		cpu.XRegSet(rd, int(int32(cpu.X[rs1])>>shamt))
+	case 0b_000:
+		instr.Addw(&cpu.State, rd, rs1, rs2)
+	case 0b_1_000:
+		instr.Subw(&cpu.State, rd, rs1, rs2)
+	case 0b_001:
+		instr.Sllw(&cpu.State, rd, rs1, rs2)
+	case 0b_101:
+		instr.Srlw(&cpu.State, rd, rs1, rs2)
+	case 0b_1_101:
+		instr.Sraw(&cpu.State, rd, rs1, rs2)
 	}
 
 	if cpu.Update.XReg < 0 {
