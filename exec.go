@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/instr"
+
 func (cpu *CPU) exec(opcode int) {
 	opcodeSize := 4
 	if isCompressed := opcode&3 != 3; isCompressed {
@@ -20,60 +22,40 @@ func (cpu *CPU) exec(opcode int) {
 	switch op := bits(opcode, 2, 5); op {
 	case 0b_00000:
 		cpu.execLoad(immI(opcode), rs1, f3, rd)
-
 	case 0b_00001:
 		cpu.execLoadFP(immI(opcode), rs1, f3, rd)
-
 	case 0b_00011:
 		cpu.execFence(immI(opcode), rs1, f3, rd)
-
 	case 0b_00100:
 		cpu.execComputeI(immI(opcode), rs1, f3, rd)
-
 	case 0b_00110:
 		cpu.execComputeI64(immI(opcode), rs1, f3, rd)
-
-	case 0b_00101: // auipc
-		cpu.Xset(rd, cpu.PC+immU(opcode))
-
+	case 0b_00101:
+		instr.Auipc(&cpu.State, rd, immU(opcode))
 	case 0b_01000:
 		cpu.execStore(immS(opcode), rs2, rs1, f3)
-
 	case 0b_01001:
 		cpu.execStoreFP(immS(opcode), rs2, rs1, f3)
-
 	case 0b_01011:
 		cpu.execAtomic(f7, rs2, rs1, f3, rd)
-
 	case 0b_01100:
 		cpu.execComputeR(f7, rs2, rs1, f3, rd)
-
 	case 0b_01110:
 		cpu.execComputeR64(f7, rs2, rs1, f3, rd)
-
-	case 0b_01101: // lui
-		cpu.Xset(rd, immU(opcode))
-
+	case 0b_01101:
+		instr.Lui(&cpu.State, rd, immU(opcode))
 	case 0b_10000, 0b_10001, 0b_10010, 0b_10011:
 		cpu.execComputeFP(f7, rs2, rs1, f3, rd, op)
-
 	case 0b_10100:
 		cpu.execComputeFP(f7, rs2, rs1, f3, rd, 0)
-
 	case 0b_11000:
 		cpu.execBranch(immB(opcode), rs2, rs1, f3)
-
-	case 0b_11001: // jalr
-		cpu.Xset(rd, cpu.PC+opcodeSize)
-		cpu.Update.PC = cpu.Xint((cpu.X[rs1] + immI(opcode)) &^ 1)
-
-	case 0b_11011: // jal
-		cpu.Xset(rd, cpu.PC+opcodeSize)
-		cpu.Update.PC = cpu.Xint(cpu.PC + immJ(opcode))
-
+	case 0b_11001:
+		instr.Jalr(&cpu.State, opcodeSize, rd, rs1, immI(opcode))
+	case 0b_11011:
+		instr.Jal(&cpu.State, opcodeSize, rd, immJ(opcode))
 	case 0b_11100:
 		cpu.execSystem(immI(opcode), rs1, f3, rd)
-
 	default:
 		cpu.trap(ExceptionIllegalIstruction)
 	}
