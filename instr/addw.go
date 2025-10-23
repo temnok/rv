@@ -3,5 +3,10 @@ package instr
 import "github.com/temnok/rv/state"
 
 func Addw(cpu *state.State, rd, rs1, rs2 int) {
-	cpu.Xset(rd, int(int32(cpu.X[rs1])+int32(cpu.X[rs2])))
+	a := int32(cpu.X[rs1])
+	b := int32(cpu.X[rs2])
+
+	c := int(a + b)
+
+	cpu.Xset(rd, c)
 }

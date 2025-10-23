@@ -5,12 +5,12 @@ import (
 )
 
 func Div(cpu *state.State, rd, rs1, rs2 int) {
-	a, b, c := cpu.X[rs1], cpu.X[rs2], 0
+	a := cpu.X[rs1]
+	b := cpu.X[rs2]
 
+	c := -1
 	if b != 0 {
 		c = a / b
-	} else {
-		c = -1
 	}
 
 	cpu.Xset(rd, c)
