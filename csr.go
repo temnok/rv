@@ -120,7 +120,7 @@ func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 		reg = &csr.Mstatus
 		mask = 1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP
 		if !write {
-			mask = int(int64(mask) | 1<<MstatusSPIE | 3<<MstatusUXL)
+			mask = int(mask | 1<<MstatusSPIE | 3<<MstatusUXL)
 		}
 
 	case Sie: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_interrupt_sip_and_sie_registers

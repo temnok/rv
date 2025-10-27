@@ -5,12 +5,12 @@ import (
 )
 
 func Remu(cpu *state.State, rd, rs1, rs2 int) {
-	a, b, c := cpu.X[rs1], cpu.X[rs2], 0
+	a := cpu.X[rs1]
+	b := cpu.X[rs2]
 
+	c := a
 	if b != 0 {
 		c = int(cpu.Xuint(a) % cpu.Xuint(b))
-	} else {
-		c = a
 	}
 
 	cpu.Xset(rd, c)

@@ -3,6 +3,10 @@ package instr
 import "github.com/temnok/rv/state"
 
 func Srlw(cpu *state.State, rd, rs1, rs2 int) {
-	shamt := uint32(cpu.X[rs2]) & 31
-	cpu.Xset(rd, int(int32(uint32(cpu.X[rs1])>>shamt)))
+	a := uint32(cpu.X[rs1])
+	b := uint32(cpu.X[rs2]) & 31
+
+	c := int(int32(a >> b))
+
+	cpu.Xset(rd, c)
 }

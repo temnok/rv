@@ -2,17 +2,23 @@ package instr
 
 import (
 	"github.com/temnok/rv/state"
-	bi "math/bits"
+	"math/bits"
 )
 
 func Mulhu(cpu *state.State, rd, rs1, rs2 int) {
-	a, b, c := cpu.X[rs1], cpu.X[rs2], 0
+	var c int
 
 	if cpu.XLen64() {
-		hi, _ := bi.Mul64(uint64(a), uint64(b))
+		a := uint64(cpu.X[rs1])
+		b := uint64(cpu.X[rs2])
+
+		hi, _ := bits.Mul64(a, b)
 		c = int(hi)
 	} else {
-		c = int(int64(uint32(a)) * int64(uint32(b)) >> 32)
+		a := int(uint32(cpu.X[rs1]))
+		b := int(uint32(cpu.X[rs2]))
+
+		c = (a * b) >> 32
 	}
 
 	cpu.Xset(rd, c)
