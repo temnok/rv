@@ -13,7 +13,7 @@ func (cpu *CPU) trapEnter(cause, tval int) {
 		panic("double trap")
 	}
 
-	mcauseI := cpu.XLen - 1
+	mcauseI := cpu.Xmask()
 	isInterrupt := bit(cause, mcauseI) == 1
 	causeID := bits(cause, 0, 5)
 

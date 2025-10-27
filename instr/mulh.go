@@ -11,7 +11,7 @@ func Mulh(cpu *state.State, rd, rs1, rs2 int) {
 
 	var c int
 
-	if cpu.XLen64() {
+	if cpu.Xlen64() {
 		hi, _ := bi.Mul64(uint64(a), uint64(b))
 		s1 := (a >> 63) & b
 		s2 := (b >> 63) & a

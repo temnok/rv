@@ -37,7 +37,7 @@ func (cpu *CPU) updateState() {
 
 	if up.FReg >= 0 || up.CReg == Fflags || up.CReg == Frm || up.CReg == Fcsr {
 		setBits(&cpu.CSR.Mstatus, MstatusFS, 2, FSdirty)
-		cpu.CSR.Mstatus |= 1 << (cpu.XLen - 1) // set SD bit
+		cpu.CSR.Mstatus |= 1 << (cpu.Xlen - 1) // set SD bit
 	}
 
 	if up.FReg >= 0 {

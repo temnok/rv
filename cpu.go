@@ -46,7 +46,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 
 		State: state.State{
 			Fixed: state.Fixed{
-				XLen: xlen,
+				Xlen: xlen,
 			},
 
 			Static: state.Static{
@@ -119,7 +119,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 			priv = PrivS
 		}
 
-		mcauseI := cpu.XLen - 1
+		mcauseI := cpu.Xlen - 1
 		if (priv == cpu.Priv && bit(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
 			cpu.trap(-1<<mcauseI | i)
 

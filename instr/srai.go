@@ -2,9 +2,9 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Sra(cpu *state.State, rd, rs1, rs2 int) {
+func Srai(cpu *state.State, rd, rs1, imm int) {
 	a := cpu.X[rs1]
-	b := cpu.X[rs2] & cpu.Xmask()
+	b := imm
 
 	c := a >> b
 

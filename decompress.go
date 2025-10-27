@@ -6,7 +6,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	opcode := *opcodePtr
 
 	opcode = int(uint16(opcode))
-	decompressedOpcode := cpu.decompressOpcode(cpu.XLen, opcode)
+	decompressedOpcode := cpu.decompressOpcode(cpu.Xlen, opcode)
 	if decompressedOpcode == 0 {
 		cpu.trapEnter(ExceptionIllegalIstruction, opcode)
 		return

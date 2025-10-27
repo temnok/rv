@@ -3,12 +3,14 @@ package rv
 import "github.com/temnok/rv/instr"
 
 func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
-	if cpu.XLen64() {
+	if cpu.Xlen64() {
 		switch f3 {
 		case 0b_000:
 			instr.Addiw(&cpu.State, rd, rs1, imm)
 		case 0b_001:
-			instr.Slliw(&cpu.State, rd, rs1, imm)
+			if imm < 32 {
+				instr.Slliw(&cpu.State, rd, rs1, imm)
+			}
 		case 0b_101:
 			if imm < 32 {
 				instr.Srliw(&cpu.State, rd, rs1, imm)
@@ -24,7 +26,7 @@ func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 }
 
 func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
-	if !cpu.XLen64() {
+	if !cpu.Xlen64() {
 		cpu.trap(ExceptionIllegalIstruction)
 		return
 	}
@@ -51,9 +53,7 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 		instr.Srlw(&cpu.State, rd, rs1, rs2)
 	case 0b_1_101:
 		instr.Sraw(&cpu.State, rd, rs1, rs2)
-	}
-
-	if cpu.Update.XReg < 0 {
+	default:
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 }

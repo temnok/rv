@@ -17,7 +17,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		cpu.Xset(rd, int(int32(val)))
 
 	case 0b_011: // ld
-		if !cpu.XLen64() {
+		if !cpu.Xlen64() {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
@@ -34,7 +34,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		cpu.Xset(rd, int(uint16(val)))
 
 	case 0b_110: // lwu
-		if !cpu.XLen64() {
+		if !cpu.Xlen64() {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}
@@ -60,7 +60,7 @@ func (cpu *CPU) execStore(imm, rs2, rs1, f3 int) {
 		cpu.memWrite(cpu.X[rs1]+imm, int(uint32(cpu.X[rs2])), 4)
 
 	case 0b_011: // sd
-		if !cpu.XLen64() {
+		if !cpu.Xlen64() {
 			cpu.trap(ExceptionIllegalIstruction)
 			return
 		}

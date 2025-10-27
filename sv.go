@@ -13,7 +13,7 @@ const (
 )
 
 func (cpu *CPU) translateSv(virtAddr int, physAddr *int, access int) {
-	if cpu.XLen64() {
+	if cpu.Xlen64() {
 		cpu.translateSv39(virtAddr, physAddr, access)
 	} else {
 		cpu.translateSv32(virtAddr, physAddr, access)

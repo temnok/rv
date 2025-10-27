@@ -8,7 +8,7 @@ import (
 func Mulhu(cpu *state.State, rd, rs1, rs2 int) {
 	var c int
 
-	if cpu.XLen64() {
+	if cpu.Xlen64() {
 		a := uint64(cpu.X[rs1])
 		b := uint64(cpu.X[rs2])
 

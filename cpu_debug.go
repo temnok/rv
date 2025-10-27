@@ -41,7 +41,7 @@ func (cpu *CPU) debugStep() bool {
 }
 
 func debugDump(cpu *CPU) {
-	isa, _ := rvda.New(uint(cpu.XLen), rvda.RV64gc)
+	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
 
 	for _, entry := range debugTrace {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))

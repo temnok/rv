@@ -7,7 +7,12 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 	case 0b_000:
 		instr.Addi(&cpu.State, rd, rs1, imm)
 	case 0b_001:
-		instr.Slli(&cpu.State, rd, rs1, imm)
+		switch imm &^ cpu.Xmask() {
+		case 0:
+			instr.Slli(&cpu.State, rd, rs1, imm)
+		default:
+			cpu.trap(ExceptionIllegalIstruction)
+		}
 	case 0b_010:
 		instr.Slti(&cpu.State, rd, rs1, imm)
 	case 0b_011:
@@ -15,15 +20,18 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 	case 0b_100:
 		instr.Xori(&cpu.State, rd, rs1, imm)
 	case 0b_101:
-		instr.Srli(&cpu.State, rd, rs1, imm)
+		switch imm &^ cpu.Xmask() {
+		case 0:
+			instr.Srli(&cpu.State, rd, rs1, imm)
+		case 0b_010000000000:
+			instr.Srai(&cpu.State, rd, rs1, imm&cpu.Xmask())
+		default:
+			cpu.trap(ExceptionIllegalIstruction)
+		}
 	case 0b_110:
 		instr.Ori(&cpu.State, rd, rs1, imm)
 	case 0b_111:
 		instr.Andi(&cpu.State, rd, rs1, imm)
-	}
-
-	if cpu.Update.XReg < 0 {
-		cpu.trap(ExceptionIllegalIstruction)
 	}
 }
 
@@ -60,9 +68,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 		instr.Or(&cpu.State, rd, rs1, rs2)
 	case 0b_111:
 		instr.And(&cpu.State, rd, rs1, rs2)
-	}
-
-	if cpu.Update.XReg < 0 {
+	default:
 		cpu.trap(ExceptionIllegalIstruction)
 	}
 }

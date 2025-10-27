@@ -6,12 +6,16 @@ type State struct {
 	Update Updated
 }
 
-func (cpu *State) XLen64() bool {
-	return cpu.XLen == 64
+func (cpu *State) Xlen64() bool {
+	return cpu.Xlen == 64
+}
+
+func (cpu *State) Xmask() int {
+	return cpu.Xlen - 1
 }
 
 func (cpu *State) Xint(val int) int {
-	if cpu.XLen64() {
+	if cpu.Xlen64() {
 		return val
 	}
 
@@ -19,7 +23,7 @@ func (cpu *State) Xint(val int) int {
 }
 
 func (cpu *State) Xuint(val int) uint {
-	if cpu.XLen64() {
+	if cpu.Xlen64() {
 		return uint(val)
 	}
 
@@ -39,6 +43,8 @@ func (cpu *State) XsetBool(rd int, val bool) {
 	}
 }
 
-func (cpu *State) PCAdd(imm int) {
-	cpu.Update.PC = cpu.Xint(cpu.PC + imm)
+func (cpu *State) PCAddIf(c bool, imm int) {
+	if c {
+		cpu.Update.PC = cpu.Xint(cpu.PC + imm)
+	}
 }

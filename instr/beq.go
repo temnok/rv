@@ -8,7 +8,5 @@ func Beq(cpu *state.State, rs1, rs2, imm int) {
 
 	c := a == b
 
-	if c {
-		cpu.PCAdd(imm)
-	}
+	cpu.PCAddIf(c, imm)
 }
