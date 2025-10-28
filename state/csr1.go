@@ -1,10 +1,9 @@
-package rv
+package state
 
 import "github.com/temnok/rv/bi"
 
-// https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
-
 const (
+	// https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 	Fflags = 0x001
 	Frm    = 0x002
 	Fcsr   = 0x003
@@ -49,9 +48,7 @@ const (
 	Marchid   = 0xF12
 	Mimpid    = 0xF13
 	Mhartid   = 0xF14
-)
 
-const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#bitdef
 	FflagsNX = 0
 	FflagsUF = 1
@@ -95,7 +92,7 @@ const (
 	FSdirty   = 0b_11
 )
 
-func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
+func (cpu *State) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 	if write && bi.Ts(i, 10, 2) == 3 || cpu.Priv < bi.Ts(i, 8, 2) {
 		return
 	}
@@ -248,26 +245,28 @@ func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 	return
 }
 
-func (cpu *CPU) csrRead(i int, val *int) {
+func (cpu *State) CsrRead(i int, val *int) bool {
 	reg, mask, shift := cpu.csrAddr(i, false)
 
 	if reg == nil {
-		cpu.trap(ExceptionIllegalIstruction)
-		return
+		return false
 	}
 
 	*val = (*reg & mask) >> shift
+
+	return true
 }
 
-func (cpu *CPU) csrWrite(i, val int) {
+func (cpu *State) CsrWrite(i, val int) bool {
 	reg, mask, shift := cpu.csrAddr(i, true)
 
 	if reg == nil {
-		cpu.trap(ExceptionIllegalIstruction)
-		return
+		return false
 	}
 
 	cpu.Update.CRegPtr = reg
 	cpu.Update.CReg = i
 	cpu.Update.CVal = *reg&^mask | (val<<shift)&mask
+
+	return true
 }

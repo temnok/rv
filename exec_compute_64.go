@@ -24,13 +24,13 @@ func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 	}
 
 	if cpu.Update.XReg < 0 {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }
 
 func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 	if !cpu.Xlen64() {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 
 	op := bi.T(f7, 5)<<3 | f3
 	if f7 &^= 0b0100000; f7 != 0 {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 
@@ -57,6 +57,6 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 	case 0b_1_101:
 		instr.Sraw(&cpu.State, rd, rs1, rs2)
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }

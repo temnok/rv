@@ -15,6 +15,6 @@ func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
 	case 0b_111:
 		instr.Remuw(&cpu.State, rd, rs1, rs2)
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }

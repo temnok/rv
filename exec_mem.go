@@ -18,7 +18,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 
 	case 0b_011: // ld
 		if !cpu.Xlen64() {
-			cpu.trap(ExceptionIllegalIstruction)
+			cpu.Trap(ExceptionIllegalIstruction)
 			return
 		}
 
@@ -35,7 +35,7 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 
 	case 0b_110: // lwu
 		if !cpu.Xlen64() {
-			cpu.trap(ExceptionIllegalIstruction)
+			cpu.Trap(ExceptionIllegalIstruction)
 			return
 		}
 
@@ -43,8 +43,8 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 		cpu.Xset(rd, int(uint32(val)))
 	}
 
-	if cpu.Update.XReg < 0 && !cpu.isTrapped() {
-		cpu.trap(ExceptionIllegalIstruction)
+	if cpu.Update.XReg < 0 && !cpu.IsTrapped() {
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }
 
@@ -61,14 +61,14 @@ func (cpu *CPU) execStore(imm, rs2, rs1, f3 int) {
 
 	case 0b_011: // sd
 		if !cpu.Xlen64() {
-			cpu.trap(ExceptionIllegalIstruction)
+			cpu.Trap(ExceptionIllegalIstruction)
 			return
 		}
 
 		cpu.memWrite(cpu.X[rs1]+imm, cpu.X[rs2], 8)
 
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }
 
@@ -76,17 +76,17 @@ func (cpu *CPU) execFence(imm, rs1, f3, rd int) {
 	switch f3 {
 	case 0b_000: // fence
 		if (imm&^0b_1111_1111) != 0 || rs1 != 0 || rd != 0 {
-			cpu.trap(ExceptionIllegalIstruction)
+			cpu.Trap(ExceptionIllegalIstruction)
 		}
 
 	case 0b_001: // fence.i
 		cpu.Update.ICache.Clear()
 
 		if imm != 0 || rs1 != 0 || rd != 0 {
-			cpu.trap(ExceptionIllegalIstruction)
+			cpu.Trap(ExceptionIllegalIstruction)
 		}
 
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }

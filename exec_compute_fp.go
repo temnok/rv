@@ -72,6 +72,7 @@ uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX :
 import "C"
 import (
 	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/state"
 	"math"
 )
 
@@ -102,7 +103,7 @@ var rmToC = []C.int{
 
 func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	if f7&1 == 1 && !cpu.extD() || cpu.fpDisabled() {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 
@@ -348,7 +349,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 	}
 
 	if cpu.Update.XReg < 0 && cpu.Update.FReg < 0 {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }
 
@@ -419,7 +420,7 @@ func (cpu *CPU) fsetCmp(rd int, res, nv bool) {
 		cpu.Xset(rd, 0)
 	}
 	if nv {
-		cpu.Update.Fflags |= 1 << FflagsNV
+		cpu.Update.Fflags |= 1 << state.FflagsNV
 	}
 }
 
@@ -453,7 +454,7 @@ func (cpu *CPU) f64(i int) float64 {
 func (cpu *CPU) prepareCfenv(rm int) {
 	if rm >= 0 {
 		if rm == RmDYN {
-			rm = bi.Ts(cpu.CSR.Fcsr, FcsrRM, 3)
+			rm = bi.Ts(cpu.CSR.Fcsr, state.FcsrRM, 3)
 		}
 
 		C.fesetround(rmToC[rm])
@@ -466,23 +467,23 @@ func (cpu *CPU) setUpdatedFflags() {
 	ex := C.fetestexcept(C.FE_ALL_EXCEPT)
 
 	if ex&C.FE_INEXACT != 0 {
-		cpu.Update.Fflags |= 1 << FflagsNX
+		cpu.Update.Fflags |= 1 << state.FflagsNX
 	}
 
 	if ex&C.FE_UNDERFLOW != 0 {
-		cpu.Update.Fflags |= 1 << FflagsUF
+		cpu.Update.Fflags |= 1 << state.FflagsUF
 	}
 
 	if ex&C.FE_OVERFLOW != 0 {
-		cpu.Update.Fflags |= 1 << FflagsOF
+		cpu.Update.Fflags |= 1 << state.FflagsOF
 	}
 
 	if ex&C.FE_DIVBYZERO != 0 {
-		cpu.Update.Fflags |= 1 << FflagsDZ
+		cpu.Update.Fflags |= 1 << state.FflagsDZ
 	}
 
 	if ex&C.FE_INVALID != 0 {
-		cpu.Update.Fflags |= 1 << FflagsNV
+		cpu.Update.Fflags |= 1 << state.FflagsNV
 	}
 }
 

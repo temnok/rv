@@ -18,12 +18,12 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	if cpu.ICache.Hit(virtAddr) {
 		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
 	} else {
-		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
+		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.IsTrapped() {
 			return
 		}
 
 		if !cpu.Bus.Read(physAddr, &val, xbytes) {
-			cpu.trapEnter(ExceptionInstructionAccessFault, addr)
+			cpu.TrapEnter(ExceptionInstructionAccessFault, addr)
 			return
 		}
 	}
@@ -44,13 +44,13 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	physAddr += xbytes
 
 	if virtAddr&pageMask == 0 {
-		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.isTrapped() {
+		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.IsTrapped() {
 			return
 		}
 	}
 
 	if !cpu.Bus.Read(physAddr, &val, xbytes) {
-		cpu.trapEnter(ExceptionInstructionAccessFault, virtAddr)
+		cpu.TrapEnter(ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
 
@@ -62,32 +62,32 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 
 func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.isTrapped() {
+	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.IsTrapped() {
 		return
 	}
 
 	if virtAddr&(width-1) != 0 {
-		cpu.trapEnter(ExceptionLoadAddressMisaligned, virtAddr)
+		cpu.TrapEnter(ExceptionLoadAddressMisaligned, virtAddr)
 		return
 	}
 
 	if !cpu.Bus.Read(physAddr, data, width) {
-		cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
+		cpu.TrapEnter(ExceptionLoadAccessFault, virtAddr)
 	}
 }
 
 func (cpu *CPU) memWrite(virtAddr, data, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.isTrapped() {
+	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.IsTrapped() {
 		return
 	}
 
 	if virtAddr&(width-1) != 0 {
-		cpu.trapEnter(ExceptionStoreAMOAddressMisaligned, virtAddr)
+		cpu.TrapEnter(ExceptionStoreAMOAddressMisaligned, virtAddr)
 		return
 	}
 
 	if !cpu.Bus.Write(physAddr, data, width) {
-		cpu.trapEnter(ExceptionStoreAMOAccessFault, virtAddr)
+		cpu.TrapEnter(ExceptionStoreAMOAccessFault, virtAddr)
 	}
 }

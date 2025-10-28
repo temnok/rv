@@ -11,7 +11,7 @@ func (cpu *CPU) exec(opcode int) {
 	if isCompressed := opcode&3 != 3; isCompressed {
 		opcodeSize = 2
 
-		if cpu.decompress(&opcode); cpu.isTrapped() {
+		if cpu.decompress(&opcode); cpu.IsTrapped() {
 			return
 		}
 	}
@@ -61,6 +61,6 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_11100:
 		cpu.execSystem(imm.I(opcode), rs1, f3, rd)
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }

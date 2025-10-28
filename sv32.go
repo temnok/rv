@@ -1,23 +1,26 @@
 package rv
 
-import "github.com/temnok/rv/bi"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/state"
+)
 
 func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.Priv
-	if bi.T(cpu.CSR.Mstatus, MstatusMPRV) == 1 && access != AccessExecute {
-		epriv = bi.Ts(cpu.CSR.Mstatus, MstatusMPP, 2)
+	if bi.T(cpu.CSR.Mstatus, state.MstatusMPRV) == 1 && access != AccessExecute {
+		epriv = bi.Ts(cpu.CSR.Mstatus, state.MstatusMPP, 2)
 	}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp-mode
-	if bi.T(cpu.CSR.Satp, SatpMODE32) == 0 || epriv == PrivM {
+	if bi.T(cpu.CSR.Satp, state.SatpMODE32) == 0 || epriv == PrivM {
 		*physAddr = virtAddr
 		return
 	}
 
 	pte, shift := cpu.TLB.lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTEsv32(virtAddr, &pte, &shift); cpu.isTrapped() {
+		if cpu.loadPTEsv32(virtAddr, &pte, &shift); cpu.IsTrapped() {
 			return
 		}
 
@@ -26,7 +29,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		}
 	}
 
-	sum, mxr := bi.T(cpu.CSR.Mstatus, MstatusSUM), bi.T(cpu.CSR.Mstatus, MstatusMXR)
+	sum, mxr := bi.T(cpu.CSR.Mstatus, state.MstatusSUM), bi.T(cpu.CSR.Mstatus, state.MstatusMXR)
 
 	if pte == 0 ||
 		epriv == PrivU && bi.T(pte, PteU) == 0 ||
@@ -36,7 +39,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bi.T(pte, PteW) == 1 && bi.T(pte, PteD) == 1) ||
 		bi.T(pte, PteA) == 0 {
 
-		cpu.trapEnter(ExceptionPageFault+access, virtAddr)
+		cpu.TrapEnter(ExceptionPageFault+access, virtAddr)
 		return
 	}
 
@@ -50,7 +53,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr := cpu.Xint(bi.Ts(cpu.CSR.Satp, 0, 20)<<12 | bi.Ts(virtAddr, 22, 10)<<2)
 	if !cpu.Bus.Read(pteAddr, &pte, 4) {
-		cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
+		cpu.TrapEnter(ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
@@ -67,7 +70,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	if !isLeaf {
 		pteAddr = cpu.Xint(bi.Ts(pte, 10, 20)<<12 | bi.Ts(virtAddr, 12, 10)<<2)
 		if !cpu.Bus.Read(pteAddr, &pte, 4) {
-			cpu.trapEnter(ExceptionLoadAccessFault, virtAddr)
+			cpu.TrapEnter(ExceptionLoadAccessFault, virtAddr)
 			return
 		}
 

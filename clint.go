@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/bi"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/state"
+)
 
 type CLINT struct {
 	cpu      *CPU
@@ -55,12 +58,12 @@ func (clint *CLINT) NotifyInterrupts() {
 	csr := &clint.cpu.CSR
 
 	if bi.T(clint.mswi, 1) == 1 {
-		csr.Mip |= 1 << MipMSI
+		csr.Mip |= 1 << state.MipMSI
 	}
 
 	if uint(csr.Timeh) > uint(clint.mtimecmph) ||
 		csr.Timeh == clint.mtimecmph && uint(csr.Time) >= uint(clint.mtimecmp) {
 
-		csr.Mip |= 1 << MipMTI
+		csr.Mip |= 1 << state.MipMTI
 	}
 }

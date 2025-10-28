@@ -32,7 +32,7 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	//if cpu.isTrapped() {
+	//if cpu.IsTrapped() {
 	//	debugDump(cpu)
 	//	return false
 	//}
@@ -47,7 +47,7 @@ func debugDump(cpu *CPU) {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))
 	}
 
-	fmt.Printf("\r\nCycle: %v, trap: %v\r\n", cpu.CSR.Cycle, debugTrapCount)
+	fmt.Printf("\r\nCycle: %v, Trap: %v\r\n", cpu.CSR.Cycle, debugTrapCount)
 
 	up := &cpu.Update
 	if cpu.Update.TrapEnter {

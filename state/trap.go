@@ -1,18 +1,18 @@
-package rv
+package state
 
 import "github.com/temnok/rv/bi"
 
-func (cpu *CPU) isTrapped() bool {
+func (cpu *State) IsTrapped() bool {
 	return cpu.Update.TrapEnter
 }
 
-func (cpu *CPU) trap(cause int) {
-	cpu.trapEnter(cause, 0)
+func (cpu *State) Trap(cause int) {
+	cpu.TrapEnter(cause, 0)
 }
 
-func (cpu *CPU) trapEnter(cause, tval int) {
-	if cpu.isTrapped() {
-		panic("double trap")
+func (cpu *State) TrapEnter(cause, tval int) {
+	if cpu.IsTrapped() {
+		panic("double Trap")
 	}
 
 	mcauseI := cpu.Xmask()
@@ -61,12 +61,12 @@ func (cpu *CPU) trapEnter(cause, tval int) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) trapExit(retPriv int) {
+func (cpu *State) TrapExit(retPriv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
 	trap := cpu.Priv == PrivS && bi.T(cpu.CSR.Mstatus, MstatusTSR) == 1
 
 	if trap || retPriv > cpu.Priv {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 

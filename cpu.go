@@ -70,7 +70,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 		},
 	}
 
-	cpu.CSR.Mstatus = cpu.Xint(xl<<MstatusSXL | xl<<MstatusUXL)
+	cpu.CSR.Mstatus = cpu.Xint(xl<<state.MstatusSXL | xl<<state.MstatusUXL)
 	cpu.Update.PC = cpu.Xint(startAddr)
 }
 
@@ -88,12 +88,12 @@ func (cpu *CPU) Step() bool {
 func (cpu *CPU) innerStep() int {
 	cpu.updateState()
 
-	if cpu.trapOnPendingInterrupts(); cpu.isTrapped() {
+	if cpu.trapOnPendingInterrupts(); cpu.IsTrapped() {
 		return 0
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.PC, &opcode); cpu.isTrapped() {
+	if cpu.memFetch(cpu.PC, &opcode); cpu.IsTrapped() {
 		return 0
 	}
 
@@ -124,7 +124,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 
 		mcauseI := cpu.Xlen - 1
 		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
-			cpu.trap(-1<<mcauseI | i)
+			cpu.Trap(-1<<mcauseI | i)
 
 			return
 		}

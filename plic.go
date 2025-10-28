@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/bi"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/state"
+)
 
 type PLIC struct {
 	cpu      *CPU
@@ -99,6 +102,6 @@ func (plic *PLIC) NotifyInterrupts() {
 	plic.claim = irq
 
 	if irq > 0 {
-		plic.cpu.CSR.Mip |= 1 << MipSEI
+		plic.cpu.CSR.Mip |= 1 << state.MipSEI
 	}
 }

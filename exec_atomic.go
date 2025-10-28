@@ -5,7 +5,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	if f3 != 0b_010 && !(cpu.Xlen64() && f3 == 0b_011) ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 
@@ -16,7 +16,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	var old int
 	if f5 != 0b_00011 { // for all except sc
-		if cpu.memRead(addr, &old, width); cpu.isTrapped() {
+		if cpu.memRead(addr, &old, width); cpu.IsTrapped() {
 			return
 		}
 	}
@@ -77,7 +77,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 			val = int(uint32(val))
 		}
 
-		if cpu.memWrite(addr, val, width); cpu.isTrapped() {
+		if cpu.memWrite(addr, val, width); cpu.IsTrapped() {
 			return
 		}
 	}

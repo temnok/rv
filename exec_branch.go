@@ -17,6 +17,6 @@ func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 	case 0b_111:
 		instr.Bgeu(&cpu.State, rs1, rs2, imm)
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }

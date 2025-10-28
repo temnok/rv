@@ -1,6 +1,10 @@
 package rv
 
-import "github.com/temnok/rv/bi"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
+)
 
 func (cpu *CPU) execSystem(imm, rs1, f3, rd int) {
 	if f3 == 0 {
@@ -12,24 +16,24 @@ func (cpu *CPU) execSystem(imm, rs1, f3, rd int) {
 
 func (cpu *CPU) execSystemSpecial(imm, rd int) {
 	if rd != 0 {
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 		return
 	}
 
 	switch imm {
 	case 0b_0000_000_00000: // ecall
-		cpu.trap(ExceptionEnvironmentCallFromUMode + cpu.Priv)
+		cpu.Trap(ExceptionEnvironmentCallFromUMode + cpu.Priv)
 
 	case 0b_0000_000_00001: // ebreak
-		cpu.trap(ExceptionBreakpoint)
+		cpu.Trap(ExceptionBreakpoint)
 
 	case 0b_0001_000_00010: // sret
-		cpu.trapExit(PrivS)
+		cpu.TrapExit(PrivS)
 
 	case 0b_0001_000_00101: // wfi, https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#wfi
 
 	case 0b_0011_000_00010: // mret
-		cpu.trapExit(PrivM)
+		cpu.TrapExit(PrivM)
 
 	default:
 		switch bi.Ts(imm, 5, 7) {
@@ -37,18 +41,18 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 			cpu.TLB.flush()
 			cpu.Update.ICache.Clear()
 
-			if cpu.Priv == PrivS && bi.T(cpu.CSR.Mstatus, MstatusTVM) == 1 {
-				cpu.trap(ExceptionIllegalIstruction)
+			if cpu.Priv == PrivS && bi.T(cpu.CSR.Mstatus, state.MstatusTVM) == 1 {
+				cpu.Trap(ExceptionIllegalIstruction)
 			}
 
 		default:
-			cpu.trap(ExceptionIllegalIstruction)
+			cpu.Trap(ExceptionIllegalIstruction)
 		}
 	}
 }
 
 func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
-	csr := bi.Ts(imm, 0, 12)
+	csrReg := bi.Ts(imm, 0, 12)
 
 	s := rs1
 	if (f3 & 0b_100) == 0 {
@@ -60,21 +64,27 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 	switch f3 & 3 {
 	case 0b_01: // csrrw
 		if rd != 0 {
-			if cpu.csrRead(csr, &val); cpu.isTrapped() {
+			if !csr.Read(&cpu.State, csrReg, &val) {
+				cpu.Trap(ExceptionIllegalIstruction)
 				return
 			}
 		}
 
-		cpu.csrWrite(csr, s)
+		if !csr.Write(&cpu.State, csrReg, s) {
+			cpu.Trap(ExceptionIllegalIstruction)
+			return
+		}
 		cpu.Xset(rd, val)
 
 	case 0b_10: // csrrs
-		if cpu.csrRead(csr, &val); cpu.isTrapped() {
+		if !csr.Read(&cpu.State, csrReg, &val) {
+			cpu.Trap(ExceptionIllegalIstruction)
 			return
 		}
 
 		if s != 0 {
-			if cpu.csrWrite(csr, val|s); cpu.isTrapped() {
+			if !csr.Write(&cpu.State, csrReg, val|s) {
+				cpu.Trap(ExceptionIllegalIstruction)
 				return
 			}
 		}
@@ -82,12 +92,14 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 		cpu.Xset(rd, val)
 
 	case 0b_11: // csrrc
-		if cpu.csrRead(csr, &val); cpu.isTrapped() {
+		if !csr.Read(&cpu.State, csrReg, &val) {
+			cpu.Trap(ExceptionIllegalIstruction)
 			return
 		}
 
 		if s != 0 {
-			if cpu.csrWrite(csr, val&^s); cpu.isTrapped() {
+			if !csr.Write(&cpu.State, csrReg, val&^s) {
+				cpu.Trap(ExceptionIllegalIstruction)
 				return
 			}
 		}
@@ -95,6 +107,6 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 		cpu.Xset(rd, val)
 
 	default:
-		cpu.trap(ExceptionIllegalIstruction)
+		cpu.Trap(ExceptionIllegalIstruction)
 	}
 }

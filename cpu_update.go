@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/state"
+
 func (cpu *CPU) updateState() {
 	cpu.updateTimers()
 	cpu.clearPendingInterrupts()
@@ -35,9 +37,9 @@ func (cpu *CPU) updateState() {
 		up.XReg = -1
 	}
 
-	if up.FReg >= 0 || up.CReg == Fflags || up.CReg == Frm || up.CReg == Fcsr {
-		cpu.CSR.Mstatus &^= 0b_11 << MstatusFS
-		cpu.CSR.Mstatus |= FSdirty << MstatusFS
+	if up.FReg >= 0 || up.CReg == state.Fflags || up.CReg == state.Frm || up.CReg == state.Fcsr {
+		cpu.CSR.Mstatus &^= 0b_11 << state.MstatusFS
+		cpu.CSR.Mstatus |= state.FSdirty << state.MstatusFS
 		cpu.CSR.Mstatus |= 1 << (cpu.Xlen - 1) // set SD bit
 	}
 
@@ -74,5 +76,5 @@ func (cpu *CPU) updateTimers() {
 }
 
 func (cpu *CPU) clearPendingInterrupts() {
-	cpu.CSR.Mip &^= 1<<MipSEI | 1<<MipMTI | 1<<MipMSI
+	cpu.CSR.Mip &^= 1<<state.MipSEI | 1<<state.MipMTI | 1<<state.MipMSI
 }
