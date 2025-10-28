@@ -6,7 +6,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	opcode := *opcodePtr
 
 	opcode = int(uint16(opcode))
-	decompressedOpcode := cpu.decompressOpcode(cpu.Xlen, opcode)
+	decompressedOpcode := cpu.decompressOpcode(opcode)
 	if decompressedOpcode == 0 {
 		cpu.trapEnter(ExceptionIllegalIstruction, opcode)
 		return
@@ -16,8 +16,9 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func (cpu *CPU) decompressOpcode(xlen, opcode int) int {
-	xlen64 := xlen == 64
+func (cpu *CPU) decompressOpcode(opcode int) int {
+	xlen := cpu.Xlen
+	xlen64 := cpu.Xlen64()
 
 	f3 := bits(opcode, 13, 3)
 	ra := bits(opcode, 7, 5)
@@ -161,7 +162,7 @@ func (cpu *CPU) decompressOpcode(xlen, opcode int) int {
 			}
 
 		case 0b_100:
-			switch bit(opcode, 12)<<2 | orBit(ra)<<1 | orBit(rb) {
+			switch bit(opcode, 12)<<2 | intBool(ra != 0)<<1 | intBool(rb != 0) {
 			case 0b_0_1_0: // c.jr
 				return encodeI(0, ra, 0, 0, 25) // jalr
 
@@ -191,6 +192,14 @@ func (cpu *CPU) decompressOpcode(xlen, opcode int) int {
 				return encodeS(imm.CSS(opcode), rb, 2, 0b_010, 0b_01001) // fsw
 			}
 		}
+	}
+
+	return 0
+}
+
+func intBool(c bool) int {
+	if c {
+		return 1
 	}
 
 	return 0
