@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/state"
+)
 
 type CPU struct {
 	Bus Bus
@@ -110,17 +113,17 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 	}
 
 	for i := 12; i > 0; i-- {
-		if bit(mi, i) == 0 {
+		if bi.T(mi, i) == 0 {
 			continue
 		}
 
 		priv := PrivM
-		if bit(cpu.CSR.Mideleg, i) == 1 {
+		if bi.T(cpu.CSR.Mideleg, i) == 1 {
 			priv = PrivS
 		}
 
 		mcauseI := cpu.Xlen - 1
-		if (priv == cpu.Priv && bit(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
+		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
 			cpu.trap(-1<<mcauseI | i)
 
 			return

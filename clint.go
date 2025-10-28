@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/bi"
+
 type CLINT struct {
 	cpu      *CPU
 	baseAddr int
@@ -52,7 +54,7 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 func (clint *CLINT) NotifyInterrupts() {
 	csr := &clint.cpu.CSR
 
-	if bit(clint.mswi, 1) == 1 {
+	if bi.T(clint.mswi, 1) == 1 {
 		csr.Mip |= 1 << MipMSI
 	}
 

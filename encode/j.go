@@ -1,9 +1,11 @@
 package encode
 
+import "github.com/temnok/rv/bi"
+
 func J(imm, rd, op int) int {
-	a := bit(imm, 20)
-	b := bits(imm, 12, 8)
-	c := bit(imm, 11)
-	d := bits(imm, 1, 10)
+	a := bi.T(imm, 20)
+	b := bi.Ts(imm, 12, 8)
+	c := bi.T(imm, 11)
+	d := bi.Ts(imm, 1, 10)
 	return a<<31 | d<<21 | c<<20 | b<<12 | rd<<7 | op<<2 | 3
 }

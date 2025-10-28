@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/bi"
+
 type PLIC struct {
 	cpu      *CPU
 	baseAddr int
@@ -47,7 +49,7 @@ func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
 				plic.claiming &^= 1 << val
 			}
 		} else {
-			if plic.claim > 0 && plic.claim < 32 && bit(plic.pending, plic.claim) == 1 {
+			if plic.claim > 0 && plic.claim < 32 && bi.T(plic.pending, plic.claim) == 1 {
 				plic.claiming |= 1 << plic.claim
 			}
 		}
@@ -73,7 +75,7 @@ func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
 }
 
 func (plic *PLIC) TriggerInterrupt(source int) {
-	if source > 0 && source < 32 && bit(plic.claiming, source) == 0 && bit(plic.pending, source) == 0 {
+	if source > 0 && source < 32 && bi.T(plic.claiming, source) == 0 && bi.T(plic.pending, source) == 0 {
 		plic.pending |= 1 << source
 	}
 }
@@ -82,10 +84,10 @@ func (plic *PLIC) NotifyInterrupts() {
 	maxPriority := 0
 	irq := 0
 	for i := 1; i < 32; i++ {
-		if bit(plic.claiming, i) == 1 {
+		if bi.T(plic.claiming, i) == 1 {
 			plic.pending &^= 1 << i
-		} else if bit(plic.enable, i) == 1 &&
-			bit(plic.pending, i) == 1 &&
+		} else if bi.T(plic.enable, i) == 1 &&
+			bi.T(plic.pending, i) == 1 &&
 			plic.priority[i] >= maxPriority &&
 			plic.priority[i] >= plic.threshold {
 

@@ -1,8 +1,10 @@
 package imm
 
-func CI(instr int) int {
-	a := bits(instr, 2, 5)
-	b := signBit(instr, 12)
+import "github.com/temnok/rv/bi"
 
-	return b<<5 | a
+func CI(instr int) int {
+	a := bi.Ts(instr, 2, 5)
+	b := bi.T(instr, 12)
+
+	return -b<<5 | a
 }

@@ -1,6 +1,7 @@
 package rv
 
 import (
+	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
 )
@@ -23,13 +24,13 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 	xlen := cpu.Xlen
 	xlen64 := cpu.Xlen64()
 
-	f3 := bits(opcode, 13, 3)
-	ra := bits(opcode, 7, 5)
+	f3 := bi.Ts(opcode, 13, 3)
+	ra := bi.Ts(opcode, 7, 5)
 	ra8 := 8 | (ra & 7)
-	rb := bits(opcode, 2, 5)
+	rb := bi.Ts(opcode, 2, 5)
 	rb8 := 8 | (rb & 7)
 
-	switch op := bits(opcode, 0, 2); op {
+	switch op := bi.Ts(opcode, 0, 2); op {
 	case 0b_00: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table0
 		switch f3 {
 		case 0b_000: // c.addi4spn
@@ -96,7 +97,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			}
 
 		case 0b_100:
-			switch bits(opcode, 10, 2) {
+			switch bi.Ts(opcode, 10, 2) {
 			case 0b_00: // srli
 				return encode.R(0, imm.CI(opcode)&(xlen-1), ra8, 5, ra8, 4)
 
@@ -107,7 +108,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 				return encode.I(imm.CI(opcode), ra8, 7, ra8, 4)
 
 			case 0b_11:
-				switch bit(opcode, 12)<<2 | bits(opcode, 5, 2) {
+				switch bi.T(opcode, 12)<<2 | bi.Ts(opcode, 5, 2) {
 				case 0b_000: // c.sub
 					return encode.R(0b_0100000, rb8, ra8, 0, ra8, 12)
 
@@ -165,7 +166,7 @@ func (cpu *CPU) decompressOpcode(opcode int) int {
 			}
 
 		case 0b_100:
-			switch bit(opcode, 12)<<2 | intBool(ra != 0)<<1 | intBool(rb != 0) {
+			switch bi.T(opcode, 12)<<2 | intBool(ra != 0)<<1 | intBool(rb != 0) {
 			case 0b_0_1_0: // c.jr
 				return encode.I(0, ra, 0, 0, 25) // jalr
 

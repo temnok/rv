@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/instr"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/instr"
+)
 
 func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 	if cpu.Xlen64() {
@@ -36,7 +39,7 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 		return
 	}
 
-	op := bit(f7, 5)<<3 | f3
+	op := bi.T(f7, 5)<<3 | f3
 	if f7 &^= 0b0100000; f7 != 0 {
 		cpu.trap(ExceptionIllegalIstruction)
 		return

@@ -1,11 +1,13 @@
 package imm
 
-func CB(instr int) int {
-	a := bits(instr, 3, 2)
-	b := bits(instr, 10, 2)
-	c := bit(instr, 2)
-	d := bits(instr, 5, 2)
-	e := signBit(instr, 12)
+import "github.com/temnok/rv/bi"
 
-	return e<<8 | d<<6 | c<<5 | b<<3 | a<<1
+func CB(instr int) int {
+	a := bi.Ts(instr, 3, 2)
+	b := bi.Ts(instr, 10, 2)
+	c := bi.T(instr, 2)
+	d := bi.Ts(instr, 5, 2)
+	e := bi.T(instr, 12)
+
+	return -e<<8 | d<<6 | c<<5 | b<<3 | a<<1
 }

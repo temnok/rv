@@ -1,9 +1,11 @@
 package imm
 
+import "github.com/temnok/rv/bi"
+
 func CI3(instr int) int {
-	a := bits(instr, 5, 2)
-	b := bit(instr, 12)
-	c := bits(instr, 2, 3)
+	a := bi.Ts(instr, 5, 2)
+	b := bi.T(instr, 12)
+	c := bi.Ts(instr, 2, 3)
 
 	return c<<6 | b<<5 | a<<3
 }

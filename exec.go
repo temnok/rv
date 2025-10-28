@@ -1,6 +1,7 @@
 package rv
 
 import (
+	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
 )
@@ -16,13 +17,13 @@ func (cpu *CPU) exec(opcode int) {
 	}
 	cpu.Update.PC = cpu.Xint(cpu.PC + opcodeSize)
 
-	f7 := bits(opcode, 25, 7)
-	rs2 := bits(opcode, 20, 5)
-	rs1 := bits(opcode, 15, 5)
-	f3 := bits(opcode, 12, 3)
-	rd := bits(opcode, 7, 5)
+	f7 := bi.Ts(opcode, 25, 7)
+	rs2 := bi.Ts(opcode, 20, 5)
+	rs1 := bi.Ts(opcode, 15, 5)
+	f3 := bi.Ts(opcode, 12, 3)
+	rd := bi.Ts(opcode, 7, 5)
 
-	switch op := bits(opcode, 2, 5); op {
+	switch op := bi.Ts(opcode, 2, 5); op {
 	case 0b_00000:
 		cpu.execLoad(imm.I(opcode), rs1, f3, rd)
 	case 0b_00001:

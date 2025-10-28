@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/bi"
+
 func (cpu *CPU) execSystem(imm, rs1, f3, rd int) {
 	if f3 == 0 {
 		cpu.execSystemSpecial(imm, rd)
@@ -30,12 +32,12 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 		cpu.trapExit(PrivM)
 
 	default:
-		switch bits(imm, 5, 7) {
+		switch bi.Ts(imm, 5, 7) {
 		case 0b_0001_001: // sfence.vma
 			cpu.TLB.flush()
 			cpu.Update.ICache.Clear()
 
-			if cpu.Priv == PrivS && bit(cpu.CSR.Mstatus, MstatusTVM) == 1 {
+			if cpu.Priv == PrivS && bi.T(cpu.CSR.Mstatus, MstatusTVM) == 1 {
 				cpu.trap(ExceptionIllegalIstruction)
 			}
 
@@ -46,7 +48,7 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 }
 
 func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
-	csr := bits(imm, 0, 12)
+	csr := bi.Ts(imm, 0, 12)
 
 	s := rs1
 	if (f3 & 0b_100) == 0 {

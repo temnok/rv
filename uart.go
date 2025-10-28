@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/bi"
+
 type UART struct {
 	plic        *PLIC
 	baseAddr    int
@@ -83,13 +85,13 @@ func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
 func (uart *UART) NotifyInterrupts() {
 	ch := byte(uart.tx.buf & 0xFF)
 	if uart.clk++; uart.clk >= uart.div {
-		if bit(uart.txctrl, 0) == 1 && uart.tx.size > 0 {
+		if bi.T(uart.txctrl, 0) == 1 && uart.tx.size > 0 {
 			if uart.callback != nil && uart.callback(&ch, true) {
 				uart.tx.get()
 			}
 		}
 
-		if bit(uart.rxctrl, 0) == 1 && uart.rx.size < 8 {
+		if bi.T(uart.rxctrl, 0) == 1 && uart.rx.size < 8 {
 			if uart.callback != nil && uart.callback(&ch, false) {
 				uart.rx.put(int(ch))
 			}
@@ -98,13 +100,13 @@ func (uart *UART) NotifyInterrupts() {
 		uart.clk = 0
 	}
 
-	if (uart.txctrl>>16) > uart.tx.size && bit(uart.ie, 0) == 1 {
+	if (uart.txctrl>>16) > uart.tx.size && bi.T(uart.ie, 0) == 1 {
 		uart.ip |= 1
 	} else {
 		uart.ip &^= 1
 	}
 
-	if (uart.rxctrl>>16) < uart.rx.size && bit(uart.ie, 1) == 1 {
+	if (uart.rxctrl>>16) < uart.rx.size && bi.T(uart.ie, 1) == 1 {
 		uart.ip |= 2
 	} else {
 		uart.ip &^= 2

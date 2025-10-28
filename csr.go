@@ -1,5 +1,7 @@
 package rv
 
+import "github.com/temnok/rv/bi"
+
 // https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 
 const (
@@ -94,7 +96,7 @@ const (
 )
 
 func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
-	if write && bits(i, 10, 2) == 3 || cpu.Priv < bits(i, 8, 2) {
+	if write && bi.Ts(i, 10, 2) == 3 || cpu.Priv < bi.Ts(i, 8, 2) {
 		return
 	}
 
@@ -154,7 +156,7 @@ func (cpu *CPU) csrAddr(i int, write bool) (reg *int, mask, shift int) {
 		}
 
 	case Satp: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-		if cpu.Priv != PrivS || bit(csr.Mstatus, MstatusTVM) == 0 {
+		if cpu.Priv != PrivS || bi.T(csr.Mstatus, MstatusTVM) == 0 {
 			reg = &csr.Satp
 		}
 

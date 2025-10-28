@@ -1,7 +1,9 @@
 package rv
 
+import "github.com/temnok/rv/bi"
+
 func (cpu *CPU) fpDisabled() bool {
-	return bits(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff
+	return bi.Ts(cpu.CSR.Mstatus, MstatusFS, 2) == FSoff
 }
 
 func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {

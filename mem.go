@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/state"
+)
 
 func (cpu *CPU) memFetch(addr int, data *int) {
 	const (
@@ -54,7 +57,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	cpu.Update.ICache = state.Cache{
 		VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
 
-	*data = val<<16 | bits(lo, 0, 16)
+	*data = val<<16 | bi.Ts(lo, 0, 16)
 }
 
 func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
