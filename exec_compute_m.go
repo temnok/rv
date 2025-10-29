@@ -17,5 +17,5 @@ var mInstr = []func(cpu *state.State, rd, rs1, rs2 int){
 }
 
 func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
-	mInstr[f3](&cpu.State, rd, rs1, rs2)
+	mInstr[f3](cpu.State, rd, rs1, rs2)
 }

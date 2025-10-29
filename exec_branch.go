@@ -8,18 +8,18 @@ import (
 func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 	switch f3 {
 	case 0b_000:
-		instr.Beq(&cpu.State, rs1, rs2, imm)
+		instr.Beq(cpu.State, rs1, rs2, imm)
 	case 0b_001:
-		instr.Bne(&cpu.State, rs1, rs2, imm)
+		instr.Bne(cpu.State, rs1, rs2, imm)
 	case 0b_100:
-		instr.Blt(&cpu.State, rs1, rs2, imm)
+		instr.Blt(cpu.State, rs1, rs2, imm)
 	case 0b_101:
-		instr.Bge(&cpu.State, rs1, rs2, imm)
+		instr.Bge(cpu.State, rs1, rs2, imm)
 	case 0b_110:
-		instr.Bltu(&cpu.State, rs1, rs2, imm)
+		instr.Bltu(cpu.State, rs1, rs2, imm)
 	case 0b_111:
-		instr.Bgeu(&cpu.State, rs1, rs2, imm)
+		instr.Bgeu(cpu.State, rs1, rs2, imm)
 	default:
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 	}
 }

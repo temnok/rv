@@ -7,7 +7,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	if f3 != 0b_010 && !(cpu.Xlen64() && f3 == 0b_011) ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -18,7 +18,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 
 	var old int
 	if f5 != 0b_00011 { // for all except sc
-		if cpu.memRead(addr, &old, width); trap.IsEntered(&cpu.State) {
+		if cpu.memRead(addr, &old, width); trap.IsEntered(cpu.State) {
 			return
 		}
 	}
@@ -79,7 +79,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 		}
 
 	default:
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
 			val = int(uint32(val))
 		}
 
-		if cpu.memWrite(addr, val, width); trap.IsEntered(&cpu.State) {
+		if cpu.memWrite(addr, val, width); trap.IsEntered(cpu.State) {
 			return
 		}
 	}

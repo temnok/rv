@@ -21,7 +21,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 
 	pte, shift := cpu.TLB.lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTEsv32(virtAddr, &pte, &shift); trap.IsEntered(&cpu.State) {
+		if cpu.loadPTEsv32(virtAddr, &pte, &shift); trap.IsEntered(cpu.State) {
 			return
 		}
 
@@ -40,7 +40,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bi.T(pte, PteW) == 1 && bi.T(pte, PteD) == 1) ||
 		bi.T(pte, PteA) == 0 {
 
-		trap.Enter(&cpu.State, ExceptionPageFault+access, virtAddr)
+		trap.Enter(cpu.State, ExceptionPageFault+access, virtAddr)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr := cpu.Xint(bi.Ts(cpu.CSR.Satp, 0, 20)<<12 | bi.Ts(virtAddr, 22, 10)<<2)
 	if !cpu.Bus.Read(pteAddr, &pte, 4) {
-		trap.Enter(&cpu.State, ExceptionLoadAccessFault, virtAddr)
+		trap.Enter(cpu.State, ExceptionLoadAccessFault, virtAddr)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	if !isLeaf {
 		pteAddr = cpu.Xint(bi.Ts(pte, 10, 20)<<12 | bi.Ts(virtAddr, 12, 10)<<2)
 		if !cpu.Bus.Read(pteAddr, &pte, 4) {
-			trap.Enter(&cpu.State, ExceptionLoadAccessFault, virtAddr)
+			trap.Enter(cpu.State, ExceptionLoadAccessFault, virtAddr)
 			return
 		}
 

@@ -12,7 +12,7 @@ func (cpu *CPU) fpDisabled() bool {
 
 func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 	if cpu.fpDisabled() {
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -20,22 +20,22 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 
 	switch f3 {
 	case 0b_010: // flw
-		if cpu.memRead(cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(&cpu.State) {
+		if cpu.memRead(cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(cpu.State) {
 			cpu.Update.FVal = f32boxingBits | val
 		}
 
 	case 0b_011: // fld
 		if !cpu.extD() {
-			trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 			return
 		}
 
-		if cpu.memRead(cpu.X[rs1]+imm, &val, 8); !trap.IsEntered(&cpu.State) {
+		if cpu.memRead(cpu.X[rs1]+imm, &val, 8); !trap.IsEntered(cpu.State) {
 			cpu.Update.FVal = val
 		}
 
 	default:
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 
 func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
 	if cpu.fpDisabled() {
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -54,13 +54,13 @@ func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
 
 	case 0b_011: // fsd
 		if !cpu.extD() {
-			trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 			return
 		}
 
 		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 8)
 
 	default:
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 	}
 }

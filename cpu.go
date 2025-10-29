@@ -11,7 +11,7 @@ type CPU struct {
 	Bus Bus
 	TLB TLB
 
-	state.State
+	*state.State
 }
 
 type ICache struct {
@@ -49,7 +49,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 	*cpu = CPU{
 		Bus: bus,
 
-		State: state.State{
+		State: &state.State{
 			Fixed: state.Fixed{
 				Xlen: xlen,
 			},
@@ -90,12 +90,12 @@ func (cpu *CPU) Step() bool {
 func (cpu *CPU) innerStep() int {
 	cpu.updateState()
 
-	if cpu.trapOnPendingInterrupts(); trap.IsEntered(&cpu.State) {
+	if cpu.trapOnPendingInterrupts(); trap.IsEntered(cpu.State) {
 		return 0
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.PC, &opcode); trap.IsEntered(&cpu.State) {
+	if cpu.memFetch(cpu.PC, &opcode); trap.IsEntered(cpu.State) {
 		return 0
 	}
 
@@ -126,7 +126,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 
 		mcauseI := cpu.Xlen - 1
 		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
-			trap.EnterWithoutTval(&cpu.State, -1<<mcauseI|i)
+			trap.EnterWithoutTval(cpu.State, -1<<mcauseI|i)
 
 			return
 		}

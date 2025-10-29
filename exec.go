@@ -12,7 +12,7 @@ func (cpu *CPU) exec(opcode int) {
 	if isCompressed := opcode&3 != 3; isCompressed {
 		opcodeSize = 2
 
-		if cpu.decompress(&opcode); trap.IsEntered(&cpu.State) {
+		if cpu.decompress(&opcode); trap.IsEntered(cpu.State) {
 			return
 		}
 	}
@@ -36,7 +36,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_00110:
 		cpu.execComputeI64(imm.I(opcode), rs1, f3, rd)
 	case 0b_00101:
-		instr.Auipc(&cpu.State, rd, imm.U(opcode))
+		instr.Auipc(cpu.State, rd, imm.U(opcode))
 	case 0b_01000:
 		cpu.execStore(imm.S(opcode), rs2, rs1, f3)
 	case 0b_01001:
@@ -48,7 +48,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_01110:
 		cpu.execComputeR64(f7, rs2, rs1, f3, rd)
 	case 0b_01101:
-		instr.Lui(&cpu.State, rd, imm.U(opcode))
+		instr.Lui(cpu.State, rd, imm.U(opcode))
 	case 0b_10000, 0b_10001, 0b_10010, 0b_10011:
 		cpu.execComputeFP(f7, rs2, rs1, f3, rd, op)
 	case 0b_10100:
@@ -56,12 +56,12 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_11000:
 		cpu.execBranch(imm.B(opcode), rs2, rs1, f3)
 	case 0b_11001:
-		instr.Jalr(&cpu.State, opcodeSize, rd, rs1, imm.I(opcode))
+		instr.Jalr(cpu.State, opcodeSize, rd, rs1, imm.I(opcode))
 	case 0b_11011:
-		instr.Jal(&cpu.State, opcodeSize, rd, imm.J(opcode))
+		instr.Jal(cpu.State, opcodeSize, rd, imm.J(opcode))
 	case 0b_11100:
 		cpu.execSystem(imm.I(opcode), rs1, f3, rd)
 	default:
-		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 	}
 }
