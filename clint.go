@@ -2,7 +2,7 @@ package rv
 
 import (
 	"github.com/temnok/rv/bi"
-	"github.com/temnok/rv/state"
+	"github.com/temnok/rv/csr"
 )
 
 type CLINT struct {
@@ -55,15 +55,15 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 }
 
 func (clint *CLINT) NotifyInterrupts() {
-	csr := &clint.cpu.CSR
+	csrReg := &clint.cpu.CSR
 
 	if bi.T(clint.mswi, 1) == 1 {
-		csr.Mip |= 1 << state.MipMSI
+		csrReg.Mip |= 1 << csr.MipMSI
 	}
 
-	if uint(csr.Timeh) > uint(clint.mtimecmph) ||
-		csr.Timeh == clint.mtimecmph && uint(csr.Time) >= uint(clint.mtimecmp) {
+	if uint(csrReg.Timeh) > uint(clint.mtimecmph) ||
+		csrReg.Timeh == clint.mtimecmph && uint(csrReg.Time) >= uint(clint.mtimecmp) {
 
-		csr.Mip |= 1 << state.MipMTI
+		csrReg.Mip |= 1 << csr.MipMTI
 	}
 }

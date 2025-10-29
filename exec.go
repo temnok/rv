@@ -4,6 +4,7 @@ import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
 )
 
 func (cpu *CPU) exec(opcode int) {
@@ -11,7 +12,7 @@ func (cpu *CPU) exec(opcode int) {
 	if isCompressed := opcode&3 != 3; isCompressed {
 		opcodeSize = 2
 
-		if cpu.decompress(&opcode); cpu.IsTrapped() {
+		if cpu.decompress(&opcode); trap.IsEntered(&cpu.State) {
 			return
 		}
 	}
@@ -61,6 +62,6 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_11100:
 		cpu.execSystem(imm.I(opcode), rs1, f3, rd)
 	default:
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 	}
 }

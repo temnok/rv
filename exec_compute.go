@@ -3,6 +3,7 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
 )
 
 func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
@@ -14,7 +15,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 		case 0:
 			instr.Slli(&cpu.State, rd, rs1, imm)
 		default:
-			cpu.Trap(ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 		}
 	case 0b_010:
 		instr.Slti(&cpu.State, rd, rs1, imm)
@@ -29,7 +30,7 @@ func (cpu *CPU) execComputeI(imm, rs1, f3, rd int) {
 		case 0b_010000000000:
 			instr.Srai(&cpu.State, rd, rs1, imm&cpu.Xmask())
 		default:
-			cpu.Trap(ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 		}
 	case 0b_110:
 		instr.Ori(&cpu.State, rd, rs1, imm)
@@ -46,7 +47,7 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 
 	op := bi.T(f7, 5)<<3 | f3
 	if f7 &^= 0b0100000; f7 != 0 {
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -72,6 +73,6 @@ func (cpu *CPU) execComputeR(f7, rs2, rs1, f3, rd int) {
 	case 0b_111:
 		instr.And(&cpu.State, rd, rs1, rs2)
 	default:
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 	}
 }

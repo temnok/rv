@@ -3,6 +3,7 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
 )
 
 func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
@@ -24,13 +25,13 @@ func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 	}
 
 	if cpu.Update.XReg < 0 {
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 	}
 }
 
 func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 	if !cpu.Xlen64() {
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -41,7 +42,7 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 
 	op := bi.T(f7, 5)<<3 | f3
 	if f7 &^= 0b0100000; f7 != 0 {
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
@@ -57,6 +58,6 @@ func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
 	case 0b_1_101:
 		instr.Sraw(&cpu.State, rd, rs1, rs2)
 	default:
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 	}
 }

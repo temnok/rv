@@ -4,6 +4,7 @@ import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/trap"
 )
 
 func (cpu *CPU) decompress(opcodePtr *int) {
@@ -12,7 +13,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	opcode = int(uint16(opcode))
 	decompressedOpcode := cpu.decompressOpcode(opcode)
 	if decompressedOpcode == 0 {
-		cpu.TrapEnter(ExceptionIllegalIstruction, opcode)
+		trap.Enter(&cpu.State, ExceptionIllegalIstruction, opcode)
 		return
 	}
 

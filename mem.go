@@ -3,6 +3,7 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/state"
+	"github.com/temnok/rv/trap"
 )
 
 func (cpu *CPU) memFetch(addr int, data *int) {
@@ -18,12 +19,12 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	if cpu.ICache.Hit(virtAddr) {
 		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
 	} else {
-		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.IsTrapped() {
+		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); trap.IsEntered(&cpu.State) {
 			return
 		}
 
 		if !cpu.Bus.Read(physAddr, &val, xbytes) {
-			cpu.TrapEnter(ExceptionInstructionAccessFault, addr)
+			trap.Enter(&cpu.State, ExceptionInstructionAccessFault, addr)
 			return
 		}
 	}
@@ -44,13 +45,13 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	physAddr += xbytes
 
 	if virtAddr&pageMask == 0 {
-		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); cpu.IsTrapped() {
+		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); trap.IsEntered(&cpu.State) {
 			return
 		}
 	}
 
 	if !cpu.Bus.Read(physAddr, &val, xbytes) {
-		cpu.TrapEnter(ExceptionInstructionAccessFault, virtAddr)
+		trap.Enter(&cpu.State, ExceptionInstructionAccessFault, virtAddr)
 		return
 	}
 
@@ -62,32 +63,32 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 
 func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessRead); cpu.IsTrapped() {
+	if cpu.translateSv(virtAddr, &physAddr, AccessRead); trap.IsEntered(&cpu.State) {
 		return
 	}
 
 	if virtAddr&(width-1) != 0 {
-		cpu.TrapEnter(ExceptionLoadAddressMisaligned, virtAddr)
+		trap.Enter(&cpu.State, ExceptionLoadAddressMisaligned, virtAddr)
 		return
 	}
 
 	if !cpu.Bus.Read(physAddr, data, width) {
-		cpu.TrapEnter(ExceptionLoadAccessFault, virtAddr)
+		trap.Enter(&cpu.State, ExceptionLoadAccessFault, virtAddr)
 	}
 }
 
 func (cpu *CPU) memWrite(virtAddr, data, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); cpu.IsTrapped() {
+	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); trap.IsEntered(&cpu.State) {
 		return
 	}
 
 	if virtAddr&(width-1) != 0 {
-		cpu.TrapEnter(ExceptionStoreAMOAddressMisaligned, virtAddr)
+		trap.Enter(&cpu.State, ExceptionStoreAMOAddressMisaligned, virtAddr)
 		return
 	}
 
 	if !cpu.Bus.Write(physAddr, data, width) {
-		cpu.TrapEnter(ExceptionStoreAMOAccessFault, virtAddr)
+		trap.Enter(&cpu.State, ExceptionStoreAMOAccessFault, virtAddr)
 	}
 }

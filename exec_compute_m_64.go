@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/instr"
+import (
+	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
+)
 
 func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
 	switch f3 {
@@ -15,6 +18,6 @@ func (cpu *CPU) execComputeM64(rs2, rs1, f3, rd int) {
 	case 0b_111:
 		instr.Remuw(&cpu.State, rd, rs1, rs2)
 	default:
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 	}
 }

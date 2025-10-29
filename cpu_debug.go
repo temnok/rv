@@ -32,7 +32,7 @@ func (cpu *CPU) debugStep() bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	//if cpu.IsTrapped() {
+	//if trap.IsEntered(&cpu.State) {
 	//	debugDump(cpu)
 	//	return false
 	//}

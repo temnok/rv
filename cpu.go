@@ -2,7 +2,9 @@ package rv
 
 import (
 	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
+	"github.com/temnok/rv/trap"
 )
 
 type CPU struct {
@@ -70,7 +72,7 @@ func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
 		},
 	}
 
-	cpu.CSR.Mstatus = cpu.Xint(xl<<state.MstatusSXL | xl<<state.MstatusUXL)
+	cpu.CSR.Mstatus = cpu.Xint(xl<<csr.MstatusSXL | xl<<csr.MstatusUXL)
 	cpu.Update.PC = cpu.Xint(startAddr)
 }
 
@@ -88,12 +90,12 @@ func (cpu *CPU) Step() bool {
 func (cpu *CPU) innerStep() int {
 	cpu.updateState()
 
-	if cpu.trapOnPendingInterrupts(); cpu.IsTrapped() {
+	if cpu.trapOnPendingInterrupts(); trap.IsEntered(&cpu.State) {
 		return 0
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.PC, &opcode); cpu.IsTrapped() {
+	if cpu.memFetch(cpu.PC, &opcode); trap.IsEntered(&cpu.State) {
 		return 0
 	}
 
@@ -124,7 +126,7 @@ func (cpu *CPU) trapOnPendingInterrupts() {
 
 		mcauseI := cpu.Xlen - 1
 		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
-			cpu.Trap(-1<<mcauseI | i)
+			trap.EnterWithoutTval(&cpu.State, -1<<mcauseI|i)
 
 			return
 		}

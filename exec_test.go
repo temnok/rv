@@ -2,6 +2,7 @@ package rv
 
 import (
 	"fmt"
+	"github.com/temnok/rv/trap"
 	"os"
 	"path/filepath"
 	"strings"
@@ -68,7 +69,7 @@ func runTest(t *testing.T, xlen int, file string) {
 			break
 		}
 
-		if cpu.IsTrapped() {
+		if trap.IsEntered(&cpu.State) {
 			trapCount++
 
 			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Update.TrapXcause)})
@@ -96,7 +97,7 @@ func runTest(t *testing.T, xlen int, file string) {
 			break
 		}
 
-		if cpu.IsTrapped() {
+		if trap.IsEntered(&cpu.State) {
 			if cause := cpu.Update.TrapXcause; cause == ExceptionEnvironmentCallFromUMode ||
 				cause == ExceptionEnvironmentCallFromSMode ||
 				cause == ExceptionEnvironmentCallFromMMode {

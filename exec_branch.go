@@ -1,6 +1,9 @@
 package rv
 
-import "github.com/temnok/rv/instr"
+import (
+	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
+)
 
 func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 	switch f3 {
@@ -17,6 +20,6 @@ func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
 	case 0b_111:
 		instr.Bgeu(&cpu.State, rs1, rs2, imm)
 	default:
-		cpu.Trap(ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(&cpu.State, ExceptionIllegalIstruction)
 	}
 }
