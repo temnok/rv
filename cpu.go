@@ -22,18 +22,6 @@ type ICache struct {
 const (
 	PageSize = 1 << 12
 
-	ExceptionInstructionAccessFault    = 1
-	ExceptionIllegalIstruction         = 2
-	ExceptionBreakpoint                = 3
-	ExceptionLoadAddressMisaligned     = 4
-	ExceptionLoadAccessFault           = 5
-	ExceptionStoreAMOAddressMisaligned = 6
-	ExceptionStoreAMOAccessFault       = 7
-	ExceptionEnvironmentCallFromUMode  = 8
-	ExceptionEnvironmentCallFromSMode  = 9
-	ExceptionEnvironmentCallFromMMode  = 11
-	ExceptionPageFault                 = 12
-
 	PrivU = 0
 	PrivS = 1
 	PrivM = 3

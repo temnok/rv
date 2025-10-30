@@ -98,9 +98,9 @@ func runTest(t *testing.T, xlen int, file string) {
 		}
 
 		if trap.IsEntered(cpu.State) {
-			if cause := cpu.Update.TrapXcause; cause == ExceptionEnvironmentCallFromUMode ||
-				cause == ExceptionEnvironmentCallFromSMode ||
-				cause == ExceptionEnvironmentCallFromMMode {
+			if cause := cpu.Update.TrapXcause; cause == trap.EnvironmentCallFromUMode ||
+				cause == trap.EnvironmentCallFromSMode ||
+				cause == trap.EnvironmentCallFromMMode {
 
 				if cpu.X[3] == 1 && cpu.X[10] == 0 {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)

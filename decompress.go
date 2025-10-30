@@ -13,7 +13,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 	opcode = int(uint16(opcode))
 	decompressedOpcode := cpu.decompressOpcode(opcode)
 	if decompressedOpcode == 0 {
-		trap.Enter(cpu.State, ExceptionIllegalIstruction, opcode)
+		trap.Enter(cpu.State, trap.IllegalIstruction, opcode)
 		return
 	}
 

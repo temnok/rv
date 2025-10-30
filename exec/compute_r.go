@@ -16,7 +16,7 @@ func ComputeR(cpu *state.State, op instr.Op) {
 	}
 
 	if f7&^0b0100000 != 0 {
-		trap.EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}
 
@@ -42,6 +42,6 @@ func ComputeR(cpu *state.State, op instr.Op) {
 	case 0b_111:
 		instr.And(cpu, op)
 	default:
-		trap.EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 	}
 }

@@ -20,16 +20,16 @@ func (cpu *CPU) execSystem(op instr.Op) {
 
 func (cpu *CPU) execSystemSpecial(imm, rd int) {
 	if rd != 0 {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
 
 	switch imm {
 	case 0b_0000_000_00000: // ecall
-		trap.EnterWithoutTval(cpu.State, ExceptionEnvironmentCallFromUMode+cpu.Priv)
+		trap.EnterWithoutTval(cpu.State, trap.EnvironmentCallFromUMode+cpu.Priv)
 
 	case 0b_0000_000_00001: // ebreak
-		trap.EnterWithoutTval(cpu.State, ExceptionBreakpoint)
+		trap.EnterWithoutTval(cpu.State, trap.Breakpoint)
 
 	case 0b_0001_000_00010: // sret
 		trap.Exit(cpu.State, PrivS)
@@ -46,11 +46,11 @@ func (cpu *CPU) execSystemSpecial(imm, rd int) {
 			cpu.Update.ICache.Clear()
 
 			if cpu.Priv == PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTVM) == 1 {
-				trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+				trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			}
 
 		default:
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		}
 	}
 }
@@ -69,26 +69,26 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 	case 0b_01: // csrrw
 		if rd != 0 {
 			if !csr.Read(cpu.State, csrReg, &val) {
-				trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+				trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 				return
 			}
 		}
 
 		if !csr.Write(cpu.State, csrReg, s) {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			return
 		}
 		cpu.Xset(rd, val)
 
 	case 0b_10: // csrrs
 		if !csr.Read(cpu.State, csrReg, &val) {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			return
 		}
 
 		if s != 0 {
 			if !csr.Write(cpu.State, csrReg, val|s) {
-				trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+				trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 				return
 			}
 		}
@@ -97,13 +97,13 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 
 	case 0b_11: // csrrc
 		if !csr.Read(cpu.State, csrReg, &val) {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			return
 		}
 
 		if s != 0 {
 			if !csr.Write(cpu.State, csrReg, val&^s) {
-				trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+				trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 				return
 			}
 		}
@@ -111,6 +111,6 @@ func (cpu *CPU) execSystemCSR(imm, rs1, f3, rd int) {
 		cpu.Xset(rd, val)
 
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }

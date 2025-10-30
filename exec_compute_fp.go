@@ -107,7 +107,7 @@ func (cpu *CPU) execComputeFP(op instr.Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.F7(), op.F5(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 
 	if f7&1 == 1 && !cpu.extD() || cpu.fpDisabled() {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
 
@@ -353,7 +353,7 @@ func (cpu *CPU) execComputeFP(op instr.Op) {
 	}
 
 	if cpu.Update.XReg < 0 && cpu.Update.FReg < 0 {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }
 

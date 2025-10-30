@@ -13,7 +13,7 @@ func Exit(cpu *state.State, retPriv int) {
 	trapped := cpu.Priv == state.PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTSR) == 1
 
 	if trapped || retPriv > cpu.Priv {
-		EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
+		EnterWithoutTval(cpu, IllegalIstruction)
 		return
 	}
 

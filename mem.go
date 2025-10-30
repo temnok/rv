@@ -24,7 +24,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 		}
 
 		if !cpu.Bus.Read(physAddr, &val, xbytes) {
-			trap.Enter(cpu.State, ExceptionInstructionAccessFault, addr)
+			trap.Enter(cpu.State, trap.InstructionAccessFault, addr)
 			return
 		}
 	}
@@ -51,7 +51,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	}
 
 	if !cpu.Bus.Read(physAddr, &val, xbytes) {
-		trap.Enter(cpu.State, ExceptionInstructionAccessFault, virtAddr)
+		trap.Enter(cpu.State, trap.InstructionAccessFault, virtAddr)
 		return
 	}
 
@@ -68,12 +68,12 @@ func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 	}
 
 	if virtAddr&(width-1) != 0 {
-		trap.Enter(cpu.State, ExceptionLoadAddressMisaligned, virtAddr)
+		trap.Enter(cpu.State, trap.LoadAddressMisaligned, virtAddr)
 		return
 	}
 
 	if !cpu.Bus.Read(physAddr, data, width) {
-		trap.Enter(cpu.State, ExceptionLoadAccessFault, virtAddr)
+		trap.Enter(cpu.State, trap.LoadAccessFault, virtAddr)
 	}
 }
 
@@ -84,11 +84,11 @@ func (cpu *CPU) memWrite(virtAddr, data, width int) {
 	}
 
 	if virtAddr&(width-1) != 0 {
-		trap.Enter(cpu.State, ExceptionStoreAMOAddressMisaligned, virtAddr)
+		trap.Enter(cpu.State, trap.StoreAMOAddressMisaligned, virtAddr)
 		return
 	}
 
 	if !cpu.Bus.Write(physAddr, data, width) {
-		trap.Enter(cpu.State, ExceptionStoreAMOAccessFault, virtAddr)
+		trap.Enter(cpu.State, trap.StoreAMOAccessFault, virtAddr)
 	}
 }

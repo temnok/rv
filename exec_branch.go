@@ -20,6 +20,6 @@ func (cpu *CPU) execBranch(op instr.Op) {
 	case 0b_111:
 		instr.Bgeu(cpu.State, op)
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }

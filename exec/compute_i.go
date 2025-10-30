@@ -18,7 +18,7 @@ func ComputeI(cpu *state.State, op instr.Op) {
 		case 0:
 			instr.Slli(cpu, op)
 		default:
-			trap.EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		}
 	case 0b_010:
 		instr.Slti(cpu, op)
@@ -33,7 +33,7 @@ func ComputeI(cpu *state.State, op instr.Op) {
 		case 0b_010000000000:
 			instr.Srai(cpu, op)
 		default:
-			trap.EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		}
 	case 0b_110:
 		instr.Ori(cpu, op)

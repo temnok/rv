@@ -18,6 +18,6 @@ func (cpu *CPU) execComputeM64(op instr.Op) {
 	case 0b_111:
 		instr.Remuw(cpu.State, op)
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }

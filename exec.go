@@ -53,6 +53,6 @@ func (cpu *CPU) exec(opcode int) {
 	case 0b_11100:
 		cpu.execSystem(op)
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }

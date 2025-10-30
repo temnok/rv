@@ -11,7 +11,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 
 	if f3 != 0b_010 && !(cpu.Xlen64() && f3 == 0b_011) ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 		}
 
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
 

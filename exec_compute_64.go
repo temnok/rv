@@ -28,13 +28,13 @@ func (cpu *CPU) execComputeI64(op instr.Op) {
 	}
 
 	if cpu.Update.XReg < 0 {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }
 
 func (cpu *CPU) execComputeR64(op instr.Op) {
 	if !cpu.Xlen64() {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (cpu *CPU) execComputeR64(op instr.Op) {
 	}
 
 	if f7&^0b0100000 != 0 {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
 
@@ -62,6 +62,6 @@ func (cpu *CPU) execComputeR64(op instr.Op) {
 	case 0b_1_101:
 		instr.Sraw(cpu.State, op)
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }

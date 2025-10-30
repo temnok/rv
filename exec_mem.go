@@ -26,7 +26,7 @@ func (cpu *CPU) execLoad(op instr.Op) {
 
 	case 0b_011: // ld
 		if !cpu.Xlen64() {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			return
 		}
 
@@ -43,7 +43,7 @@ func (cpu *CPU) execLoad(op instr.Op) {
 
 	case 0b_110: // lwu
 		if !cpu.Xlen64() {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			return
 		}
 
@@ -52,7 +52,7 @@ func (cpu *CPU) execLoad(op instr.Op) {
 	}
 
 	if cpu.Update.XReg < 0 && !trap.IsEntered(cpu.State) {
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }
 
@@ -71,14 +71,14 @@ func (cpu *CPU) execStore(op instr.Op) {
 
 	case 0b_011: // sd
 		if !cpu.Xlen64() {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 			return
 		}
 
 		cpu.memWrite(cpu.X[rs1]+imm, cpu.X[rs2], 8)
 
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }
 
@@ -88,17 +88,17 @@ func (cpu *CPU) execFence(op instr.Op) {
 	switch op.F3() {
 	case 0b_000: // fence
 		if (imm&^0b_1111_1111) != 0 || rs1 != 0 || rd != 0 {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		}
 
 	case 0b_001: // fence.i
 		cpu.Update.ICache.Clear()
 
 		if imm != 0 || rs1 != 0 || rd != 0 {
-			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		}
 
 	default:
-		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
+		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}
 }
