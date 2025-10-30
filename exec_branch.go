@@ -1,11 +1,14 @@
 package rv
 
 import (
+	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) execBranch(imm, rs2, rs1, f3 int) {
+func (cpu *CPU) execBranch(op instr.Op) {
+	imm, f3, rs1, rs2 := imm.B(op.Code()), op.F3(), op.Rs1(), op.Rs2()
+
 	switch f3 {
 	case 0b_000:
 		instr.Beq(cpu.State, rs1, rs2, imm)

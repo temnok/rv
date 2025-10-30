@@ -73,6 +73,7 @@ import "C"
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/trap"
 	"math"
 )
@@ -102,14 +103,16 @@ var rmToC = []C.int{
 	RmDYN: C.FE_TONEAREST,
 }
 
-func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
+func (cpu *CPU) execComputeFP(op instr.Op) {
+	f7, f5, f3, rd, rs1, rs2 := op.F7(), op.F5(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
+
 	if f7&1 == 1 && !cpu.extD() || cpu.fpDisabled() {
 		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
 	rs3 := 0
-	if op != 0 {
+	if f5 != 0b_10100 {
 		rs3 = f7 >> 2
 		f7 = 0b_10000000 | f7&3
 	}
@@ -319,7 +322,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 		cpu.f64setBits(rd, cpu.X[rs1])
 
 	case 0b_10000000:
-		switch op {
+		switch f5 {
 		case 0b_10000: // fmadd.s
 			cpu.f32set(rd, C.fmadd_s(cpu.f32arg3(rs1, rs2, rs3, f3)))
 
@@ -334,7 +337,7 @@ func (cpu *CPU) execComputeFP(f7, rs2, rs1, f3, rd, op int) {
 		}
 
 	case 0b_10000001:
-		switch op {
+		switch f5 {
 		case 0b_10000: // fmadd.d
 			cpu.f64set(rd, C.fmadd_d(cpu.f64arg3(rs1, rs2, rs3, f3)))
 

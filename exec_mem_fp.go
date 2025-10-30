@@ -3,6 +3,8 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/trap"
 )
 
@@ -10,15 +12,17 @@ func (cpu *CPU) fpDisabled() bool {
 	return bi.Ts(cpu.CSR.Mstatus, csr.MstatusFS, 2) == csr.FSoff
 }
 
-func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
+func (cpu *CPU) execLoadFP(op instr.Op) {
 	if cpu.fpDisabled() {
 		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
+	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+
 	var val int
 
-	switch f3 {
+	switch op.F3() {
 	case 0b_010: // flw
 		if cpu.memRead(cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(cpu.State) {
 			cpu.Update.FVal = f32boxingBits | val
@@ -42,13 +46,15 @@ func (cpu *CPU) execLoadFP(imm, rs1, f3, rd int) {
 	cpu.Update.FReg = rd
 }
 
-func (cpu *CPU) execStoreFP(imm, rs2, rs1, f3 int) {
+func (cpu *CPU) execStoreFP(op instr.Op) {
 	if cpu.fpDisabled() {
 		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
-	switch f3 {
+	imm, rs1, rs2 := imm.S(op.Code()), op.Rs1(), op.Rs2()
+
+	switch op.F3() {
 	case 0b_010: // fsw
 		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 4)
 

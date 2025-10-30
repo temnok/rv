@@ -1,11 +1,17 @@
 package rv
 
-import "github.com/temnok/rv/trap"
+import (
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
+)
 
-func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
+func (cpu *CPU) execLoad(op instr.Op) {
+	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+
 	var val int
 
-	switch f3 {
+	switch op.F3() {
 	case 0b_000: // lb
 		cpu.memRead(cpu.X[rs1]+imm, &val, 1)
 		cpu.Xset(rd, int(int8(val)))
@@ -50,8 +56,10 @@ func (cpu *CPU) execLoad(imm, rs1, f3, rd int) {
 	}
 }
 
-func (cpu *CPU) execStore(imm, rs2, rs1, f3 int) {
-	switch f3 {
+func (cpu *CPU) execStore(op instr.Op) {
+	imm, rs1, rs2 := imm.S(op.Code()), op.Rs1(), op.Rs2()
+
+	switch op.F3() {
 	case 0b_000: // sb
 		cpu.memWrite(cpu.X[rs1]+imm, int(uint8(cpu.X[rs2])), 1)
 
@@ -74,8 +82,10 @@ func (cpu *CPU) execStore(imm, rs2, rs1, f3 int) {
 	}
 }
 
-func (cpu *CPU) execFence(imm, rs1, f3, rd int) {
-	switch f3 {
+func (cpu *CPU) execFence(op instr.Op) {
+	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+
+	switch op.F3() {
 	case 0b_000: // fence
 		if (imm&^0b_1111_1111) != 0 || rs1 != 0 || rd != 0 {
 			trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)

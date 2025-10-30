@@ -1,4 +1,4 @@
-package rv
+package exec
 
 import (
 	"github.com/temnok/rv/instr"
@@ -16,6 +16,6 @@ var mInstr = []func(cpu *state.State, rd, rs1, rs2 int){
 	7: instr.Remu,
 }
 
-func (cpu *CPU) execComputeM(rs2, rs1, f3, rd int) {
-	mInstr[f3](cpu.State, rd, rs1, rs2)
+func ComputeM(cpu *state.State, rs2, rs1, f3, rd int) {
+	mInstr[f3](cpu, rd, rs1, rs2)
 }

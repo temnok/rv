@@ -2,13 +2,16 @@ package rv
 
 import (
 	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
+func (cpu *CPU) execComputeI64(op instr.Op) {
+	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+
 	if cpu.Xlen64() {
-		switch f3 {
+		switch op.F3() {
 		case 0b_000:
 			instr.Addiw(cpu.State, rd, rs1, imm)
 		case 0b_001:
@@ -29,24 +32,25 @@ func (cpu *CPU) execComputeI64(imm, rs1, f3, rd int) {
 	}
 }
 
-func (cpu *CPU) execComputeR64(f7, rs2, rs1, f3, rd int) {
+func (cpu *CPU) execComputeR64(op instr.Op) {
 	if !cpu.Xlen64() {
 		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
+
+	f7, f3, rd, rs1, rs2 := op.F7(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 
 	if f7 == 1 {
 		cpu.execComputeM64(rs2, rs1, f3, rd)
 		return
 	}
 
-	op := bi.T(f7, 5)<<3 | f3
-	if f7 &^= 0b0100000; f7 != 0 {
+	if f7&^0b0100000 != 0 {
 		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 		return
 	}
 
-	switch op {
+	switch bi.T(f7, 5)<<3 | f3 {
 	case 0b_000:
 		instr.Addw(cpu.State, rd, rs1, rs2)
 	case 0b_1_000:

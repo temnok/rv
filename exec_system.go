@@ -3,10 +3,14 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) execSystem(imm, rs1, f3, rd int) {
+func (cpu *CPU) execSystem(op instr.Op) {
+	imm, f3, rd, rs1 := imm.I(op.Code()), op.F3(), op.Rd(), op.Rs1()
+
 	if f3 == 0 {
 		cpu.execSystemSpecial(imm, rd)
 	} else {

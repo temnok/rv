@@ -1,8 +1,12 @@
 package rv
 
-import "github.com/temnok/rv/trap"
+import (
+	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/trap"
+)
 
-func (cpu *CPU) execAtomic(f7, rs2, rs1, f3, rd int) {
+func (cpu *CPU) execAtomic(op instr.Op) {
+	f7, f3, rd, rs1, rs2 := op.F7(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 	f5 := f7 >> 2
 
 	if f3 != 0b_010 && !(cpu.Xlen64() && f3 == 0b_011) ||
