@@ -5,9 +5,9 @@ import (
 	bi "math/bits"
 )
 
-func Mulh(cpu *state.State, rd, rs1, rs2 int) {
-	a := cpu.X[rs1]
-	b := cpu.X[rs2]
+func Mulh(cpu *state.State, op Op) {
+	a := cpu.X[op.Rs1()]
+	b := cpu.X[op.Rs2()]
 
 	var c int
 
@@ -20,5 +20,5 @@ func Mulh(cpu *state.State, rd, rs1, rs2 int) {
 		c = a * b >> 32
 	}
 
-	cpu.Xset(rd, c)
+	cpu.Xset(op.Rd(), c)
 }

@@ -1,12 +1,15 @@
 package instr
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/state"
+)
 
-func Bltu(cpu *state.State, rs1, rs2, imm int) {
-	a := cpu.Xuint(cpu.X[rs1])
-	b := cpu.Xuint(cpu.X[rs2])
+func Bltu(cpu *state.State, op Op) {
+	a := cpu.Xuint(cpu.X[op.Rs1()])
+	b := cpu.Xuint(cpu.X[op.Rs2()])
 
 	c := a < b
 
-	cpu.PCAddIf(c, imm)
+	cpu.PCAddIf(c, imm.B(op.Code()))
 }

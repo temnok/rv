@@ -8,36 +8,36 @@ import (
 )
 
 func ComputeI(cpu *state.State, op instr.Op) {
-	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+	imm := imm.I(op.Code())
 
 	switch op.F3() {
 	case 0b_000:
-		instr.Addi(cpu, rd, rs1, imm)
+		instr.Addi(cpu, op)
 	case 0b_001:
 		switch imm &^ cpu.Xmask() {
 		case 0:
-			instr.Slli(cpu, rd, rs1, imm)
+			instr.Slli(cpu, op)
 		default:
 			trap.EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
 		}
 	case 0b_010:
-		instr.Slti(cpu, rd, rs1, imm)
+		instr.Slti(cpu, op)
 	case 0b_011:
-		instr.Sltiu(cpu, rd, rs1, imm)
+		instr.Sltiu(cpu, op)
 	case 0b_100:
-		instr.Xori(cpu, rd, rs1, imm)
+		instr.Xori(cpu, op)
 	case 0b_101:
 		switch imm &^ cpu.Xmask() {
 		case 0:
-			instr.Srli(cpu, rd, rs1, imm)
+			instr.Srli(cpu, op)
 		case 0b_010000000000:
-			instr.Srai(cpu, rd, rs1, imm&cpu.Xmask())
+			instr.Srai(cpu, op)
 		default:
 			trap.EnterWithoutTval(cpu, state.ExceptionIllegalIstruction)
 		}
 	case 0b_110:
-		instr.Ori(cpu, rd, rs1, imm)
+		instr.Ori(cpu, op)
 	case 0b_111:
-		instr.Andi(cpu, rd, rs1, imm)
+		instr.Andi(cpu, op)
 	}
 }

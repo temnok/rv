@@ -6,11 +6,11 @@ import (
 )
 
 func Jalr(cpu *state.State, op Op) {
-	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+	imm := imm.I(op.Code())
 
 	savedPC := cpu.Update.PC
-	newPC := (cpu.X[rs1] + imm) &^ 1
+	newPC := (cpu.X[op.Rs1()] + imm) &^ 1
 
-	cpu.Xset(rd, savedPC)
+	cpu.Xset(op.Rd(), savedPC)
 	cpu.Update.PC = cpu.Xint(newPC)
 }

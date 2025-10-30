@@ -6,7 +6,7 @@ import (
 )
 
 func Lui(cpu *state.State, op Op) {
-	imm, rd := imm.U(op.Code()), op.Rd()
+	imm := imm.U(op.Code())
 
-	cpu.Xset(rd, imm)
+	cpu.Xset(op.Rd(), imm)
 }

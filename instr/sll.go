@@ -2,11 +2,11 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Sll(cpu *state.State, rd, rs1, rs2 int) {
-	a := cpu.X[rs1]
-	b := cpu.X[rs2] & cpu.Xmask()
+func Sll(cpu *state.State, op Op) {
+	a := cpu.X[op.Rs1()]
+	b := cpu.X[op.Rs2()] & cpu.Xmask()
 
 	c := a << b
 
-	cpu.Xset(rd, c)
+	cpu.Xset(op.Rd(), c)
 }

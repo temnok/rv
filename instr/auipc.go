@@ -6,9 +6,9 @@ import (
 )
 
 func Auipc(cpu *state.State, op Op) {
-	imm, rd := imm.U(op.Code()), op.Rd()
+	imm := imm.U(op.Code())
 
 	newPC := cpu.PC + imm
 
-	cpu.Xset(rd, newPC)
+	cpu.Xset(op.Rd(), newPC)
 }

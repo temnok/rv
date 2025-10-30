@@ -1,12 +1,15 @@
 package instr
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/state"
+)
 
-func Srai(cpu *state.State, rd, rs1, imm int) {
-	a := cpu.X[rs1]
-	b := imm
+func Srai(cpu *state.State, op Op) {
+	a := cpu.X[op.Rs1()]
+	b := imm.I(op.Code()) & cpu.Xmask()
 
 	c := a >> b
 
-	cpu.Xset(rd, c)
+	cpu.Xset(op.Rd(), c)
 }

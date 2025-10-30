@@ -1,27 +1,24 @@
 package rv
 
 import (
-	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/trap"
 )
 
 func (cpu *CPU) execBranch(op instr.Op) {
-	imm, f3, rs1, rs2 := imm.B(op.Code()), op.F3(), op.Rs1(), op.Rs2()
-
-	switch f3 {
+	switch op.F3() {
 	case 0b_000:
-		instr.Beq(cpu.State, rs1, rs2, imm)
+		instr.Beq(cpu.State, op)
 	case 0b_001:
-		instr.Bne(cpu.State, rs1, rs2, imm)
+		instr.Bne(cpu.State, op)
 	case 0b_100:
-		instr.Blt(cpu.State, rs1, rs2, imm)
+		instr.Blt(cpu.State, op)
 	case 0b_101:
-		instr.Bge(cpu.State, rs1, rs2, imm)
+		instr.Bge(cpu.State, op)
 	case 0b_110:
-		instr.Bltu(cpu.State, rs1, rs2, imm)
+		instr.Bltu(cpu.State, op)
 	case 0b_111:
-		instr.Bgeu(cpu.State, rs1, rs2, imm)
+		instr.Bgeu(cpu.State, op)
 	default:
 		trap.EnterWithoutTval(cpu.State, ExceptionIllegalIstruction)
 	}

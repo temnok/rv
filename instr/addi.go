@@ -1,13 +1,16 @@
 package instr
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/state"
+)
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#norm:addi_op
-func Addi(cpu *state.State, rd, rs1, imm int) {
-	a := cpu.X[rs1]
-	b := imm
+func Addi(cpu *state.State, op Op) {
+	a := cpu.X[op.Rs1()]
+	b := imm.I(op.Code())
 
 	c := a + b
 
-	cpu.Xset(rd, c)
+	cpu.Xset(op.Rd(), c)
 }

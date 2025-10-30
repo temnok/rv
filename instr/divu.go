@@ -4,14 +4,14 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Divu(cpu *state.State, rd, rs1, rs2 int) {
-	a := cpu.Xuint(cpu.X[rs1])
-	b := cpu.Xuint(cpu.X[rs2])
+func Divu(cpu *state.State, op Op) {
+	a := cpu.Xuint(cpu.X[op.Rs1()])
+	b := cpu.Xuint(cpu.X[op.Rs2()])
 
 	c := -1
 	if b != 0 {
 		c = int(a / b)
 	}
 
-	cpu.Xset(rd, c)
+	cpu.Xset(op.Rd(), c)
 }
