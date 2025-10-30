@@ -10,12 +10,12 @@ import (
 func ComputeR(cpu *state.State, op instr.Op) {
 	f7 := op.F7()
 
-	if f7 == 1 {
+	switch {
+	case f7 == 1:
 		ComputeM(cpu, op)
 		return
-	}
 
-	if f7&^0b0100000 != 0 {
+	case f7&^0b0100000 != 0:
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}

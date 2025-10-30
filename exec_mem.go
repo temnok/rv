@@ -92,11 +92,11 @@ func (cpu *CPU) execFence(op instr.Op) {
 		}
 
 	case 0b_001: // fence.i
-		cpu.Update.ICache.Clear()
-
 		if imm != 0 || rs1 != 0 || rd != 0 {
 			trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		}
+
+		cpu.Update.ICache.Clear()
 
 	default:
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)

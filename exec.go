@@ -18,39 +18,39 @@ func (cpu *CPU) exec(opcode int) {
 	cpu.Update.PC = cpu.Xint(cpu.PC + opcodeSize)
 
 	switch op := instr.Op(opcode); op.F5() {
-	case 0b_00000:
+	case 0:
 		cpu.execLoad(op)
-	case 0b_00001:
+	case 1:
 		cpu.execLoadFP(op)
-	case 0b_00011:
-		cpu.execFence(op)
-	case 0b_00100:
+	case 3:
+		exec.Fence(cpu.State, op)
+	case 4:
 		exec.ComputeI(cpu.State, op)
-	case 0b_00110:
-		cpu.execComputeI64(op)
-	case 0b_00101:
+	case 5:
 		instr.Auipc(cpu.State, op)
-	case 0b_01000:
+	case 6:
+		exec.ComputeI64(cpu.State, op)
+	case 8:
 		cpu.execStore(op)
-	case 0b_01001:
+	case 9:
 		cpu.execStoreFP(op)
-	case 0b_01011:
+	case 11:
 		cpu.execAtomic(op)
-	case 0b_01100:
+	case 12:
 		exec.ComputeR(cpu.State, op)
-	case 0b_01110:
-		cpu.execComputeR64(op)
-	case 0b_01101:
+	case 13:
 		instr.Lui(cpu.State, op)
-	case 0b_10000, 0b_10001, 0b_10010, 0b_10011, 0b_10100:
+	case 14:
+		exec.ComputeR64(cpu.State, op)
+	case 16, 17, 18, 19, 20:
 		cpu.execComputeFP(op)
-	case 0b_11000:
+	case 24:
 		cpu.execBranch(op)
-	case 0b_11001:
+	case 25:
 		instr.Jalr(cpu.State, op)
-	case 0b_11011:
+	case 27:
 		instr.Jal(cpu.State, op)
-	case 0b_11100:
+	case 28:
 		cpu.execSystem(op)
 	default:
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
