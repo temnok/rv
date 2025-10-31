@@ -45,7 +45,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 16, 17, 18, 19, 20:
 		cpu.execComputeFP(op)
 	case 24:
-		cpu.execBranch(op)
+		exec.Branch(cpu.State, op)
 	case 25:
 		instr.Jalr(cpu.State, op)
 	case 27:
