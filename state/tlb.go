@@ -1,4 +1,4 @@
-package rv
+package state
 
 type TLB struct {
 	entries []TLBEntry
@@ -10,11 +10,11 @@ type TLBEntry struct {
 
 const tlbSize = 4
 
-func (tlb *TLB) flush() {
+func (tlb *TLB) Flush() {
 	tlb.entries = tlb.entries[:0]
 }
 
-func (tlb *TLB) lookup(virtAddr int) (int, int) {
+func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 	for i, e := range tlb.entries {
 		shift := e.virtAddr & 0xFFF
 		if virtAddr>>shift == e.virtAddr>>shift {
@@ -27,7 +27,7 @@ func (tlb *TLB) lookup(virtAddr int) (int, int) {
 	return 0, 0
 }
 
-func (tlb *TLB) append(virtAddr, shift, pte int) {
+func (tlb *TLB) Append(virtAddr, shift, pte int) {
 	if tlbSize == 0 {
 		return
 	}

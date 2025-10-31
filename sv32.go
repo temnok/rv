@@ -19,14 +19,14 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		return
 	}
 
-	pte, shift := cpu.TLB.lookup(virtAddr)
+	pte, shift := cpu.TLB.Lookup(virtAddr)
 	if pte == 0 {
 		if cpu.loadPTEsv32(virtAddr, &pte, &shift); trap.IsEntered(cpu.State) {
 			return
 		}
 
 		if pte != 0 {
-			cpu.TLB.append(virtAddr, shift, pte)
+			cpu.TLB.Append(virtAddr, shift, pte)
 		}
 	}
 

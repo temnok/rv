@@ -51,7 +51,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 27:
 		instr.Jal(cpu.State, op)
 	case 28:
-		cpu.execSystem(op)
+		exec.System(cpu.State, op)
 	default:
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 	}

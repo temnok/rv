@@ -4,6 +4,8 @@ type State struct {
 	Fixed
 	Static
 	Update Updated
+
+	TLB TLB
 }
 
 func (cpu *State) Xlen64() bool {

@@ -9,7 +9,6 @@ import (
 
 type CPU struct {
 	Bus Bus
-	TLB TLB
 
 	*state.State
 }
