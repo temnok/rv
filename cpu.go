@@ -8,8 +8,6 @@ import (
 )
 
 type CPU struct {
-	Bus Bus
-
 	*state.State
 }
 
@@ -30,13 +28,13 @@ const (
 	AccessWrite   = 3
 )
 
-func (cpu *CPU) Init(xlen int, bus Bus, startAddr int) {
+func (cpu *CPU) Init(xlen int, bus state.Bus, startAddr int) {
 	xl := xlen / 32
 
 	*cpu = CPU{
-		Bus: bus,
-
 		State: &state.State{
+			Bus: bus,
+
 			Fixed: state.Fixed{
 				Xlen: xlen,
 			},

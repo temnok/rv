@@ -3,6 +3,7 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/state"
+	"github.com/temnok/rv/translate"
 	"github.com/temnok/rv/trap"
 )
 
@@ -19,7 +20,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	if cpu.ICache.Hit(virtAddr) {
 		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
 	} else {
-		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); trap.IsEntered(cpu.State) {
+		if translate.Sv(cpu.State, virtAddr, &physAddr, AccessExecute); trap.IsEntered(cpu.State) {
 			return
 		}
 
@@ -45,7 +46,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 	physAddr += xbytes
 
 	if virtAddr&pageMask == 0 {
-		if cpu.translateSv(virtAddr, &physAddr, AccessExecute); trap.IsEntered(cpu.State) {
+		if translate.Sv(cpu.State, virtAddr, &physAddr, AccessExecute); trap.IsEntered(cpu.State) {
 			return
 		}
 	}
@@ -63,7 +64,7 @@ func (cpu *CPU) memFetch(addr int, data *int) {
 
 func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessRead); trap.IsEntered(cpu.State) {
+	if translate.Sv(cpu.State, virtAddr, &physAddr, AccessRead); trap.IsEntered(cpu.State) {
 		return
 	}
 
@@ -79,7 +80,7 @@ func (cpu *CPU) memRead(virtAddr int, data *int, width int) {
 
 func (cpu *CPU) memWrite(virtAddr, data, width int) {
 	var physAddr int
-	if cpu.translateSv(virtAddr, &physAddr, AccessWrite); trap.IsEntered(cpu.State) {
+	if translate.Sv(cpu.State, virtAddr, &physAddr, AccessWrite); trap.IsEntered(cpu.State) {
 		return
 	}
 

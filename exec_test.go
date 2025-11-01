@@ -2,6 +2,7 @@ package rv
 
 import (
 	"fmt"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 	"os"
 	"path/filepath"
@@ -44,7 +45,7 @@ func runTest(t *testing.T, xlen int, file string) {
 
 	ramBaseAddr := 0x8000_0000
 
-	cpu.Init(xlen, Bus{ram}, ramBaseAddr)
+	cpu.Init(xlen, state.Bus{ram}, ramBaseAddr)
 	ram.Init(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 

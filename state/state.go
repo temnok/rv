@@ -6,6 +6,7 @@ type State struct {
 	Update Updated
 
 	TLB TLB
+	Bus Bus
 }
 
 func (cpu *State) Xlen64() bool {

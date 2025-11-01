@@ -1,4 +1,4 @@
-package rv
+package state
 
 type Bus []interface {
 	Access(addr int, data *int, width int, write bool) bool

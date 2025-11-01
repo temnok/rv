@@ -1,14 +1,15 @@
-package rv
+package translate
 
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
+func sv39(cpu *state.State, virtAddr int, physAddr *int, access int) {
 	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
-		trap.Enter(cpu.State, trap.PageFault+access, virtAddr)
+		trap.Enter(cpu, trap.PageFault+access, virtAddr)
 		return
 	}
 
@@ -26,7 +27,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 
 	pte, shift := cpu.TLB.Lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTEsv39(virtAddr, &pte, &shift); trap.IsEntered(cpu.State) {
+		if loadPTEsv39(cpu, virtAddr, &pte, &shift); trap.IsEntered(cpu) {
 			return
 		}
 
@@ -45,7 +46,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bi.T(pte, PteW) == 1 && bi.T(pte, PteD) == 1) ||
 		bi.T(pte, PteA) == 0 {
 
-		trap.Enter(cpu.State, trap.PageFault+access, virtAddr)
+		trap.Enter(cpu, trap.PageFault+access, virtAddr)
 		return
 	}
 
@@ -53,7 +54,7 @@ func (cpu *CPU) translateSv39(virtAddr int, physAddr *int, access int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
+func loadPTEsv39(cpu *state.State, virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
 	var pte int
 
@@ -62,7 +63,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 	//panic(fmt.Sprintf("*** oops: virtAddr:%x, pteAddr:%x, pte:%x", uint(virtAddr), uint(pteAddr), uint(pte)))
 
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
-		trap.Enter(cpu.State, trap.LoadAccessFault, virtAddr)
+		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}
 
@@ -82,7 +83,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr = bi.Ts(pte, 10, 44)<<12 | bi.Ts(virtAddr, 21, 9)<<3
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
-		trap.Enter(cpu.State, trap.LoadAccessFault, virtAddr)
+		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}
 
@@ -102,7 +103,7 @@ func (cpu *CPU) loadPTEsv39(virtAddr int, targetPTE, shift *int) {
 
 	pteAddr = bi.Ts(pte, 10, 44)<<12 | bi.Ts(virtAddr, 12, 9)<<3
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
-		trap.Enter(cpu.State, trap.LoadAccessFault, virtAddr)
+		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}
 

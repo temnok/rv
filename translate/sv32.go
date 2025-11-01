@@ -1,12 +1,13 @@
-package rv
+package translate
 
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
+func sv32(cpu *state.State, virtAddr int, physAddr *int, access int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.Priv
 	if bi.T(cpu.CSR.Mstatus, csr.MstatusMPRV) == 1 && access != AccessExecute {
@@ -21,7 +22,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 
 	pte, shift := cpu.TLB.Lookup(virtAddr)
 	if pte == 0 {
-		if cpu.loadPTEsv32(virtAddr, &pte, &shift); trap.IsEntered(cpu.State) {
+		if loadPTEsv32(cpu, virtAddr, &pte, &shift); trap.IsEntered(cpu) {
 			return
 		}
 
@@ -40,7 +41,7 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 		access == AccessWrite && !(bi.T(pte, PteW) == 1 && bi.T(pte, PteD) == 1) ||
 		bi.T(pte, PteA) == 0 {
 
-		trap.Enter(cpu.State, trap.PageFault+access, virtAddr)
+		trap.Enter(cpu, trap.PageFault+access, virtAddr)
 		return
 	}
 
@@ -48,13 +49,13 @@ func (cpu *CPU) translateSv32(virtAddr int, physAddr *int, access int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
+func loadPTEsv32(cpu *state.State, virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
 	var pte int
 
 	pteAddr := cpu.Xint(bi.Ts(cpu.CSR.Satp, 0, 20)<<12 | bi.Ts(virtAddr, 22, 10)<<2)
 	if !cpu.Bus.Read(pteAddr, &pte, 4) {
-		trap.Enter(cpu.State, trap.LoadAccessFault, virtAddr)
+		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}
 
@@ -71,7 +72,7 @@ func (cpu *CPU) loadPTEsv32(virtAddr int, targetPTE, shift *int) {
 	if !isLeaf {
 		pteAddr = cpu.Xint(bi.Ts(pte, 10, 20)<<12 | bi.Ts(virtAddr, 12, 10)<<2)
 		if !cpu.Bus.Read(pteAddr, &pte, 4) {
-			trap.Enter(cpu.State, trap.LoadAccessFault, virtAddr)
+			trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 			return
 		}
 
