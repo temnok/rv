@@ -1,7 +1,6 @@
 package rv
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -9,10 +8,6 @@ import (
 
 type CPU struct {
 	*state.State
-}
-
-type ICache struct {
-	VirtAddr, PhysAddr, Value int
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
@@ -75,7 +70,7 @@ func (cpu *CPU) Step() bool {
 func (cpu *CPU) innerStep() int {
 	cpu.updateState()
 
-	if cpu.trapOnPendingInterrupts(); trap.IsEntered(cpu.State) {
+	if trap.OnPendingInterrupts(cpu.State); trap.IsEntered(cpu.State) {
 		return 0
 	}
 
@@ -87,33 +82,4 @@ func (cpu *CPU) innerStep() int {
 	cpu.exec(opcode)
 
 	return opcode
-}
-
-// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func (cpu *CPU) trapOnPendingInterrupts() {
-	cpu.Bus.NotifyInterrupts()
-
-	mi := cpu.CSR.Mip & cpu.CSR.Mie
-
-	if mi == 0 {
-		return
-	}
-
-	for i := 12; i > 0; i-- {
-		if bi.T(mi, i) == 0 {
-			continue
-		}
-
-		priv := PrivM
-		if bi.T(cpu.CSR.Mideleg, i) == 1 {
-			priv = PrivS
-		}
-
-		mcauseI := cpu.Xlen - 1
-		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
-			trap.EnterWithoutTval(cpu.State, -1<<mcauseI|i)
-
-			return
-		}
-	}
 }
