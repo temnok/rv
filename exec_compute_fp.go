@@ -106,7 +106,7 @@ var rmToC = []C.int{
 func (cpu *CPU) execComputeFP(op instr.Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.F7(), op.F5(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 
-	if f7&1 == 1 && !cpu.extD() || cpu.fpDisabled() {
+	if f7&1 == 1 && !cpu.extD() || csr.FpDisabled(cpu.State) {
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}

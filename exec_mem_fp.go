@@ -1,7 +1,6 @@
 package rv
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
@@ -9,12 +8,8 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) fpDisabled() bool {
-	return bi.Ts(cpu.CSR.Mstatus, csr.MstatusFS, 2) == csr.FSoff
-}
-
 func (cpu *CPU) execLoadFP(op instr.Op) {
-	if cpu.fpDisabled() {
+	if csr.FpDisabled(cpu.State) {
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}
@@ -48,7 +43,7 @@ func (cpu *CPU) execLoadFP(op instr.Op) {
 }
 
 func (cpu *CPU) execStoreFP(op instr.Op) {
-	if cpu.fpDisabled() {
+	if csr.FpDisabled(cpu.State) {
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
 		return
 	}

@@ -19,7 +19,7 @@ func (cpu *CPU) exec(opcode int) {
 
 	switch op := instr.Op(opcode); op.F5() {
 	case 0:
-		cpu.execLoad(op)
+		exec.Load(cpu.State, op)
 	case 1:
 		cpu.execLoadFP(op)
 	case 3:
@@ -31,7 +31,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 6:
 		exec.ComputeI64(cpu.State, op)
 	case 8:
-		cpu.execStore(op)
+		exec.Store(cpu.State, op)
 	case 9:
 		cpu.execStoreFP(op)
 	case 11:
