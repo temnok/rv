@@ -2,6 +2,7 @@ package rv
 
 import (
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
@@ -10,17 +11,8 @@ type CPU struct {
 	*state.State
 }
 
-// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcauses
 const (
-	PageSize = 1 << 12
-
-	PrivU = 0
-	PrivS = 1
 	PrivM = 3
-
-	AccessExecute = 0
-	AccessRead    = 1
-	AccessWrite   = 3
 )
 
 func (cpu *CPU) Init(xlen int, bus state.Bus, startAddr int) {
@@ -75,7 +67,7 @@ func (cpu *CPU) innerStep() int {
 	}
 
 	var opcode int
-	if cpu.memFetch(cpu.PC, &opcode); trap.IsEntered(cpu.State) {
+	if mem.Fetch(cpu.State, cpu.PC, &opcode); trap.IsEntered(cpu.State) {
 		return 0
 	}
 

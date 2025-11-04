@@ -2,6 +2,7 @@ package rv
 
 import (
 	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/trap"
 )
 
@@ -22,7 +23,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 
 	var old int
 	if f5 != 0b_00011 { // for all except sc
-		if cpu.memRead(addr, &old, width); trap.IsEntered(cpu.State) {
+		if mem.Read(cpu.State, addr, &old, width); trap.IsEntered(cpu.State) {
 			return
 		}
 	}
@@ -92,7 +93,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 			val = int(uint32(val))
 		}
 
-		if cpu.memWrite(addr, val, width); trap.IsEntered(cpu.State) {
+		if mem.Write(cpu.State, addr, val, width); trap.IsEntered(cpu.State) {
 			return
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/trap"
 )
 
@@ -24,7 +25,7 @@ func (cpu *CPU) execLoadFP(op instr.Op) {
 
 	switch op.F3() {
 	case 0b_010: // flw
-		if cpu.memRead(cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(cpu.State) {
+		if mem.Read(cpu.State, cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(cpu.State) {
 			cpu.Update.FVal = f32boxingBits | val
 		}
 
@@ -34,7 +35,7 @@ func (cpu *CPU) execLoadFP(op instr.Op) {
 			return
 		}
 
-		if cpu.memRead(cpu.X[rs1]+imm, &val, 8); !trap.IsEntered(cpu.State) {
+		if mem.Read(cpu.State, cpu.X[rs1]+imm, &val, 8); !trap.IsEntered(cpu.State) {
 			cpu.Update.FVal = val
 		}
 
@@ -56,7 +57,7 @@ func (cpu *CPU) execStoreFP(op instr.Op) {
 
 	switch op.F3() {
 	case 0b_010: // fsw
-		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 4)
+		mem.Write(cpu.State, cpu.X[rs1]+imm, cpu.F[rs2], 4)
 
 	case 0b_011: // fsd
 		if !cpu.extD() {
@@ -64,7 +65,7 @@ func (cpu *CPU) execStoreFP(op instr.Op) {
 			return
 		}
 
-		cpu.memWrite(cpu.X[rs1]+imm, cpu.F[rs2], 8)
+		mem.Write(cpu.State, cpu.X[rs1]+imm, cpu.F[rs2], 8)
 
 	default:
 		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
