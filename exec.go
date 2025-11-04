@@ -35,7 +35,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 9:
 		cpu.execStoreFP(op)
 	case 11:
-		cpu.execAtomic(op)
+		exec.Atomic(cpu.State, op)
 	case 12:
 		exec.ComputeR(cpu.State, op)
 	case 13:

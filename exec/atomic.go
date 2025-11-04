@@ -1,18 +1,19 @@
-package rv
+package exec
 
 import (
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/mem"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) execAtomic(op instr.Op) {
+func Atomic(cpu *state.State, op instr.Op) {
 	f7, f3, rd, rs1, rs2 := op.F7(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 	f5 := f7 >> 2
 
 	if f3 != 0b_010 && !(cpu.Xlen64() && f3 == 0b_011) ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
-		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}
 
@@ -23,7 +24,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 
 	var old int
 	if f5 != 0b_00011 { // for all except sc
-		if mem.Read(cpu.State, addr, &old, width); trap.IsEntered(cpu.State) {
+		if mem.Read(cpu, addr, &old, width); trap.IsEntered(cpu) {
 			return
 		}
 	}
@@ -84,7 +85,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 		}
 
 	default:
-		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}
 
@@ -93,7 +94,7 @@ func (cpu *CPU) execAtomic(op instr.Op) {
 			val = int(uint32(val))
 		}
 
-		if mem.Write(cpu.State, addr, val, width); trap.IsEntered(cpu.State) {
+		if mem.Write(cpu, addr, val, width); trap.IsEntered(cpu) {
 			return
 		}
 	}
