@@ -21,7 +21,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 0:
 		exec.Load(cpu.State, op)
 	case 1:
-		cpu.execLoadFP(op)
+		exec.LoadFP(cpu.State, op)
 	case 3:
 		exec.Fence(cpu.State, op)
 	case 4:
@@ -33,7 +33,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 8:
 		exec.Store(cpu.State, op)
 	case 9:
-		cpu.execStoreFP(op)
+		exec.StoreFP(cpu.State, op)
 	case 11:
 		exec.Atomic(cpu.State, op)
 	case 12:

@@ -48,10 +48,6 @@ func (cpu *CPU) Init(xlen int, bus state.Bus, startAddr int) {
 	cpu.Update.PC = cpu.Xint(startAddr)
 }
 
-func (cpu *CPU) extD() bool {
-	return cpu.CSR.Misa&1<<('d'-'a') != 0
-}
-
 func (cpu *CPU) Step() bool {
 	//return cpu.debugStep()
 
