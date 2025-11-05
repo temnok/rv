@@ -15,7 +15,7 @@ const (
 	PrivM = 3
 )
 
-func (cpu *CPU) Init(xlen int, bus state.Bus, startAddr int) {
+func Init(cpu *CPU, xlen int, bus state.Bus, startAddr int) {
 	xl := xlen / 32
 
 	*cpu = CPU{
@@ -48,26 +48,26 @@ func (cpu *CPU) Init(xlen int, bus state.Bus, startAddr int) {
 	cpu.Update.PC = cpu.Xint(startAddr)
 }
 
-func (cpu *CPU) Step() bool {
-	//return cpu.debugStep()
+func Step(cpu *state.State) bool {
+	//return debugStep(cpu)
 
-	cpu.innerStep()
+	innerStep(cpu)
 	return true
 }
 
-func (cpu *CPU) innerStep() int {
-	cpu.updateState()
+func innerStep(cpu *state.State) int {
+	updateState(cpu)
 
-	if trap.OnPendingInterrupts(cpu.State); trap.IsEntered(cpu.State) {
+	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
 		return 0
 	}
 
 	var opcode int
-	if mem.Fetch(cpu.State, cpu.PC, &opcode); trap.IsEntered(cpu.State) {
+	if mem.Fetch(cpu, cpu.PC, &opcode); trap.IsEntered(cpu) {
 		return 0
 	}
 
-	cpu.exec(opcode)
+	Exec(cpu, opcode)
 
 	return opcode
 }

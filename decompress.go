@@ -4,16 +4,17 @@ import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
 
-func (cpu *CPU) decompress(opcodePtr *int) {
+func decompress(cpu *state.State, opcodePtr *int) {
 	opcode := *opcodePtr
 
 	opcode = int(uint16(opcode))
-	decompressedOpcode := cpu.decompressOpcode(opcode)
+	decompressedOpcode := decompressOpcode(cpu, opcode)
 	if decompressedOpcode == 0 {
-		trap.Enter(cpu.State, trap.IllegalIstruction, opcode)
+		trap.Enter(cpu, trap.IllegalIstruction, opcode)
 		return
 	}
 
@@ -21,7 +22,7 @@ func (cpu *CPU) decompress(opcodePtr *int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func (cpu *CPU) decompressOpcode(opcode int) int {
+func decompressOpcode(cpu *state.State, opcode int) int {
 	xlen := cpu.Xlen
 	xlen64 := cpu.Xlen64()
 

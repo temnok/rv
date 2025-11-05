@@ -3,6 +3,7 @@ package rv
 import (
 	"fmt"
 	"github.com/deadsy/rvda"
+	"github.com/temnok/rv/state"
 	"math"
 	"strings"
 )
@@ -12,8 +13,8 @@ var (
 	debugTrace     [][]int
 )
 
-func (cpu *CPU) debugStep() bool {
-	opcode := cpu.innerStep()
+func debugStep(cpu *state.State) bool {
+	opcode := innerStep(cpu)
 
 	entry := []int{cpu.PC, opcode}
 
@@ -40,7 +41,7 @@ func (cpu *CPU) debugStep() bool {
 	return true
 }
 
-func debugDump(cpu *CPU) {
+func debugDump(cpu *state.State) {
 	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
 
 	for _, entry := range debugTrace {

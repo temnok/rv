@@ -2,11 +2,12 @@ package rv
 
 import (
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
 )
 
-func (cpu *CPU) updateState() {
-	cpu.updateTimers()
-	cpu.clearPendingInterrupts()
+func updateState(cpu *state.State) {
+	updateTimers(cpu)
+	clearPendingInterrupts(cpu)
 
 	up := &cpu.Update
 
@@ -65,7 +66,7 @@ func (cpu *CPU) updateState() {
 	cpu.ICache = cpu.Update.ICache
 }
 
-func (cpu *CPU) updateTimers() {
+func updateTimers(cpu *state.State) {
 	if cpu.CSR.Cycle = cpu.Xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
 		cpu.CSR.Cycleh++
 	}
@@ -77,6 +78,6 @@ func (cpu *CPU) updateTimers() {
 	}
 }
 
-func (cpu *CPU) clearPendingInterrupts() {
+func clearPendingInterrupts(cpu *state.State) {
 	cpu.CSR.Mip &^= 1<<csr.MipSEI | 1<<csr.MipMTI | 1<<csr.MipMSI
 }

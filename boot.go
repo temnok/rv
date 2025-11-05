@@ -38,7 +38,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		kernelPath = path + ".kernel.gz"
 	}
 
-	cpu.Init(xlen, state.Bus{&ram, &clint, &plic, &uart}, ramBaseAddr)
+	Init(&cpu, xlen, state.Bus{&ram, &clint, &plic, &uart}, ramBaseAddr)
 	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
 	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
@@ -49,7 +49,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	ram.Load(ramBaseAddr, readFile(kernelPath))
 
 	for step := 0; !terminal.Closed; step++ {
-		ok := cpu.Step()
+		ok := Step(cpu.State)
 
 		if !ok || (timeout > 0 && step > timeout) {
 			break

@@ -45,7 +45,7 @@ func runTest(t *testing.T, xlen int, file string) {
 
 	ramBaseAddr := 0x8000_0000
 
-	cpu.Init(xlen, state.Bus{ram}, ramBaseAddr)
+	Init(cpu, xlen, state.Bus{ram}, ramBaseAddr)
 	ram.Init(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 
@@ -65,8 +65,8 @@ func runTest(t *testing.T, xlen int, file string) {
 			lastPCs = lastPCs[:n]
 		}
 
-		if !cpu.Step() {
-			debugDump(cpu)
+		if !Step(cpu.State) {
+			debugDump(cpu.State)
 			break
 		}
 
@@ -106,7 +106,7 @@ func runTest(t *testing.T, xlen int, file string) {
 				if cpu.X[3] == 1 && cpu.X[10] == 0 {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
-					debugDump(cpu)
+					debugDump(cpu.State)
 
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, pc=%08x\n"+
