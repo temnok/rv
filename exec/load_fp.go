@@ -9,10 +9,6 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-const (
-	f32boxingBits = -1 << 32
-)
-
 func LoadFP(cpu *state.State, op instr.Op) {
 	if csr.FpDisabled(cpu) {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)

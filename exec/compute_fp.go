@@ -1,4 +1,4 @@
-package rv
+package exec
 
 /*
 #cgo LDFLAGS: -lm
@@ -74,6 +74,7 @@ import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/instr"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 	"math"
 )
@@ -103,11 +104,11 @@ var rmToC = []C.int{
 	RmDYN: C.FE_TONEAREST,
 }
 
-func (cpu *CPU) execComputeFP(op instr.Op) {
+func ComputeFP(cpu *state.State, op instr.Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.F7(), op.F5(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 
-	if f7&1 == 1 && !csr.ExtD(cpu.State) || csr.FpDisabled(cpu.State) {
-		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
+	if f7&1 == 1 && !csr.ExtD(cpu) || csr.FpDisabled(cpu) {
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}
 
@@ -119,182 +120,182 @@ func (cpu *CPU) execComputeFP(op instr.Op) {
 
 	switch f7 {
 	case 0b_0000000: // fadd.s
-		cpu.f32set(rd, C.fadd_s(cpu.f32arg2(rs1, rs2, f3)))
+		f32set(cpu, rd, C.fadd_s(f32arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0000001: // fadd.d
-		cpu.f64set(rd, C.fadd_d(cpu.f64arg2(rs1, rs2, f3)))
+		f64set(cpu, rd, C.fadd_d(f64arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0000100: // fsub.s
-		cpu.f32set(rd, C.fsub_s(cpu.f32arg2(rs1, rs2, f3)))
+		f32set(cpu, rd, C.fsub_s(f32arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0000101: // fsub.d
-		cpu.f64set(rd, C.fsub_d(cpu.f64arg2(rs1, rs2, f3)))
+		f64set(cpu, rd, C.fsub_d(f64arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0001000: // fmul.s
-		cpu.f32set(rd, C.fmul_s(cpu.f32arg2(rs1, rs2, f3)))
+		f32set(cpu, rd, C.fmul_s(f32arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0001001: // fmul.d
-		cpu.f64set(rd, C.fmul_d(cpu.f64arg2(rs1, rs2, f3)))
+		f64set(cpu, rd, C.fmul_d(f64arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0001100: // fdiv.s
-		cpu.f32set(rd, C.fdiv_s(cpu.f32arg2(rs1, rs2, f3)))
+		f32set(cpu, rd, C.fdiv_s(f32arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0001101: // fdiv.d
-		cpu.f64set(rd, C.fdiv_d(cpu.f64arg2(rs1, rs2, f3)))
+		f64set(cpu, rd, C.fdiv_d(f64arg2(cpu, rs1, rs2, f3)))
 
 	case 0b_0010000:
 		switch f3 {
 		case 0b_000: // fsgnj.s
-			cpu.f32setBits(rd, cpu.f32bits(rs1)&^f32signMask|cpu.f32bits(rs2)&f32signMask)
+			f32setBits(cpu, rd, f32bits(cpu, rs1)&^f32signMask|f32bits(cpu, rs2)&f32signMask)
 
 		case 0b_001: // fsgnjn.s
-			cpu.f32setBits(rd, cpu.f32bits(rs1)&^f32signMask|(^cpu.f32bits(rs2))&f32signMask)
+			f32setBits(cpu, rd, f32bits(cpu, rs1)&^f32signMask|(^f32bits(cpu, rs2))&f32signMask)
 
 		case 0b_010: // fsgnjx.s
-			cpu.f32setBits(rd, cpu.f32bits(rs1)^cpu.f32bits(rs2)&f32signMask)
+			f32setBits(cpu, rd, f32bits(cpu, rs1)^f32bits(cpu, rs2)&f32signMask)
 		}
 
 	case 0b_0010001:
 		switch f3 {
 		case 0b_000: // fsgnj.d
-			cpu.f64setBits(rd, cpu.F[rs1]&^f64signMask|cpu.F[rs2]&f64signMask)
+			f64setBits(cpu, rd, cpu.F[rs1]&^f64signMask|cpu.F[rs2]&f64signMask)
 
 		case 0b_001: // fsgnjn.d
-			cpu.f64setBits(rd, cpu.F[rs1]&^f64signMask|(^cpu.F[rs2])&f64signMask)
+			f64setBits(cpu, rd, cpu.F[rs1]&^f64signMask|(^cpu.F[rs2])&f64signMask)
 
 		case 0b_010: // fsgnjx.d
-			cpu.f64setBits(rd, cpu.F[rs1]^cpu.F[rs2]&f64signMask)
+			f64setBits(cpu, rd, cpu.F[rs1]^cpu.F[rs2]&f64signMask)
 		}
 
 	case 0b_0010100:
 		switch f3 {
 		case 0b_000: // fmin.s
-			cpu.f32set(rd, C.fmin_s(cpu.f32arg2(rs1, rs2, -1)))
+			f32set(cpu, rd, C.fmin_s(f32arg2(cpu, rs1, rs2, -1)))
 
 		case 0b_001: // fmax.s
-			cpu.f32set(rd, C.fmax_s(cpu.f32arg2(rs1, rs2, -1)))
+			f32set(cpu, rd, C.fmax_s(f32arg2(cpu, rs1, rs2, -1)))
 		}
 
 	case 0b_0010101:
 		switch f3 {
 		case 0b_000: // fmin.d
-			cpu.f64set(rd, C.fmin_d(cpu.f64arg2(rs1, rs2, -1)))
+			f64set(cpu, rd, C.fmin_d(f64arg2(cpu, rs1, rs2, -1)))
 
 		case 0b_001: // fmax.d
-			cpu.f64set(rd, C.fmax_d(cpu.f64arg2(rs1, rs2, -1)))
+			f64set(cpu, rd, C.fmax_d(f64arg2(cpu, rs1, rs2, -1)))
 		}
 
 	case 0b_0100000:
 		switch rs2 {
 		case 0b_00001: // fcvt.s.d
-			cpu.f32set(rd, C.fcvt_s_d(cpu.f64arg(rs1, f3)))
+			f32set(cpu, rd, C.fcvt_s_d(f64arg(cpu, rs1, f3)))
 		}
 
 	case 0b_0100001:
 		switch rs2 {
 		case 0b_00000: // fcvt.d.s
-			cpu.f64set(rd, C.fcvt_d_s(cpu.f32arg(rs1, f3)))
+			f64set(cpu, rd, C.fcvt_d_s(f32arg(cpu, rs1, f3)))
 		}
 
 	case 0b_0101100: // fsqrt.s
 		if rs2 == 0 {
-			cpu.f32set(rd, C.fsqrt_s(cpu.f32arg(rs1, f3)))
+			f32set(cpu, rd, C.fsqrt_s(f32arg(cpu, rs1, f3)))
 		}
 
 	case 0b_0101101: // fsqrt.d
 		if rs2 == 0 {
-			cpu.f64set(rd, C.fsqrt_d(cpu.f64arg(rs1, f3)))
+			f64set(cpu, rd, C.fsqrt_d(f64arg(cpu, rs1, f3)))
 		}
 
 	case 0b_1010000: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_compare_instructions
 		switch f3 {
 		case 0b_000: // fle.s
-			a, b := cpu.f32(rs1), cpu.f32(rs2)
-			cpu.fsetCmp(rd, a <= b, isNaN32(a) || isNaN32(b))
+			a, b := f32(cpu, rs1), f32(cpu, rs2)
+			fsetCmp(cpu, rd, a <= b, isNaN32(a) || isNaN32(b))
 
 		case 0b_001: // flt.s
-			a, b := cpu.f32(rs1), cpu.f32(rs2)
-			cpu.fsetCmp(rd, a < b, isNaN32(a) || isNaN32(b))
+			a, b := f32(cpu, rs1), f32(cpu, rs2)
+			fsetCmp(cpu, rd, a < b, isNaN32(a) || isNaN32(b))
 
 		case 0b_010: // feq.s
-			a, b := cpu.f32(rs1), cpu.f32(rs2)
-			cpu.fsetCmp(rd, a == b, isSNaN32(a) || isSNaN32(b))
+			a, b := f32(cpu, rs1), f32(cpu, rs2)
+			fsetCmp(cpu, rd, a == b, isSNaN32(a) || isSNaN32(b))
 		}
 
 	case 0b_1010001:
 		switch f3 {
 		case 0b_000: // fle.d
-			a, b := cpu.f64(rs1), cpu.f64(rs2)
-			cpu.fsetCmp(rd, a <= b, isNaN64(a) || isNaN64(b))
+			a, b := f64(cpu, rs1), f64(cpu, rs2)
+			fsetCmp(cpu, rd, a <= b, isNaN64(a) || isNaN64(b))
 
 		case 0b_001: // flt.d
-			a, b := cpu.f64(rs1), cpu.f64(rs2)
-			cpu.fsetCmp(rd, a < b, isNaN64(a) || isNaN64(b))
+			a, b := f64(cpu, rs1), f64(cpu, rs2)
+			fsetCmp(cpu, rd, a < b, isNaN64(a) || isNaN64(b))
 
 		case 0b_010: // feq.d
-			a, b := cpu.f64(rs1), cpu.f64(rs2)
-			cpu.fsetCmp(rd, a == b, isSNaN64(a) || isSNaN64(b))
+			a, b := f64(cpu, rs1), f64(cpu, rs2)
+			fsetCmp(cpu, rd, a == b, isSNaN64(a) || isSNaN64(b))
 		}
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_single_precision_floating_point_conversion_and_move_instructions
 	case 0b_1100000:
 		switch rs2 {
 		case 0b_00000: // fcvt.w.s
-			cpu.fxset(rd, int(C.fcvt_w_s(cpu.f32arg(rs1, f3))))
+			fxset(cpu, rd, int(C.fcvt_w_s(f32arg(cpu, rs1, f3))))
 
 		case 0b_00001: // fcvt.wu.s
-			cpu.fxset(rd, int(int32(C.fcvt_wu_s(cpu.f32arg(rs1, f3)))))
+			fxset(cpu, rd, int(int32(C.fcvt_wu_s(f32arg(cpu, rs1, f3)))))
 
 		case 0b_00010: // fcvt.l.s
-			cpu.fxset(rd, int(C.fcvt_l_s(cpu.f32arg(rs1, f3))))
+			fxset(cpu, rd, int(C.fcvt_l_s(f32arg(cpu, rs1, f3))))
 
 		case 0b_00011: // fcvt.lu.s
-			cpu.fxset(rd, int(C.fcvt_lu_s(cpu.f32arg(rs1, f3))))
+			fxset(cpu, rd, int(C.fcvt_lu_s(f32arg(cpu, rs1, f3))))
 		}
 
 	case 0b_1100001:
 		switch rs2 {
 		case 0b_00000: // fcvt.w.d
-			cpu.fxset(rd, int(C.fcvt_w_d(cpu.f64arg(rs1, f3))))
+			fxset(cpu, rd, int(C.fcvt_w_d(f64arg(cpu, rs1, f3))))
 
 		case 0b_00001: // fcvt.wu.d
-			cpu.fxset(rd, int(int32(C.fcvt_wu_d(cpu.f64arg(rs1, f3)))))
+			fxset(cpu, rd, int(int32(C.fcvt_wu_d(f64arg(cpu, rs1, f3)))))
 
 		case 0b_00010: // fcvt.l.d
-			cpu.fxset(rd, int(C.fcvt_l_d(cpu.f64arg(rs1, f3))))
+			fxset(cpu, rd, int(C.fcvt_l_d(f64arg(cpu, rs1, f3))))
 
 		case 0b_00011: // fcvt.lu.d
-			cpu.fxset(rd, int(C.fcvt_lu_d(cpu.f64arg(rs1, f3))))
+			fxset(cpu, rd, int(C.fcvt_lu_d(f64arg(cpu, rs1, f3))))
 		}
 
 	case 0b_1101000:
 		switch rs2 {
 		case 0b_00000: // fcvt.s.w
-			cpu.f32set(rd, C.fcvt_s_w(C.int32_t(cpu.fxget(rs1, f3))))
+			f32set(cpu, rd, C.fcvt_s_w(C.int32_t(fxget(cpu, rs1, f3))))
 
 		case 0b_00001: // fcvt.s.wu
-			cpu.f32set(rd, C.fcvt_s_wu(C.uint32_t(cpu.fxget(rs1, f3))))
+			f32set(cpu, rd, C.fcvt_s_wu(C.uint32_t(fxget(cpu, rs1, f3))))
 
 		case 0b_00010: // fcvt.s.l
-			cpu.f32set(rd, C.fcvt_s_l(C.int64_t(cpu.fxget(rs1, f3))))
+			f32set(cpu, rd, C.fcvt_s_l(C.int64_t(fxget(cpu, rs1, f3))))
 
 		case 0b_00011: // fcvt.s.lu
-			cpu.f32set(rd, C.fcvt_s_lu(C.uint64_t(cpu.fxget(rs1, f3))))
+			f32set(cpu, rd, C.fcvt_s_lu(C.uint64_t(fxget(cpu, rs1, f3))))
 		}
 
 	case 0b_1101001:
 		switch rs2 {
 		case 0b_00000: // fcvt.d.w
-			cpu.f64set(rd, C.fcvt_d_w(C.int32_t(cpu.fxget(rs1, f3))))
+			f64set(cpu, rd, C.fcvt_d_w(C.int32_t(fxget(cpu, rs1, f3))))
 
 		case 0b_00001: // fcvt.d.wu
-			cpu.f64set(rd, C.fcvt_d_wu(C.uint32_t(cpu.fxget(rs1, f3))))
+			f64set(cpu, rd, C.fcvt_d_wu(C.uint32_t(fxget(cpu, rs1, f3))))
 
 		case 0b_00010: // fcvt.d.l
-			cpu.f64set(rd, C.fcvt_d_l(C.int64_t(cpu.fxget(rs1, f3))))
+			f64set(cpu, rd, C.fcvt_d_l(C.int64_t(fxget(cpu, rs1, f3))))
 
 		case 0b_00011: // fcvt.d.lu
-			cpu.f64set(rd, C.fcvt_d_lu(C.uint64_t(cpu.fxget(rs1, f3))))
+			f64set(cpu, rd, C.fcvt_d_lu(C.uint64_t(fxget(cpu, rs1, f3))))
 		}
 
 	case 0b_1110000:
@@ -303,7 +304,7 @@ func (cpu *CPU) execComputeFP(op instr.Op) {
 			cpu.Xset(rd, int(int32(cpu.F[rs1])))
 
 		case 0b_00000_001: // fclass.s
-			cpu.Xset(rd, fclass_s(cpu.f32(rs1)))
+			cpu.Xset(rd, fclass_s(f32(cpu, rs1)))
 		}
 
 	case 0b_1110001:
@@ -312,112 +313,112 @@ func (cpu *CPU) execComputeFP(op instr.Op) {
 			cpu.Xset(rd, cpu.F[rs1])
 
 		case 0b_00000_001: // fclass.d
-			cpu.Xset(rd, fclass_d(cpu.f64(rs1)))
+			cpu.Xset(rd, fclass_d(f64(cpu, rs1)))
 		}
 
 	case 0b_1111000: // fmv.w.x
-		cpu.f32setBits(rd, cpu.X[rs1])
+		f32setBits(cpu, rd, cpu.X[rs1])
 
 	case 0b_1111001: // fmv.d.x
-		cpu.f64setBits(rd, cpu.X[rs1])
+		f64setBits(cpu, rd, cpu.X[rs1])
 
 	case 0b_10000000:
 		switch f5 {
 		case 0b_10000: // fmadd.s
-			cpu.f32set(rd, C.fmadd_s(cpu.f32arg3(rs1, rs2, rs3, f3)))
+			f32set(cpu, rd, C.fmadd_s(f32arg3(cpu, rs1, rs2, rs3, f3)))
 
 		case 0b_10001: // fmsub.s
-			cpu.f32set(rd, C.fmsub_s(cpu.f32arg3(rs1, rs2, rs3, f3)))
+			f32set(cpu, rd, C.fmsub_s(f32arg3(cpu, rs1, rs2, rs3, f3)))
 
 		case 0b_10010: // fnmsub.s
-			cpu.f32set(rd, C.fnmsub_s(cpu.f32arg3(rs1, rs2, rs3, f3)))
+			f32set(cpu, rd, C.fnmsub_s(f32arg3(cpu, rs1, rs2, rs3, f3)))
 
 		case 0b_10011: // fnmadd.s
-			cpu.f32set(rd, C.fnmadd_s(cpu.f32arg3(rs1, rs2, rs3, f3)))
+			f32set(cpu, rd, C.fnmadd_s(f32arg3(cpu, rs1, rs2, rs3, f3)))
 		}
 
 	case 0b_10000001:
 		switch f5 {
 		case 0b_10000: // fmadd.d
-			cpu.f64set(rd, C.fmadd_d(cpu.f64arg3(rs1, rs2, rs3, f3)))
+			f64set(cpu, rd, C.fmadd_d(f64arg3(cpu, rs1, rs2, rs3, f3)))
 
 		case 0b_10001: // fmsub.d
-			cpu.f64set(rd, C.fmsub_d(cpu.f64arg3(rs1, rs2, rs3, f3)))
+			f64set(cpu, rd, C.fmsub_d(f64arg3(cpu, rs1, rs2, rs3, f3)))
 
 		case 0b_10010: // fnmsub.d
-			cpu.f64set(rd, C.fnmsub_d(cpu.f64arg3(rs1, rs2, rs3, f3)))
+			f64set(cpu, rd, C.fnmsub_d(f64arg3(cpu, rs1, rs2, rs3, f3)))
 
 		case 0b_10011: // fnmadd.d
-			cpu.f64set(rd, C.fnmadd_d(cpu.f64arg3(rs1, rs2, rs3, f3)))
+			f64set(cpu, rd, C.fnmadd_d(f64arg3(cpu, rs1, rs2, rs3, f3)))
 		}
 	}
 
 	if cpu.Update.XReg < 0 && cpu.Update.FReg < 0 {
-		trap.EnterWithoutTval(cpu.State, trap.IllegalIstruction)
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 	}
 }
 
-func (cpu *CPU) f32arg(rs1, f3 int) C.float {
-	cpu.prepareCfenv(f3)
-	return C.float(cpu.f32(rs1))
+func f32arg(cpu *state.State, rs1, f3 int) C.float {
+	prepareCfenv(cpu, f3)
+	return C.float(f32(cpu, rs1))
 }
 
-func (cpu *CPU) f32arg2(rs1, rs2, f3 int) (C.float, C.float) {
-	cpu.prepareCfenv(f3)
-	return C.float(cpu.f32(rs1)), C.float(cpu.f32(rs2))
+func f32arg2(cpu *state.State, rs1, rs2, f3 int) (C.float, C.float) {
+	prepareCfenv(cpu, f3)
+	return C.float(f32(cpu, rs1)), C.float(f32(cpu, rs2))
 }
 
-func (cpu *CPU) f32arg3(rs1, rs2, rs3, f3 int) (C.float, C.float, C.float) {
-	cpu.prepareCfenv(f3)
-	return C.float(cpu.f32(rs1)), C.float(cpu.f32(rs2)), C.float(cpu.f32(rs3))
+func f32arg3(cpu *state.State, rs1, rs2, rs3, f3 int) (C.float, C.float, C.float) {
+	prepareCfenv(cpu, f3)
+	return C.float(f32(cpu, rs1)), C.float(f32(cpu, rs2)), C.float(f32(cpu, rs3))
 }
 
-func (cpu *CPU) f64arg(rs1, f3 int) C.double {
-	cpu.prepareCfenv(f3)
-	return C.double(cpu.f64(rs1))
+func f64arg(cpu *state.State, rs1, f3 int) C.double {
+	prepareCfenv(cpu, f3)
+	return C.double(f64(cpu, rs1))
 }
 
-func (cpu *CPU) f64arg2(rs1, rs2, f3 int) (C.double, C.double) {
-	cpu.prepareCfenv(f3)
-	return C.double(cpu.f64(rs1)), C.double(cpu.f64(rs2))
+func f64arg2(cpu *state.State, rs1, rs2, f3 int) (C.double, C.double) {
+	prepareCfenv(cpu, f3)
+	return C.double(f64(cpu, rs1)), C.double(f64(cpu, rs2))
 }
 
-func (cpu *CPU) f64arg3(rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
-	cpu.prepareCfenv(f3)
-	return C.double(cpu.f64(rs1)), C.double(cpu.f64(rs2)), C.double(cpu.f64(rs3))
+func f64arg3(cpu *state.State, rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
+	prepareCfenv(cpu, f3)
+	return C.double(f64(cpu, rs1)), C.double(f64(cpu, rs2)), C.double(f64(cpu, rs3))
 }
 
-func (cpu *CPU) f32set(rd int, res C.float) {
+func f32set(cpu *state.State, rd int, res C.float) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = f32boxingBits | int(math.Float32bits(float32(res)))
 	if uint(cpu.Update.FVal) == 0xffffffffffc00000 {
 		cpu.Update.FVal &^= f32signMask
 	}
 
-	cpu.setUpdatedFflags()
+	setUpdatedFflags(cpu)
 }
 
-func (cpu *CPU) f64set(rd int, res C.double) {
+func f64set(cpu *state.State, rd int, res C.double) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = int(math.Float64bits(float64(res)))
 	if uint(cpu.Update.FVal) == 0xfff8000000000000 {
 		cpu.Update.FVal &^= f64signMask
 	}
 
-	cpu.setUpdatedFflags()
+	setUpdatedFflags(cpu)
 }
 
-func (cpu *CPU) fxget(rs1, f3 int) int {
-	cpu.prepareCfenv(f3)
+func fxget(cpu *state.State, rs1, f3 int) int {
+	prepareCfenv(cpu, f3)
 	return cpu.X[rs1]
 }
 
-func (cpu *CPU) fxset(rd, res int) {
+func fxset(cpu *state.State, rd, res int) {
 	cpu.Xset(rd, res)
-	cpu.setUpdatedFflags()
+	setUpdatedFflags(cpu)
 }
 
-func (cpu *CPU) fsetCmp(rd int, res, nv bool) {
+func fsetCmp(cpu *state.State, rd int, res, nv bool) {
 	if res {
 		cpu.Xset(rd, 1)
 	} else {
@@ -428,22 +429,22 @@ func (cpu *CPU) fsetCmp(rd int, res, nv bool) {
 	}
 }
 
-func (cpu *CPU) f32setBits(rd, bits int) {
+func f32setBits(cpu *state.State, rd, bits int) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = f32boxingBits | bits
 }
 
-func (cpu *CPU) f64setBits(rd, bits int) {
+func f64setBits(cpu *state.State, rd, bits int) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = bits
 }
 
-func (cpu *CPU) f32(i int) float32 {
-	return math.Float32frombits(uint32(cpu.f32bits(i)))
+func f32(cpu *state.State, i int) float32 {
+	return math.Float32frombits(uint32(f32bits(cpu, i)))
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#nanboxing
-func (cpu *CPU) f32bits(i int) int {
+func f32bits(cpu *state.State, i int) int {
 	val := cpu.F[i]
 	if val>>32 != -1 {
 		return nan32bits
@@ -451,11 +452,11 @@ func (cpu *CPU) f32bits(i int) int {
 	return val
 }
 
-func (cpu *CPU) f64(i int) float64 {
+func f64(cpu *state.State, i int) float64 {
 	return math.Float64frombits(uint64(cpu.F[i]))
 }
 
-func (cpu *CPU) prepareCfenv(rm int) {
+func prepareCfenv(cpu *state.State, rm int) {
 	if rm >= 0 {
 		if rm == RmDYN {
 			rm = bi.Ts(cpu.CSR.Fcsr, csr.FcsrRM, 3)
@@ -467,7 +468,7 @@ func (cpu *CPU) prepareCfenv(rm int) {
 	C.feclearexcept(C.FE_ALL_EXCEPT)
 }
 
-func (cpu *CPU) setUpdatedFflags() {
+func setUpdatedFflags(cpu *state.State) {
 	ex := C.fetestexcept(C.FE_ALL_EXCEPT)
 
 	if ex&C.FE_INEXACT != 0 {
@@ -515,31 +516,22 @@ func fclass_s(a float32) int {
 	switch {
 	case math.IsInf(float64(a), -1):
 		i = 0
-
 	case a <= -smallestNormal:
 		i = 1
-
 	case a < 0:
 		i = 2
-
 	case math.Signbit(float64(a)):
 		i = 3
-
 	case a == 0:
 		i = 4
-
 	case a < smallestNormal:
 		i = 5
-
 	case float64(a) < math.Inf(1):
 		i = 6
-
 	case a > 0:
 		i = 7
-
 	case isSNaN32(a):
 		i = 8
-
 	default:
 		i = 9
 	}
@@ -555,31 +547,22 @@ func fclass_d(a float64) int {
 	switch {
 	case math.IsInf(a, -1):
 		i = 0
-
 	case a <= -smallestNormal:
 		i = 1
-
 	case a < 0:
 		i = 2
-
 	case math.Signbit(a):
 		i = 3
-
 	case a == 0:
 		i = 4
-
 	case a < smallestNormal:
 		i = 5
-
 	case a < math.Inf(1):
 		i = 6
-
 	case a > 0:
 		i = 7
-
 	case isSNaN64(a):
 		i = 8
-
 	default:
 		i = 9
 	}

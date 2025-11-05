@@ -43,7 +43,7 @@ func (cpu *CPU) exec(opcode int) {
 	case 14:
 		exec.ComputeR64(cpu.State, op)
 	case 16, 17, 18, 19, 20:
-		cpu.execComputeFP(op)
+		exec.ComputeFP(cpu.State, op)
 	case 24:
 		exec.Branch(cpu.State, op)
 	case 25:
