@@ -2,7 +2,6 @@ package exec
 
 import (
 	"github.com/temnok/rv/bi"
-	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/state"
@@ -26,29 +25,25 @@ func systemSpecial(cpu *state.CPU, op instr.Op) {
 	}
 
 	switch imm {
-	case 0b_0000_000_00000: // ecall
-		trap.EnterWithoutTval(cpu, trap.EnvironmentCallFromUMode+cpu.Priv)
+	case 0b_0000_000_00000:
+		instr.Ecall(cpu, op)
 
-	case 0b_0000_000_00001: // ebreak
-		trap.EnterWithoutTval(cpu, trap.Breakpoint)
+	case 0b_0000_000_00001:
+		instr.Ebreak(cpu, op)
 
-	case 0b_0001_000_00010: // sret
-		trap.Exit(cpu, state.PrivS)
+	case 0b_0001_000_00010:
+		instr.Sret(cpu, op)
 
-	case 0b_0001_000_00101: // wfi, https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#wfi
+	case 0b_0001_000_00101:
+		instr.Wfi(cpu, op)
 
-	case 0b_0011_000_00010: // mret
-		trap.Exit(cpu, state.PrivM)
+	case 0b_0011_000_00010:
+		instr.Mret(cpu, op)
 
 	default:
 		switch bi.Ts(imm, 5, 7) {
-		case 0b_0001_001: // sfence.vma
-			cpu.TLB.Flush()
-			cpu.Update.ICache.Clear()
-
-			if cpu.Priv == state.PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTVM) == 1 {
-				trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
-			}
+		case 0b_0001_001:
+			instr.Sfence_vma(cpu, op)
 
 		default:
 			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
