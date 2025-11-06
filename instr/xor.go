@@ -2,7 +2,7 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Xor(cpu *state.State, op Op) {
+func Xor(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 

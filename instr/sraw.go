@@ -2,7 +2,7 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Sraw(cpu *state.State, op Op) {
+func Sraw(cpu *state.CPU, op Op) {
 	a := int32(cpu.X[op.Rs1()])
 	b := int32(cpu.X[op.Rs2()]) & 31
 

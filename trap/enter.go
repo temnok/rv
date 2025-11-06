@@ -6,15 +6,15 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func IsEntered(cpu *state.State) bool {
+func IsEntered(cpu *state.CPU) bool {
 	return cpu.Update.TrapEnter
 }
 
-func EnterWithoutTval(cpu *state.State, cause int) {
+func EnterWithoutTval(cpu *state.CPU, cause int) {
 	Enter(cpu, cause, 0)
 }
 
-func Enter(cpu *state.State, cause, tval int) {
+func Enter(cpu *state.CPU, cause, tval int) {
 	if IsEntered(cpu) {
 		panic("double Trap")
 	}

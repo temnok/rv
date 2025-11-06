@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Jalr(cpu *state.State, op Op) {
+func Jalr(cpu *state.CPU, op Op) {
 	imm := imm.I(op.Code())
 
 	savedPC := cpu.Update.PC

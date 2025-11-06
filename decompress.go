@@ -8,7 +8,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func decompress(cpu *state.State, opcodePtr *int) {
+func decompress(cpu *state.CPU, opcodePtr *int) {
 	opcode := *opcodePtr
 
 	opcode = int(uint16(opcode))
@@ -22,7 +22,7 @@ func decompress(cpu *state.State, opcodePtr *int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func decompressOpcode(cpu *state.State, opcode int) int {
+func decompressOpcode(cpu *state.CPU, opcode int) int {
 	xlen := cpu.Xlen
 	xlen64 := cpu.Xlen64()
 

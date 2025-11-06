@@ -9,7 +9,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func System(cpu *state.State, op instr.Op) {
+func System(cpu *state.CPU, op instr.Op) {
 	if op.F3() == 0 {
 		systemSpecial(cpu, op)
 	} else {
@@ -17,7 +17,7 @@ func System(cpu *state.State, op instr.Op) {
 	}
 }
 
-func systemSpecial(cpu *state.State, op instr.Op) {
+func systemSpecial(cpu *state.CPU, op instr.Op) {
 	imm, rd := imm.I(op.Code()), op.Rd()
 
 	if rd != 0 {
@@ -56,7 +56,7 @@ func systemSpecial(cpu *state.State, op instr.Op) {
 	}
 }
 
-func systemCSR(cpu *state.State, op instr.Op) {
+func systemCSR(cpu *state.CPU, op instr.Op) {
 	switch op.F3() & 3 {
 	case 1:
 		instr.Csrrw(cpu, op)

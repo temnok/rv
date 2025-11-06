@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Bgeu(cpu *state.State, op Op) {
+func Bgeu(cpu *state.CPU, op Op) {
 	a := cpu.Xuint(cpu.X[op.Rs1()])
 	b := cpu.Xuint(cpu.X[op.Rs2()])
 

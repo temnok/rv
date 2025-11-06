@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Ori(cpu *state.State, op Op) {
+func Ori(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := imm.I(op.Code())
 

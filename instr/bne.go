@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Bne(cpu *state.State, op Op) {
+func Bne(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 

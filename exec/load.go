@@ -8,7 +8,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Load(cpu *state.State, op instr.Op) {
+func Load(cpu *state.CPU, op instr.Op) {
 	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
 
 	var val int

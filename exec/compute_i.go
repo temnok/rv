@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-var iInstr = []func(cpu *state.State, op instr.Op){
+var iInstr = []func(cpu *state.CPU, op instr.Op){
 	0: instr.Addi,
 	1: slli,
 	2: instr.Slti,
@@ -18,11 +18,11 @@ var iInstr = []func(cpu *state.State, op instr.Op){
 	7: instr.Andi,
 }
 
-func ComputeI(cpu *state.State, op instr.Op) {
+func ComputeI(cpu *state.CPU, op instr.Op) {
 	iInstr[op.F3()](cpu, op)
 }
 
-func slli(cpu *state.State, op instr.Op) {
+func slli(cpu *state.CPU, op instr.Op) {
 	imm := imm.I(op.Code())
 
 	switch imm &^ cpu.Xmask() {
@@ -33,7 +33,7 @@ func slli(cpu *state.State, op instr.Op) {
 	}
 }
 
-func sr_i(cpu *state.State, op instr.Op) {
+func sr_i(cpu *state.CPU, op instr.Op) {
 	imm := imm.I(op.Code())
 
 	switch imm &^ cpu.Xmask() {

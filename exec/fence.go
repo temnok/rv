@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Fence(cpu *state.State, op instr.Op) {
+func Fence(cpu *state.CPU, op instr.Op) {
 	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
 
 	switch op.F3() {

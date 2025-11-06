@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Csrrc(cpu *state.State, op Op) {
+func Csrrc(cpu *state.CPU, op Op) {
 	r, s := csrRS(cpu, op)
 	val := 0
 

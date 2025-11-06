@@ -8,7 +8,7 @@ import (
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#otherpriv
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func Exit(cpu *state.State, retPriv int) {
+func Exit(cpu *state.CPU, retPriv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
 	trapped := cpu.Priv == state.PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTSR) == 1
 

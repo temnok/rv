@@ -104,7 +104,7 @@ var rmToC = []C.int{
 	RmDYN: C.FE_TONEAREST,
 }
 
-func ComputeFP(cpu *state.State, op instr.Op) {
+func ComputeFP(cpu *state.CPU, op instr.Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.F7(), op.F5(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 
 	if f7&1 == 1 && !csr.ExtD(cpu) || csr.FpDisabled(cpu) {
@@ -358,37 +358,37 @@ func ComputeFP(cpu *state.State, op instr.Op) {
 	}
 }
 
-func f32arg(cpu *state.State, rs1, f3 int) C.float {
+func f32arg(cpu *state.CPU, rs1, f3 int) C.float {
 	prepareCfenv(cpu, f3)
 	return C.float(f32(cpu, rs1))
 }
 
-func f32arg2(cpu *state.State, rs1, rs2, f3 int) (C.float, C.float) {
+func f32arg2(cpu *state.CPU, rs1, rs2, f3 int) (C.float, C.float) {
 	prepareCfenv(cpu, f3)
 	return C.float(f32(cpu, rs1)), C.float(f32(cpu, rs2))
 }
 
-func f32arg3(cpu *state.State, rs1, rs2, rs3, f3 int) (C.float, C.float, C.float) {
+func f32arg3(cpu *state.CPU, rs1, rs2, rs3, f3 int) (C.float, C.float, C.float) {
 	prepareCfenv(cpu, f3)
 	return C.float(f32(cpu, rs1)), C.float(f32(cpu, rs2)), C.float(f32(cpu, rs3))
 }
 
-func f64arg(cpu *state.State, rs1, f3 int) C.double {
+func f64arg(cpu *state.CPU, rs1, f3 int) C.double {
 	prepareCfenv(cpu, f3)
 	return C.double(f64(cpu, rs1))
 }
 
-func f64arg2(cpu *state.State, rs1, rs2, f3 int) (C.double, C.double) {
+func f64arg2(cpu *state.CPU, rs1, rs2, f3 int) (C.double, C.double) {
 	prepareCfenv(cpu, f3)
 	return C.double(f64(cpu, rs1)), C.double(f64(cpu, rs2))
 }
 
-func f64arg3(cpu *state.State, rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
+func f64arg3(cpu *state.CPU, rs1, rs2, rs3, f3 int) (C.double, C.double, C.double) {
 	prepareCfenv(cpu, f3)
 	return C.double(f64(cpu, rs1)), C.double(f64(cpu, rs2)), C.double(f64(cpu, rs3))
 }
 
-func f32set(cpu *state.State, rd int, res C.float) {
+func f32set(cpu *state.CPU, rd int, res C.float) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = f32boxingBits | int(math.Float32bits(float32(res)))
 	if uint(cpu.Update.FVal) == 0xffffffffffc00000 {
@@ -398,7 +398,7 @@ func f32set(cpu *state.State, rd int, res C.float) {
 	setUpdatedFflags(cpu)
 }
 
-func f64set(cpu *state.State, rd int, res C.double) {
+func f64set(cpu *state.CPU, rd int, res C.double) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = int(math.Float64bits(float64(res)))
 	if uint(cpu.Update.FVal) == 0xfff8000000000000 {
@@ -408,17 +408,17 @@ func f64set(cpu *state.State, rd int, res C.double) {
 	setUpdatedFflags(cpu)
 }
 
-func fxget(cpu *state.State, rs1, f3 int) int {
+func fxget(cpu *state.CPU, rs1, f3 int) int {
 	prepareCfenv(cpu, f3)
 	return cpu.X[rs1]
 }
 
-func fxset(cpu *state.State, rd, res int) {
+func fxset(cpu *state.CPU, rd, res int) {
 	cpu.Xset(rd, res)
 	setUpdatedFflags(cpu)
 }
 
-func fsetCmp(cpu *state.State, rd int, res, nv bool) {
+func fsetCmp(cpu *state.CPU, rd int, res, nv bool) {
 	if res {
 		cpu.Xset(rd, 1)
 	} else {
@@ -429,22 +429,22 @@ func fsetCmp(cpu *state.State, rd int, res, nv bool) {
 	}
 }
 
-func f32setBits(cpu *state.State, rd, bits int) {
+func f32setBits(cpu *state.CPU, rd, bits int) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = f32boxingBits | bits
 }
 
-func f64setBits(cpu *state.State, rd, bits int) {
+func f64setBits(cpu *state.CPU, rd, bits int) {
 	cpu.Update.FReg = rd
 	cpu.Update.FVal = bits
 }
 
-func f32(cpu *state.State, i int) float32 {
+func f32(cpu *state.CPU, i int) float32 {
 	return math.Float32frombits(uint32(f32bits(cpu, i)))
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#nanboxing
-func f32bits(cpu *state.State, i int) int {
+func f32bits(cpu *state.CPU, i int) int {
 	val := cpu.F[i]
 	if val>>32 != -1 {
 		return nan32bits
@@ -452,11 +452,11 @@ func f32bits(cpu *state.State, i int) int {
 	return val
 }
 
-func f64(cpu *state.State, i int) float64 {
+func f64(cpu *state.CPU, i int) float64 {
 	return math.Float64frombits(uint64(cpu.F[i]))
 }
 
-func prepareCfenv(cpu *state.State, rm int) {
+func prepareCfenv(cpu *state.CPU, rm int) {
 	if rm >= 0 {
 		if rm == RmDYN {
 			rm = bi.Ts(cpu.CSR.Fcsr, csr.FcsrRM, 3)
@@ -468,7 +468,7 @@ func prepareCfenv(cpu *state.State, rm int) {
 	C.feclearexcept(C.FE_ALL_EXCEPT)
 }
 
-func setUpdatedFflags(cpu *state.State) {
+func setUpdatedFflags(cpu *state.CPU) {
 	ex := C.fetestexcept(C.FE_ALL_EXCEPT)
 
 	if ex&C.FE_INEXACT != 0 {

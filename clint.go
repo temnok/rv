@@ -3,16 +3,17 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
 )
 
 type CLINT struct {
-	cpu      *CPU
+	cpu      *state.CPU
 	baseAddr int
 
 	mswi, mtimecmp, mtimecmph int
 }
 
-func (clint *CLINT) Init(cpu *CPU, baseAddr int) {
+func (clint *CLINT) Init(cpu *state.CPU, baseAddr int) {
 	*clint = CLINT{
 		cpu:      cpu,
 		baseAddr: cpu.Xint(baseAddr),

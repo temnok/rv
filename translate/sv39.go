@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func sv39(cpu *state.State, virtAddr int, physAddr *int, access int) {
+func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
 		return
@@ -54,7 +54,7 @@ func sv39(cpu *state.State, virtAddr int, physAddr *int, access int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func loadPTEsv39(cpu *state.State, virtAddr int, targetPTE, shift *int) {
+func loadPTEsv39(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
 	var pte int
 

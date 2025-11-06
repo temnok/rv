@@ -13,7 +13,7 @@ var (
 	debugTrace     [][]int
 )
 
-func debugStep(cpu *state.State) bool {
+func debugStep(cpu *state.CPU) bool {
 	opcode := innerStep(cpu)
 
 	entry := []int{cpu.PC, opcode}
@@ -33,7 +33,7 @@ func debugStep(cpu *state.State) bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	//if trap.IsEntered(cpu.State) {
+	//if trap.IsEntered(cpu.CPU) {
 	//	debugDump(cpu)
 	//	return false
 	//}
@@ -41,7 +41,7 @@ func debugStep(cpu *state.State) bool {
 	return true
 }
 
-func debugDump(cpu *state.State) {
+func debugDump(cpu *state.CPU) {
 	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
 
 	for _, entry := range debugTrace {

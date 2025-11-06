@@ -8,7 +8,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Store(cpu *state.State, op instr.Op) {
+func Store(cpu *state.CPU, op instr.Op) {
 	imm, rs1, rs2 := imm.S(op.Code()), op.Rs1(), op.Rs2()
 
 	switch op.F3() {

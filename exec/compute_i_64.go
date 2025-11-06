@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func ComputeI64(cpu *state.State, op instr.Op) {
+func ComputeI64(cpu *state.CPU, op instr.Op) {
 	imm := imm.I(op.Code())
 
 	if cpu.Xlen64() {

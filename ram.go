@@ -1,14 +1,17 @@
 package rv
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/temnok/rv/state"
+)
 
 type RAM struct {
-	cpu      *CPU
+	cpu      *state.CPU
 	baseAddr int
 	words    []int
 }
 
-func (ram *RAM) Init(cpu *CPU, baseAddr int, size int) {
+func (ram *RAM) Init(cpu *state.CPU, baseAddr int, size int) {
 	*ram = RAM{
 		cpu:      cpu,
 		baseAddr: cpu.Xint(baseAddr),

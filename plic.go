@@ -3,10 +3,11 @@ package rv
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
 )
 
 type PLIC struct {
-	cpu      *CPU
+	cpu      *state.CPU
 	baseAddr int
 
 	priority  [32]int
@@ -17,7 +18,7 @@ type PLIC struct {
 	claiming  int
 }
 
-func (plic *PLIC) Init(cpu *CPU, baseAddr int) {
+func (plic *PLIC) Init(cpu *state.CPU, baseAddr int) {
 	*plic = PLIC{
 		cpu:      cpu,
 		baseAddr: cpu.Xint(baseAddr),

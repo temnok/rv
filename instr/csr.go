@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func csrRS(cpu *state.State, op Op) (int, int) {
+func csrRS(cpu *state.CPU, op Op) (int, int) {
 	r := bi.Ts(imm.I(op.Code()), 0, 12)
 
 	s := op.Rs1()

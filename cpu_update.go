@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func updateState(cpu *state.State) {
+func updateState(cpu *state.CPU) {
 	updateTimers(cpu)
 	clearPendingInterrupts(cpu)
 
@@ -17,7 +17,7 @@ func updateState(cpu *state.State) {
 		cpu.CSR.Mstatus = up.TrapMstatus
 
 		if up.TrapEnter {
-			if up.TrapPriv == PrivM {
+			if up.TrapPriv == state.PrivM {
 				cpu.CSR.Mepc = up.TrapXepc
 				cpu.CSR.Mcause = up.TrapXcause
 				cpu.CSR.Mtval = up.TrapXtval
@@ -66,7 +66,7 @@ func updateState(cpu *state.State) {
 	cpu.ICache = cpu.Update.ICache
 }
 
-func updateTimers(cpu *state.State) {
+func updateTimers(cpu *state.CPU) {
 	if cpu.CSR.Cycle = cpu.Xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
 		cpu.CSR.Cycleh++
 	}
@@ -78,6 +78,6 @@ func updateTimers(cpu *state.State) {
 	}
 }
 
-func clearPendingInterrupts(cpu *state.State) {
+func clearPendingInterrupts(cpu *state.CPU) {
 	cpu.CSR.Mip &^= 1<<csr.MipSEI | 1<<csr.MipMTI | 1<<csr.MipMSI
 }

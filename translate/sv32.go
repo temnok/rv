@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func sv32(cpu *state.State, virtAddr int, physAddr *int, access int) {
+func sv32(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_memory_privilege_in_mstatus_register
 	epriv := cpu.Priv
 	if bi.T(cpu.CSR.Mstatus, csr.MstatusMPRV) == 1 && access != AccessExecute {
@@ -49,7 +49,7 @@ func sv32(cpu *state.State, virtAddr int, physAddr *int, access int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func loadPTEsv32(cpu *state.State, virtAddr int, targetPTE, shift *int) {
+func loadPTEsv32(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
 	*targetPTE = 0
 	var pte int
 

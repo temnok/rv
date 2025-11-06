@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Read(cpu *state.State, virtAddr int, data *int, width int) {
+func Read(cpu *state.CPU, virtAddr int, data *int, width int) {
 	var physAddr int
 	if translate.Sv(cpu, virtAddr, &physAddr, state.AccessRead); trap.IsEntered(cpu) {
 		return

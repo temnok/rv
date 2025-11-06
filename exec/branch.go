@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Branch(cpu *state.State, op instr.Op) {
+func Branch(cpu *state.CPU, op instr.Op) {
 	switch op.F3() {
 	case 0b_000:
 		instr.Beq(cpu, op)

@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Write(cpu *state.State, i, val int) bool {
+func Write(cpu *state.CPU, i, val int) bool {
 	reg, mask, shift := addr(cpu, i, true)
 
 	if reg == nil {

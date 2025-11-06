@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func ComputeR(cpu *state.State, op instr.Op) {
+func ComputeR(cpu *state.CPU, op instr.Op) {
 	f7 := op.F7()
 
 	switch {

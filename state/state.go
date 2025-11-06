@@ -1,6 +1,6 @@
 package state
 
-type State struct {
+type CPU struct {
 	Fixed
 	Static
 	Update Updated
@@ -9,15 +9,15 @@ type State struct {
 	Bus Bus
 }
 
-func (cpu *State) Xlen64() bool {
+func (cpu *CPU) Xlen64() bool {
 	return cpu.Xlen == 64
 }
 
-func (cpu *State) Xmask() int {
+func (cpu *CPU) Xmask() int {
 	return cpu.Xlen - 1
 }
 
-func (cpu *State) Xint(val int) int {
+func (cpu *CPU) Xint(val int) int {
 	if cpu.Xlen64() {
 		return val
 	}
@@ -25,7 +25,7 @@ func (cpu *State) Xint(val int) int {
 	return int(int32(val))
 }
 
-func (cpu *State) Xuint(val int) uint {
+func (cpu *CPU) Xuint(val int) uint {
 	if cpu.Xlen64() {
 		return uint(val)
 	}
@@ -33,12 +33,12 @@ func (cpu *State) Xuint(val int) uint {
 	return uint(uint32(val))
 }
 
-func (cpu *State) Xset(rd, val int) {
+func (cpu *CPU) Xset(rd, val int) {
 	cpu.Update.XReg = rd
 	cpu.Update.XVal = cpu.Xint(val)
 }
 
-func (cpu *State) XsetBool(rd int, val bool) {
+func (cpu *CPU) XsetBool(rd int, val bool) {
 	if val {
 		cpu.Xset(rd, 1)
 	} else {
@@ -46,7 +46,7 @@ func (cpu *State) XsetBool(rd int, val bool) {
 	}
 }
 
-func (cpu *State) PCAddIf(c bool, imm int) {
+func (cpu *CPU) PCAddIf(c bool, imm int) {
 	if c {
 		cpu.Update.PC = cpu.Xint(cpu.PC + imm)
 	}

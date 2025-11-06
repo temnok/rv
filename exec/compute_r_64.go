@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func ComputeR64(cpu *state.State, op instr.Op) {
+func ComputeR64(cpu *state.CPU, op instr.Op) {
 	if !cpu.Xlen64() {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return

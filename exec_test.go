@@ -40,7 +40,7 @@ func runTest(t *testing.T, xlen int, file string) {
 		t.Fatal(err)
 	}
 
-	cpu := &CPU{}
+	cpu := &state.CPU{}
 	ram := &RAM{}
 
 	ramBaseAddr := 0x8000_0000
@@ -65,12 +65,12 @@ func runTest(t *testing.T, xlen int, file string) {
 			lastPCs = lastPCs[:n]
 		}
 
-		if !Step(cpu.State) {
-			debugDump(cpu.State)
+		if !Step(cpu) {
+			debugDump(cpu)
 			break
 		}
 
-		if trap.IsEntered(cpu.State) {
+		if trap.IsEntered(cpu) {
 			trapCount++
 
 			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Update.TrapXcause)})
@@ -98,7 +98,7 @@ func runTest(t *testing.T, xlen int, file string) {
 			break
 		}
 
-		if trap.IsEntered(cpu.State) {
+		if trap.IsEntered(cpu) {
 			if cause := cpu.Update.TrapXcause; cause == trap.EnvironmentCallFromUMode ||
 				cause == trap.EnvironmentCallFromSMode ||
 				cause == trap.EnvironmentCallFromMMode {
@@ -106,7 +106,7 @@ func runTest(t *testing.T, xlen int, file string) {
 				if cpu.X[3] == 1 && cpu.X[10] == 0 {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
-					debugDump(cpu.State)
+					debugDump(cpu)
 
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, pc=%08x\n"+

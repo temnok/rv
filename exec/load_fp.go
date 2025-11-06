@@ -9,7 +9,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func LoadFP(cpu *state.State, op instr.Op) {
+func LoadFP(cpu *state.CPU, op instr.Op) {
 	if csr.FpDisabled(cpu) {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return

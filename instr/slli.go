@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Slli(cpu *state.State, op Op) {
+func Slli(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := imm.I(op.Code())
 

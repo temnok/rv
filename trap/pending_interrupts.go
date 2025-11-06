@@ -6,7 +6,7 @@ import (
 )
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func OnPendingInterrupts(cpu *state.State) {
+func OnPendingInterrupts(cpu *state.CPU) {
 	cpu.Bus.NotifyInterrupts()
 
 	mi := cpu.CSR.Mip & cpu.CSR.Mie

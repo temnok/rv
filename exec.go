@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-var routes = []func(*state.State, instr.Op){
+var routes = []func(*state.CPU, instr.Op){
 	0:  exec.Load,
 	1:  exec.LoadFP,
 	3:  exec.Fence,
@@ -31,7 +31,7 @@ var routes = []func(*state.State, instr.Op){
 	28: exec.System,
 }
 
-func Exec(cpu *state.State, opcode int) {
+func Exec(cpu *state.CPU, opcode int) {
 	opcodeSize := 4
 	if isCompressed := opcode&3 != 3; isCompressed {
 		opcodeSize = 2

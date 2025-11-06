@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func addr(cpu *state.State, i int, write bool) (reg *int, mask, shift int) {
+func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 	if write && bi.Ts(i, 10, 2) == 3 || cpu.Priv < bi.Ts(i, 8, 2) {
 		return
 	}

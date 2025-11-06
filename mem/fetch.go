@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Fetch(cpu *state.State, addr int, data *int) {
+func Fetch(cpu *state.CPU, addr int, data *int) {
 	const (
 		xbytes   = 8
 		pageMask = state.PageSize - 1

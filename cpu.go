@@ -7,40 +7,30 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-type CPU struct {
-	*state.State
-}
-
-const (
-	PrivM = 3
-)
-
-func Init(cpu *CPU, xlen int, bus state.Bus, startAddr int) {
+func Init(cpu *state.CPU, xlen int, bus state.Bus, startAddr int) {
 	xl := xlen / 32
 
-	*cpu = CPU{
-		State: &state.State{
-			Bus: bus,
+	*cpu = state.CPU{
+		Bus: bus,
 
-			Fixed: state.Fixed{
-				Xlen: xlen,
+		Fixed: state.Fixed{
+			Xlen: xlen,
+		},
+
+		Static: state.Static{
+			Priv: state.PrivM,
+
+			CSR: state.CSR{
+				Misa: xl<<(xlen-2) |
+					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+					1<<('f'-'a') | ('d' - 'a') |
+					1<<('u'-'a') | 1<<('s'-'a'),
 			},
+		},
 
-			Static: state.Static{
-				Priv: PrivM,
-
-				CSR: state.CSR{
-					Misa: xl<<(xlen-2) |
-						1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-						1<<('f'-'a') | ('d' - 'a') |
-						1<<('u'-'a') | 1<<('s'-'a'),
-				},
-			},
-
-			Update: state.Updated{
-				XReg: -1,
-				CReg: -1,
-			},
+		Update: state.Updated{
+			XReg: -1,
+			CReg: -1,
 		},
 	}
 
@@ -48,14 +38,14 @@ func Init(cpu *CPU, xlen int, bus state.Bus, startAddr int) {
 	cpu.Update.PC = cpu.Xint(startAddr)
 }
 
-func Step(cpu *state.State) bool {
+func Step(cpu *state.CPU) bool {
 	//return debugStep(cpu)
 
 	innerStep(cpu)
 	return true
 }
 
-func innerStep(cpu *state.State) int {
+func innerStep(cpu *state.CPU) int {
 	updateState(cpu)
 
 	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {

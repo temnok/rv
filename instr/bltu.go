@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Bltu(cpu *state.State, op Op) {
+func Bltu(cpu *state.CPU, op Op) {
 	a := cpu.Xuint(cpu.X[op.Rs1()])
 	b := cpu.Xuint(cpu.X[op.Rs2()])
 

@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Atomic(cpu *state.State, op instr.Op) {
+func Atomic(cpu *state.CPU, op instr.Op) {
 	f7, f3, rd, rs1, rs2 := op.F7(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 	f5 := f7 >> 2
 

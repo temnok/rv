@@ -2,7 +2,7 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Sllw(cpu *state.State, op Op) {
+func Sllw(cpu *state.CPU, op Op) {
 	a := int32(cpu.X[op.Rs1()])
 	b := int32(cpu.X[op.Rs2()]) & 31
 

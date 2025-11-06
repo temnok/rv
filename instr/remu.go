@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Remu(cpu *state.State, op Op) {
+func Remu(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 

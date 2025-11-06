@@ -2,7 +2,7 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Remuw(cpu *state.State, op Op) {
+func Remuw(cpu *state.CPU, op Op) {
 	a := uint32(cpu.X[op.Rs1()])
 	b := uint32(cpu.X[op.Rs2()])
 

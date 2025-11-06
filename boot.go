@@ -23,7 +23,7 @@ func BootLinux(xlen int, dir string) {
 
 func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
-		cpu   CPU
+		cpu   state.CPU
 		ram   RAM
 		clint CLINT
 		plic  PLIC
@@ -49,7 +49,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	ram.Load(ramBaseAddr, readFile(kernelPath))
 
 	for step := 0; !terminal.Closed; step++ {
-		ok := Step(cpu.State)
+		ok := Step(&cpu)
 
 		if !ok || (timeout > 0 && step > timeout) {
 			break

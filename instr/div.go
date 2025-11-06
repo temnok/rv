@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Div(cpu *state.State, op Op) {
+func Div(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 

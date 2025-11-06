@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Jal(cpu *state.State, op Op) {
+func Jal(cpu *state.CPU, op Op) {
 	imm := imm.J(op.Code())
 
 	savedPC := cpu.Update.PC
