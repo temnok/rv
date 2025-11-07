@@ -14,6 +14,11 @@ func Lb(cpu *state.CPU, op Op) {
 }
 
 func load(cpu *state.CPU, op Op, n int, f func(val int) int) {
+	if n == 8 && !cpu.Xlen64() {
+		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		return
+	}
+
 	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
 
 	var val int
