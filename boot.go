@@ -8,6 +8,7 @@ import (
 	"github.com/temnok/rv/clint"
 	"github.com/temnok/rv/plic"
 	"github.com/temnok/rv/state"
+	"github.com/temnok/rv/terminal"
 	"github.com/temnok/rv/uart"
 	"golang.org/x/term"
 	"io"
@@ -30,8 +31,8 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		ram      RAM
 		clint    = clint.New(&cpu, 0x0200_0000)
 		plic     = plic.New(&cpu, 0x0C00_0000)
-		terminal = newTerminal(in, out)
-		uart     = uart.New(plic, 0x0300_0000, 1, terminal.callback)
+		terminal = terminal.New(in, out)
+		uart     = uart.New(plic, 0x0300_0000, 1, terminal.Callback)
 	)
 
 	ramBaseAddr := 0x8000_0000

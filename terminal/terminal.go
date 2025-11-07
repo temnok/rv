@@ -1,4 +1,4 @@
-package rv
+package terminal
 
 import (
 	"io"
@@ -13,7 +13,7 @@ type Terminal struct {
 
 const ctrlC = 3
 
-func newTerminal(in io.Reader, out io.Writer) *Terminal {
+func New(in io.Reader, out io.Writer) *Terminal {
 	t := &Terminal{
 		stdin: make(chan byte),
 		out:   out,
@@ -35,7 +35,7 @@ func newTerminal(in io.Reader, out io.Writer) *Terminal {
 	return t
 }
 
-func (t *Terminal) callback(data *byte, write bool) bool {
+func (t *Terminal) Callback(data *byte, write bool) bool {
 	if write {
 		check1(t.out.Write([]byte{*data}))
 		return true
@@ -52,5 +52,16 @@ func (t *Terminal) callback(data *byte, write bool) bool {
 
 	default:
 		return false
+	}
+}
+
+func check1[A any](a A, err error) A {
+	check(err)
+	return a
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
 	}
 }
