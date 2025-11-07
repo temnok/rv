@@ -1,7 +1,13 @@
 package state
 
-type Bus []interface {
+type Bus []device
+
+type device interface {
 	Access(addr int, data *int, width int, write bool) bool
+}
+
+type withNotifyInterrupts interface {
+	NotifyInterrupts()
 }
 
 func (bus Bus) Read(addr int, data *int, width int) bool {
@@ -24,7 +30,7 @@ func (bus Bus) Access(addr int, data *int, width int, write bool) bool {
 
 func (bus Bus) NotifyInterrupts() {
 	for _, device := range bus {
-		if target, ok := device.(interface{ NotifyInterrupts() }); ok {
+		if target, ok := device.(withNotifyInterrupts); ok {
 			target.NotifyInterrupts()
 		}
 	}

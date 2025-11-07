@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
+	"github.com/temnok/rv/clint"
 	"github.com/temnok/rv/state"
 	"golang.org/x/term"
 	"io"
@@ -25,7 +26,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
 		cpu   state.CPU
 		ram   RAM
-		clint CLINT
+		clint = clint.New(&cpu, 0x0200_0000)
 		plic  PLIC
 		uart  UART
 	)
@@ -38,9 +39,8 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		kernelPath = path + ".kernel.gz"
 	}
 
-	Init(&cpu, xlen, state.Bus{&ram, &clint, &plic, &uart}, ramBaseAddr)
+	Init(&cpu, xlen, state.Bus{&ram, clint, &plic, &uart}, ramBaseAddr)
 	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
-	clint.Init(&cpu, 0x0200_0000)
 	plic.Init(&cpu, 0x0C00_0000)
 
 	terminal := newTerminal(in, out)

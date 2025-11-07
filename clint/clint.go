@@ -1,4 +1,4 @@
-package rv
+package clint
 
 import (
 	"github.com/temnok/rv/bi"
@@ -13,8 +13,8 @@ type CLINT struct {
 	mswi, mtimecmp, mtimecmph int
 }
 
-func (clint *CLINT) Init(cpu *state.CPU, baseAddr int) {
-	*clint = CLINT{
+func New(cpu *state.CPU, baseAddr int) *CLINT {
+	return &CLINT{
 		cpu:      cpu,
 		baseAddr: cpu.Xint(baseAddr),
 	}
@@ -56,15 +56,15 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 }
 
 func (clint *CLINT) NotifyInterrupts() {
-	csrReg := &clint.cpu.CSR
+	reg := &clint.cpu.CSR
 
 	if bi.T(clint.mswi, 1) == 1 {
-		csrReg.Mip |= 1 << csr.MipMSI
+		reg.Mip |= 1 << csr.MipMSI
 	}
 
-	if uint(csrReg.Timeh) > uint(clint.mtimecmph) ||
-		csrReg.Timeh == clint.mtimecmph && uint(csrReg.Time) >= uint(clint.mtimecmp) {
+	if uint(reg.Timeh) > uint(clint.mtimecmph) ||
+		reg.Timeh == clint.mtimecmph && uint(reg.Time) >= uint(clint.mtimecmp) {
 
-		csrReg.Mip |= 1 << csr.MipMTI
+		reg.Mip |= 1 << csr.MipMTI
 	}
 }
