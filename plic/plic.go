@@ -1,4 +1,4 @@
-package rv
+package plic
 
 import (
 	"github.com/temnok/rv/bi"
@@ -18,8 +18,8 @@ type PLIC struct {
 	claiming  int
 }
 
-func (plic *PLIC) Init(cpu *state.CPU, baseAddr int) {
-	*plic = PLIC{
+func New(cpu *state.CPU, baseAddr int) *PLIC {
+	return &PLIC{
 		cpu:      cpu,
 		baseAddr: cpu.Xint(baseAddr),
 	}

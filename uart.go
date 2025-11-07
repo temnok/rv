@@ -1,9 +1,12 @@
 package rv
 
-import "github.com/temnok/rv/bi"
+import (
+	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/plic"
+)
 
 type UART struct {
-	plic        *PLIC
+	plic        *plic.PLIC
 	baseAddr    int
 	interruptID int
 	callback    func(ch *byte, write bool) bool
@@ -17,7 +20,7 @@ type UARTfifo struct {
 	size int
 }
 
-func (uart *UART) Init(plic *PLIC, baseAddr int, interuptID int, callback func(ch *byte, write bool) bool) {
+func (uart *UART) Init(plic *plic.PLIC, baseAddr int, interuptID int, callback func(ch *byte, write bool) bool) {
 	*uart = UART{
 		plic:        plic,
 		baseAddr:    baseAddr,
