@@ -3,24 +3,19 @@ package exec
 import (
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 )
 
+var branch = []func(*state.CPU, instr.Op){
+	0: instr.Beq,
+	1: instr.Bne,
+	2: instrIllegal,
+	3: instrIllegal,
+	4: instr.Blt,
+	5: instr.Bge,
+	6: instr.Bltu,
+	7: instr.Bgeu,
+}
+
 func Branch(cpu *state.CPU, op instr.Op) {
-	switch op.F3() {
-	case 0b_000:
-		instr.Beq(cpu, op)
-	case 0b_001:
-		instr.Bne(cpu, op)
-	case 0b_100:
-		instr.Blt(cpu, op)
-	case 0b_101:
-		instr.Bge(cpu, op)
-	case 0b_110:
-		instr.Bltu(cpu, op)
-	case 0b_111:
-		instr.Bgeu(cpu, op)
-	default:
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
-	}
+	branch[op.F3()](cpu, op)
 }
