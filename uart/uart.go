@@ -1,4 +1,4 @@
-package rv
+package uart
 
 import (
 	"github.com/temnok/rv/bi"
@@ -11,17 +11,17 @@ type UART struct {
 	interruptID int
 	callback    func(ch *byte, write bool) bool
 
-	rx, tx                           UARTfifo
+	rx, tx                           fifo
 	txctrl, rxctrl, ip, ie, div, clk int
 }
 
-type UARTfifo struct {
+type fifo struct {
 	buf  uint64
 	size int
 }
 
-func (uart *UART) Init(plic *plic.PLIC, baseAddr int, interuptID int, callback func(ch *byte, write bool) bool) {
-	*uart = UART{
+func New(plic *plic.PLIC, baseAddr int, interuptID int, callback func(ch *byte, write bool) bool) *UART {
+	return &UART{
 		plic:        plic,
 		baseAddr:    baseAddr,
 		interruptID: interuptID,
@@ -120,7 +120,7 @@ func (uart *UART) NotifyInterrupts() {
 	}
 }
 
-func (fifo *UARTfifo) put(ch int) {
+func (fifo *fifo) put(ch int) {
 	if fifo.size == 8 {
 		return
 	}
@@ -129,7 +129,7 @@ func (fifo *UARTfifo) put(ch int) {
 	fifo.size++
 }
 
-func (fifo *UARTfifo) get() int {
+func (fifo *fifo) get() int {
 	if fifo.size == 0 {
 		return 0
 	}
