@@ -1,4 +1,4 @@
-package rv
+package ram
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ type RAM struct {
 	words    []int
 }
 
-func (ram *RAM) Init(cpu *state.CPU, baseAddr int, size int) {
-	*ram = RAM{
+func New(cpu *state.CPU, baseAddr int, size int) *RAM {
+	return &RAM{
 		cpu:      cpu,
 		baseAddr: cpu.Xint(baseAddr),
 		words:    make([]int, size/8),

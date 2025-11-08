@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/temnok/rv/clint"
 	"github.com/temnok/rv/plic"
+	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/terminal"
 	"github.com/temnok/rv/uart"
@@ -27,15 +28,14 @@ func BootLinux(xlen int, dir string) {
 
 func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
-		cpu      state.CPU
-		ram      RAM
-		clint    = clint.New(&cpu, 0x0200_0000)
-		plic     = plic.New(&cpu, 0x0C00_0000)
-		terminal = terminal.New(in, out)
-		uart     = uart.New(plic, 0x0300_0000, 1, terminal.Callback)
+		ramBaseAddr = 0x8000_0000
+		cpu         = NewCPU(xlen, ramBaseAddr)
+		ram         = ram.New(cpu, ramBaseAddr, 128*1024*1024)
+		clint       = clint.New(cpu, 0x0200_0000)
+		plic        = plic.New(cpu, 0x0C00_0000)
+		terminal    = terminal.New(in, out)
+		uart        = uart.New(plic, 0x0300_0000, 1, terminal.Callback)
 	)
-
-	ramBaseAddr := 0x8000_0000
 
 	path := fmt.Sprintf("%v/rv%v", dir, xlen)
 	kernelPath := dir + "/biko.gz"
@@ -43,13 +43,12 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		kernelPath = path + ".kernel.gz"
 	}
 
-	Init(&cpu, xlen, state.Bus{&ram, clint, plic, uart}, ramBaseAddr)
-	ram.Init(&cpu, ramBaseAddr, 128*1024*1024)
+	cpu.Bus = state.Bus{ram, clint, plic, uart}
 
 	ram.Load(ramBaseAddr, readFile(kernelPath))
 
 	for step := 0; !terminal.Closed; step++ {
-		ok := Step(&cpu)
+		ok := Step(cpu)
 
 		if !ok || (timeout > 0 && step > timeout) {
 			break

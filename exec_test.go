@@ -2,6 +2,7 @@ package rv
 
 import (
 	"fmt"
+	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 	"os"
@@ -40,14 +41,12 @@ func runTest(t *testing.T, xlen int, file string) {
 		t.Fatal(err)
 	}
 
-	cpu := &state.CPU{}
-	ram := &RAM{}
-
 	ramBaseAddr := 0x8000_0000
-
-	Init(cpu, xlen, state.Bus{ram}, ramBaseAddr)
-	ram.Init(cpu, ramBaseAddr, 64*1024)
+	cpu := NewCPU(xlen, ramBaseAddr)
+	ram := ram.New(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
+
+	cpu.Bus = state.Bus{ram}
 
 	instrCounts := make([]int, len(program))
 	trapCount := 0

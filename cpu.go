@@ -7,12 +7,10 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Init(cpu *state.CPU, xlen int, bus state.Bus, startAddr int) {
+func NewCPU(xlen int, startAddr int) *state.CPU {
 	xl := xlen / 32
 
-	*cpu = state.CPU{
-		Bus: bus,
-
+	cpu := &state.CPU{
 		Fixed: state.Fixed{
 			Xlen: xlen,
 		},
@@ -36,6 +34,8 @@ func Init(cpu *state.CPU, xlen int, bus state.Bus, startAddr int) {
 
 	cpu.CSR.Mstatus = cpu.Xint(xl<<csr.MstatusSXL | xl<<csr.MstatusUXL)
 	cpu.Update.PC = cpu.Xint(startAddr)
+
+	return cpu
 }
 
 func Step(cpu *state.CPU) bool {
