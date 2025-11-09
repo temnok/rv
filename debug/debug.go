@@ -1,4 +1,4 @@
-package rv
+package debug
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ var (
 	debugTrace     [][]int
 )
 
-func debugStep(cpu *state.CPU) bool {
+func step(cpu *state.CPU) bool {
 	opcode := cp.InnerStep(cpu)
 
 	entry := []int{cpu.PC, opcode}
@@ -35,14 +35,14 @@ func debugStep(cpu *state.CPU) bool {
 	}
 
 	//if trap.IsEntered(cpu.CPU) {
-	//	debugDump(cpu)
+	//	Dump(cpu)
 	//	return false
 	//}
 
 	return true
 }
 
-func debugDump(cpu *state.CPU) {
+func Dump(cpu *state.CPU) {
 	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
 
 	for _, entry := range debugTrace {

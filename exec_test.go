@@ -3,6 +3,7 @@ package rv
 import (
 	"fmt"
 	cp "github.com/temnok/rv/cpu"
+	"github.com/temnok/rv/debug"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -66,7 +67,7 @@ func runTest(t *testing.T, xlen int, file string) {
 		}
 
 		if !cp.Step(cpu) {
-			debugDump(cpu)
+			debug.Dump(cpu)
 			break
 		}
 
@@ -106,7 +107,7 @@ func runTest(t *testing.T, xlen int, file string) {
 				if cpu.X[3] == 1 && cpu.X[10] == 0 {
 					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
 				} else {
-					debugDump(cpu)
+					debug.Dump(cpu)
 
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, pc=%08x\n"+
