@@ -1,6 +1,6 @@
 package state
 
-type Static struct {
+type StaticState struct {
 	Priv int
 	PC   int
 

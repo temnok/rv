@@ -1,6 +1,6 @@
 package state
 
-type Updated struct {
+type UpdatedState struct {
 	TrapEnter, TrapExit   bool
 	TrapPriv, TrapPC      int
 	TrapMstatus, TrapXepc int

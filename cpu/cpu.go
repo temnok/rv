@@ -1,13 +1,11 @@
-package rv
+package cpu
 
 import (
 	"github.com/temnok/rv/csr"
-	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 )
 
-func NewCPU(xlen int, startAddr int) *state.CPU {
+func New(xlen int, startAddr int) *state.CPU {
 	xl := xlen / 32
 
 	cpu := &state.CPU{
@@ -36,28 +34,4 @@ func NewCPU(xlen int, startAddr int) *state.CPU {
 	cpu.Update.PC = cpu.Xint(startAddr)
 
 	return cpu
-}
-
-func Step(cpu *state.CPU) bool {
-	//return debugStep(cpu)
-
-	innerStep(cpu)
-	return true
-}
-
-func innerStep(cpu *state.CPU) int {
-	updateState(cpu)
-
-	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
-		return 0
-	}
-
-	var opcode int
-	if mem.Fetch(cpu, cpu.PC, &opcode); trap.IsEntered(cpu) {
-		return 0
-	}
-
-	Exec(cpu, opcode)
-
-	return opcode
 }

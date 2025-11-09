@@ -1,9 +1,9 @@
 package state
 
 type CPU struct {
-	Fixed
-	Static
-	Update Updated
+	FixedState
+	StaticState
+	Update UpdatedState
 
 	TLB TLB
 	Bus Bus

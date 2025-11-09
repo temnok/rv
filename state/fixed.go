@@ -1,5 +1,5 @@
 package state
 
-type Fixed struct {
+type FixedState struct {
 	Xlen int
 }
