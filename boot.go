@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/temnok/rv/clint"
-	"github.com/temnok/rv/cpu"
+	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/plic"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
@@ -30,7 +30,7 @@ func BootLinux(xlen int, dir string) {
 func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
 		ramBaseAddr = 0x8000_0000
-		cpu         = cpu.New(xlen, ramBaseAddr)
+		cpu         = cp.New(xlen, ramBaseAddr)
 		ram         = ram.New(cpu, ramBaseAddr, 128*1024*1024)
 		clint       = clint.New(cpu, 0x0200_0000)
 		plic        = plic.New(cpu, 0x0C00_0000)
@@ -49,7 +49,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 	ram.Load(ramBaseAddr, readFile(kernelPath))
 
 	for step := 0; !terminal.Closed; step++ {
-		ok := Step(cpu)
+		ok := cp.Step(cpu)
 
 		if !ok || (timeout > 0 && step > timeout) {
 			break

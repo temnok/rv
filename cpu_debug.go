@@ -3,6 +3,7 @@ package rv
 import (
 	"fmt"
 	"github.com/deadsy/rvda"
+	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/state"
 	"math"
 	"strings"
@@ -14,7 +15,7 @@ var (
 )
 
 func debugStep(cpu *state.CPU) bool {
-	opcode := innerStep(cpu)
+	opcode := cp.InnerStep(cpu)
 
 	entry := []int{cpu.PC, opcode}
 

@@ -2,7 +2,7 @@ package rv
 
 import (
 	"fmt"
-	"github.com/temnok/rv/cpu"
+	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -43,7 +43,7 @@ func runTest(t *testing.T, xlen int, file string) {
 	}
 
 	ramBaseAddr := 0x8000_0000
-	cpu := cpu.New(xlen, ramBaseAddr)
+	cpu := cp.New(xlen, ramBaseAddr)
 	ram := ram.New(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 
@@ -65,7 +65,7 @@ func runTest(t *testing.T, xlen int, file string) {
 			lastPCs = lastPCs[:n]
 		}
 
-		if !Step(cpu) {
+		if !cp.Step(cpu) {
 			debugDump(cpu)
 			break
 		}

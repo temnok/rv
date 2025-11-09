@@ -1,4 +1,4 @@
-package rv
+package cpu
 
 import (
 	"github.com/temnok/rv/csr"
