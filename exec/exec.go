@@ -1,34 +1,34 @@
-package rv
+package exec
 
 import (
-	"github.com/temnok/rv/exec"
+	"github.com/temnok/rv/decompress"
 	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
 
 var routes = []func(*state.CPU, instr.Op){
-	0:  exec.Load,
-	1:  exec.LoadFP,
-	3:  exec.Fence,
-	4:  exec.ComputeI,
+	0:  Load,
+	1:  LoadFP,
+	3:  Fence,
+	4:  ComputeI,
 	5:  instr.Auipc,
-	6:  exec.ComputeI64,
-	8:  exec.Store,
-	9:  exec.StoreFP,
-	11: exec.Atomic,
-	12: exec.ComputeR,
+	6:  ComputeI64,
+	8:  Store,
+	9:  StoreFP,
+	11: Atomic,
+	12: ComputeR,
 	13: instr.Lui,
-	14: exec.ComputeR64,
-	16: exec.ComputeFP,
-	17: exec.ComputeFP,
-	18: exec.ComputeFP,
-	19: exec.ComputeFP,
-	20: exec.ComputeFP,
-	24: exec.Branch,
+	14: ComputeR64,
+	16: ComputeFP,
+	17: ComputeFP,
+	18: ComputeFP,
+	19: ComputeFP,
+	20: ComputeFP,
+	24: Branch,
 	25: instr.Jalr,
 	27: instr.Jal,
-	28: exec.System,
+	28: System,
 }
 
 func Exec(cpu *state.CPU, opcode int) {
@@ -36,7 +36,7 @@ func Exec(cpu *state.CPU, opcode int) {
 	if isCompressed := opcode&3 != 3; isCompressed {
 		opcodeSize = 2
 
-		if decompress(cpu, &opcode); trap.IsEntered(cpu) {
+		if decompress.Decompress(cpu, &opcode); trap.IsEntered(cpu) {
 			return
 		}
 	}

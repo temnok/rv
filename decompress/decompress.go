@@ -1,4 +1,4 @@
-package rv
+package decompress
 
 import (
 	"github.com/temnok/rv/bi"
@@ -8,7 +8,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func decompress(cpu *state.CPU, opcodePtr *int) {
+func Decompress(cpu *state.CPU, opcodePtr *int) {
 	opcode := *opcodePtr
 
 	opcode = int(uint16(opcode))

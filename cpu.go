@@ -2,6 +2,7 @@ package rv
 
 import (
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/exec"
 	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -57,7 +58,7 @@ func innerStep(cpu *state.CPU) int {
 		return 0
 	}
 
-	Exec(cpu, opcode)
+	exec.Exec(cpu, opcode)
 
 	return opcode
 }
