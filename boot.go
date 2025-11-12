@@ -3,8 +3,6 @@ package rv
 import (
 	"bytes"
 	"compress/gzip"
-	"errors"
-	"fmt"
 	"github.com/temnok/rv/clint"
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/plic"
@@ -38,11 +36,7 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 		uart        = uart.New(plic, 0x0300_0000, 1, terminal.Callback)
 	)
 
-	path := fmt.Sprintf("%v/rv%v", dir, xlen)
 	kernelPath := dir + "/biko.gz"
-	if !existsFile(kernelPath) {
-		kernelPath = path + ".kernel.gz"
-	}
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
 
@@ -55,14 +49,6 @@ func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
 			break
 		}
 	}
-}
-
-func existsFile(path string) bool {
-	_, err := os.Stat(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return false // File does not exist
-	}
-	return err == nil
 }
 
 func readFile(path string) []byte {
