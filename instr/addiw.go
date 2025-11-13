@@ -5,7 +5,6 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#norm:addiw_op
 func Addiw(cpu *state.CPU, op Op) {
 	a := int32(cpu.X[op.Rs1()])
 	b := int32(imm.I(op.Code()))

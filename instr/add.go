@@ -2,12 +2,17 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#norm:add_op
 func Add(cpu *state.CPU, op Op) {
+	computeR(cpu, op, func(a, b int) int {
+		return a + b
+	})
+}
+
+func computeR(cpu *state.CPU, op Op, f func(a, b int) int) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 
-	c := a + b
+	c := f(a, b)
 
 	cpu.Xset(op.Rd(), c)
 }
