@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Sc(cpu *state.CPU, op Op) {
+func sc(cpu *state.CPU, op Op) {
 	atomic(cpu, op, func(cpu *state.CPU, addr int, val, old *int) bool {
 		if !cpu.Reserved || cpu.ReservedAddr != addr {
 			*old = 1

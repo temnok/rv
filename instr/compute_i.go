@@ -44,3 +44,12 @@ func sr_i(cpu *state.CPU, op Op) {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 	}
 }
+
+func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
+	a := cpu.X[op.Rs1()]
+	b := imm.I(op.Code())
+
+	c := f(a, b)
+
+	cpu.Xset(op.Rd(), c)
+}

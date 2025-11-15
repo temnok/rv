@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Amominu(cpu *state.CPU, op Op) {
+func amominu(cpu *state.CPU, op Op) {
 	atomic(cpu, op, func(cpu *state.CPU, addr int, val, old *int) bool {
 		if cpu.Xuint(*old) < cpu.Xuint(*val) {
 			*val = *old
