@@ -7,12 +7,3 @@ func add(cpu *state.CPU, op Op) {
 		return a + b
 	})
 }
-
-func computeR(cpu *state.CPU, op Op, f func(a, b int) int) {
-	a := cpu.X[op.Rs1()]
-	b := cpu.X[op.Rs2()]
-
-	c := f(a, b)
-
-	cpu.Xset(op.Rd(), c)
-}

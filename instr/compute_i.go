@@ -1,46 +1,45 @@
-package exec
+package instr
 
 import (
 	"github.com/temnok/rv/imm"
-	"github.com/temnok/rv/instr"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
 
-var iInstr = []func(cpu *state.CPU, op instr.Op){
-	0: instr.Addi,
+var iInstr = []func(cpu *state.CPU, op Op){
+	0: Addi,
 	1: slli,
-	2: instr.Slti,
-	3: instr.Sltiu,
-	4: instr.Xori,
+	2: Slti,
+	3: Sltiu,
+	4: Xori,
 	5: sr_i,
-	6: instr.Ori,
-	7: instr.Andi,
+	6: Ori,
+	7: Andi,
 }
 
-func ComputeI(cpu *state.CPU, op instr.Op) {
+func ComputeI(cpu *state.CPU, op Op) {
 	iInstr[op.F3()](cpu, op)
 }
 
-func slli(cpu *state.CPU, op instr.Op) {
+func slli(cpu *state.CPU, op Op) {
 	imm := imm.I(op.Code())
 
 	switch imm &^ cpu.Xmask() {
 	case 0:
-		instr.Slli(cpu, op)
+		Slli(cpu, op)
 	default:
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 	}
 }
 
-func sr_i(cpu *state.CPU, op instr.Op) {
+func sr_i(cpu *state.CPU, op Op) {
 	imm := imm.I(op.Code())
 
 	switch imm &^ cpu.Xmask() {
 	case 0:
-		instr.Srli(cpu, op)
+		Srli(cpu, op)
 	case 0b_010000000000:
-		instr.Srai(cpu, op)
+		Srai(cpu, op)
 	default:
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 	}
