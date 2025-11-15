@@ -3,10 +3,11 @@ package instr
 import "github.com/temnok/rv/state"
 
 func slt(cpu *state.CPU, op Op) {
-	a := cpu.X[op.Rs1()]
-	b := cpu.X[op.Rs2()]
+	computeR(cpu, op, func(a, b int) int {
+		if a < b {
+			return 1
+		}
 
-	c := a < b
-
-	cpu.XsetBool(op.Rd(), c)
+		return 0
+	})
 }

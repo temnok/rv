@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var mInstr = []func(cpu *state.CPU, op Op){
+var computesM = []func(cpu *state.CPU, op Op){
 	0: mul,
 	1: mulh,
 	2: mulhsu,
@@ -16,5 +16,5 @@ var mInstr = []func(cpu *state.CPU, op Op){
 }
 
 func computeM(cpu *state.CPU, op Op) {
-	mInstr[op.F3()](cpu, op)
+	computesM[op.F3()](cpu, op)
 }

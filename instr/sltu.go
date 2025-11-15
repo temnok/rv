@@ -3,10 +3,11 @@ package instr
 import "github.com/temnok/rv/state"
 
 func sltu(cpu *state.CPU, op Op) {
-	a := cpu.Xuint(cpu.X[op.Rs1()])
-	b := cpu.Xuint(cpu.X[op.Rs2()])
+	computeR(cpu, op, func(a, b int) int {
+		if cpu.Xuint(a) < cpu.Xuint(b) {
+			return 1
+		}
 
-	c := a < b
-
-	cpu.XsetBool(op.Rd(), c)
+		return 0
+	})
 }
