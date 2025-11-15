@@ -5,13 +5,11 @@ import (
 )
 
 func remu(cpu *state.CPU, op Op) {
-	a := cpu.X[op.Rs1()]
-	b := cpu.X[op.Rs2()]
+	computeR(cpu, op, func(a, b int) int {
+		if b == 0 {
+			return a
+		}
 
-	c := a
-	if b != 0 {
-		c = int(cpu.Xuint(a) % cpu.Xuint(b))
-	}
-
-	cpu.Xset(op.Rd(), c)
+		return int(cpu.Xuint(a) % cpu.Xuint(b))
+	})
 }

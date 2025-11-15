@@ -6,20 +6,15 @@ import (
 )
 
 func mulhu(cpu *state.CPU, op Op) {
-	var c int
+	computeR(cpu, op, func(a, b int) int {
+		if !cpu.Xlen64() {
+			a = int(uint32(a))
+			b = int(uint32(b))
 
-	if cpu.Xlen64() {
-		a := uint64(cpu.X[op.Rs1()])
-		b := uint64(cpu.X[op.Rs2()])
+			return (a * b) >> 32
+		}
 
-		hi, _ := bits.Mul64(a, b)
-		c = int(hi)
-	} else {
-		a := int(uint32(cpu.X[op.Rs1()]))
-		b := int(uint32(cpu.X[op.Rs2()]))
-
-		c = (a * b) >> 32
-	}
-
-	cpu.Xset(op.Rd(), c)
+		hi, _ := bits.Mul64(uint64(a), uint64(b))
+		return int(hi)
+	})
 }
