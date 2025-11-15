@@ -16,7 +16,7 @@ func atomic(cpu *state.CPU, op Op, f func(cpu *state.CPU, addr int, val, old *in
 	f7, f3, rd, rs1, rs2 := op.F7(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 	f5 := f7 >> 2
 
-	if f3 != 0b_010 && !(cpu.Xlen64() && f3 == 0b_011) ||
+	if f3 != 2 && !(cpu.Xlen64() && f3 == 3) ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 
@@ -29,7 +29,7 @@ func atomic(cpu *state.CPU, op Op, f func(cpu *state.CPU, addr int, val, old *in
 	val := cpu.X[rs2]
 
 	var old int
-	if f5 != 0b_00011 { // for all except sc
+	if f5 != 3 { // for all except sc
 		if mem.Read(cpu, addr, &old, width); trap.IsEntered(cpu) {
 			return
 		}

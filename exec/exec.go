@@ -25,7 +25,7 @@ var routes = []func(*state.CPU, instr.Op){
 	18: ComputeFP,
 	19: ComputeFP,
 	20: ComputeFP,
-	24: Branch,
+	24: instr.Branch,
 	25: instr.Jalr,
 	27: instr.Jal,
 	28: System,

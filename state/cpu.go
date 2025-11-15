@@ -45,9 +45,3 @@ func (cpu *CPU) XsetBool(rd int, val bool) {
 		cpu.Xset(rd, 0)
 	}
 }
-
-func (cpu *CPU) PCAddIf(c bool, imm int) {
-	if c {
-		cpu.Update.PC = cpu.Xint(cpu.PC + imm)
-	}
-}
