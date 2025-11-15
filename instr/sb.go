@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Sb(cpu *state.CPU, op Op) {
+func sb(cpu *state.CPU, op Op) {
 	store(cpu, op, 1)
 }
 

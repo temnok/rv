@@ -4,6 +4,6 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Sh(cpu *state.CPU, op Op) {
+func sh(cpu *state.CPU, op Op) {
 	store(cpu, op, 2)
 }

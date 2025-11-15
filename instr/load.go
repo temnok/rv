@@ -8,13 +8,13 @@ import (
 )
 
 var loads = []func(*state.CPU, Op){
-	0: Lb,
-	1: Lh,
-	2: Lw,
-	3: Ld,
-	4: Lbu,
-	5: Lhu,
-	6: Lwu,
+	0: lb,
+	1: lh,
+	2: lw,
+	3: ld,
+	4: lbu,
+	5: lhu,
+	6: lwu,
 	7: illegal,
 }
 
@@ -22,7 +22,7 @@ func Load(cpu *state.CPU, op Op) {
 	loads[op.F3()](cpu, op)
 }
 
-func load(cpu *state.CPU, op Op, n int, f func(val int) int) {
+func load(cpu *state.CPU, op Op, n int, wrap func(val int) int) {
 	if n == 8 && !cpu.Xlen64() {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
@@ -37,7 +37,5 @@ func load(cpu *state.CPU, op Op, n int, f func(val int) int) {
 		return
 	}
 
-	val = f(val)
-
-	cpu.Xset(rd, val)
+	cpu.Xset(rd, wrap(val))
 }

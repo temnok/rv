@@ -4,6 +4,6 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Sw(cpu *state.CPU, op Op) {
+func sw(cpu *state.CPU, op Op) {
 	store(cpu, op, 4)
 }
