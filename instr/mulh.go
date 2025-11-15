@@ -5,7 +5,7 @@ import (
 	bi "math/bits"
 )
 
-func Mulh(cpu *state.CPU, op Op) {
+func mulh(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 

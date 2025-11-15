@@ -2,7 +2,7 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Sub(cpu *state.CPU, op Op) {
+func sub(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
 	b := cpu.X[op.Rs2()]
 

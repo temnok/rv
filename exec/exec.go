@@ -17,7 +17,7 @@ var routes = []func(*state.CPU, instr.Op){
 	8:  Store,
 	9:  StoreFP,
 	11: Atomic,
-	12: ComputeR,
+	12: instr.ComputeR,
 	13: instr.Lui,
 	14: ComputeR64,
 	16: ComputeFP,

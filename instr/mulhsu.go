@@ -5,7 +5,7 @@ import (
 	"math/bits"
 )
 
-func Mulhsu(cpu *state.CPU, op Op) {
+func mulhsu(cpu *state.CPU, op Op) {
 	var c int
 
 	if cpu.Xlen64() {
