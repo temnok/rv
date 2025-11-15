@@ -8,7 +8,7 @@ import (
 )
 
 var routes = []func(*state.CPU, instr.Op){
-	0:  Load,
+	0:  instr.Load,
 	1:  LoadFP,
 	3:  Fence,
 	4:  instr.ComputeI,
