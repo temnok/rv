@@ -25,7 +25,7 @@ func ComputeR(cpu *state.CPU, op Op) {
 		ins = computesR[f3]
 	case 1:
 		ins = computeM
-	case 32:
+	case 1 << 5:
 		switch f3 {
 		case 0:
 			ins = sub

@@ -2,11 +2,10 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Sllw(cpu *state.CPU, op Op) {
-	a := int32(cpu.X[op.Rs1()])
-	b := int32(cpu.X[op.Rs2()]) & 31
+func sllw(cpu *state.CPU, op Op) {
+	computeR32(cpu, op, func(a, b int32) int32 {
+		b &= 31
 
-	c := int(a << b)
-
-	cpu.Xset(op.Rd(), c)
+		return a << b
+	})
 }
