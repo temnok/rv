@@ -3,46 +3,21 @@ package instr
 import (
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 )
 
 var insComputeI = []func(cpu *state.CPU, op Op){
 	0: addi,
-	1: slli,
-	2: Slti,
-	3: Sltiu,
-	4: Xori,
-	5: sr_i,
-	6: Ori,
-	7: Andi,
+	1: slli_illegal,
+	2: slti,
+	3: sltiu,
+	4: xori,
+	5: srli_srai,
+	6: ori,
+	7: andi,
 }
 
 func ComputeI(cpu *state.CPU, op Op) {
 	insComputeI[op.F3()](cpu, op)
-}
-
-func slli(cpu *state.CPU, op Op) {
-	imm := imm.I(op.Code())
-
-	switch imm &^ cpu.Xmask() {
-	case 0:
-		Slli(cpu, op)
-	default:
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
-	}
-}
-
-func sr_i(cpu *state.CPU, op Op) {
-	imm := imm.I(op.Code())
-
-	switch imm &^ cpu.Xmask() {
-	case 0:
-		Srli(cpu, op)
-	case 0b_010000000000:
-		Srai(cpu, op)
-	default:
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
-	}
 }
 
 func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
@@ -51,7 +26,28 @@ func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
 
 	c := f(a, b)
 
-	if !trap.IsEntered(cpu) {
-		cpu.Xset(op.Rd(), c)
+	cpu.Xset(op.Rd(), c)
+}
+
+func slli_illegal(cpu *state.CPU, op Op) {
+	ins := illegal
+
+	if imm.I(op.Code())&^cpu.Xmask() == 0 {
+		ins = slli
 	}
+
+	ins(cpu, op)
+}
+
+func srli_srai(cpu *state.CPU, op Op) {
+	ins := illegal
+
+	switch imm.I(op.Code()) &^ cpu.Xmask() {
+	case 0:
+		ins = srli
+	case 1 << 10:
+		ins = srai
+	}
+
+	ins(cpu, op)
 }

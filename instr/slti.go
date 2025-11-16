@@ -1,15 +1,15 @@
 package instr
 
 import (
-	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
 
-func Slti(cpu *state.CPU, op Op) {
-	a := cpu.X[op.Rs1()]
-	b := imm.I(op.Code())
+func slti(cpu *state.CPU, op Op) {
+	computeI(cpu, op, func(a, b int) int {
+		if a < b {
+			return 1
+		}
 
-	c := a < b
-
-	cpu.XsetBool(op.Rd(), c)
+		return 0
+	})
 }
