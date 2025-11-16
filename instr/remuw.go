@@ -2,14 +2,12 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Remuw(cpu *state.CPU, op Op) {
-	a := uint32(cpu.X[op.Rs1()])
-	b := uint32(cpu.X[op.Rs2()])
+func remuw(cpu *state.CPU, op Op) {
+	computeR64(cpu, op, func(a, b int32) int32 {
+		if b == 0 {
+			return a
+		}
 
-	c := int(int32(a))
-	if b != 0 {
-		c = int(int32(a % b))
-	}
-
-	cpu.Xset(op.Rd(), c)
+		return int32(uint32(a) % uint32(b))
+	})
 }

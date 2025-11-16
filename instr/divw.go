@@ -2,14 +2,12 @@ package instr
 
 import "github.com/temnok/rv/state"
 
-func Divw(cpu *state.CPU, op Op) {
-	a := int32(cpu.X[op.Rs1()])
-	b := int32(cpu.X[op.Rs2()])
+func divw(cpu *state.CPU, op Op) {
+	computeR64(cpu, op, func(a, b int32) int32 {
+		if b == 0 {
+			return -1
+		}
 
-	c := -1
-	if b != 0 {
-		c = int(a / b)
-	}
-
-	cpu.Xset(op.Rd(), c)
+		return a / b
+	})
 }
