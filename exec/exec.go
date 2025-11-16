@@ -10,7 +10,7 @@ import (
 var routes = []func(*state.CPU, instr.Op){
 	0:  instr.Load,
 	1:  LoadFP,
-	3:  Fence,
+	3:  instr.Fence,
 	4:  instr.ComputeI,
 	5:  instr.Auipc,
 	6:  ComputeI64,
