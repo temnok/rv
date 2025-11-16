@@ -6,8 +6,8 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-var iInstr = []func(cpu *state.CPU, op Op){
-	0: Addi,
+var insComputeI = []func(cpu *state.CPU, op Op){
+	0: addi,
 	1: slli,
 	2: Slti,
 	3: Sltiu,
@@ -18,7 +18,7 @@ var iInstr = []func(cpu *state.CPU, op Op){
 }
 
 func ComputeI(cpu *state.CPU, op Op) {
-	iInstr[op.F3()](cpu, op)
+	insComputeI[op.F3()](cpu, op)
 }
 
 func slli(cpu *state.CPU, op Op) {
@@ -51,5 +51,7 @@ func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
 
 	c := f(a, b)
 
-	cpu.Xset(op.Rd(), c)
+	if !trap.IsEntered(cpu) {
+		cpu.Xset(op.Rd(), c)
+	}
 }

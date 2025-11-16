@@ -7,7 +7,7 @@ import (
 
 func Slli(cpu *state.CPU, op Op) {
 	a := cpu.X[op.Rs1()]
-	b := imm.I(op.Code())
+	b := imm.I(op.Code()) & cpu.Xmask()
 
 	c := a << b
 

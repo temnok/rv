@@ -16,25 +16,25 @@ var computesR = []instr{
 }
 
 func ComputeR(cpu *state.CPU, op Op) {
-	f7 := op.F7()
+	f3, f7 := op.F3(), op.F7()
 
-	run := illegal
+	ins := illegal
 
 	switch f7 {
 	case 0:
-		run = computesR[op.F3()]
+		ins = computesR[f3]
 	case 1:
-		run = computeM
+		ins = computeM
 	case 32:
-		switch op.F3() {
+		switch f3 {
 		case 0:
-			run = sub
+			ins = sub
 		case 5:
-			run = sra
+			ins = sra
 		}
 	}
 
-	run(cpu, op)
+	ins(cpu, op)
 }
 
 func computeR(cpu *state.CPU, op Op, f func(a, b int) int) {
