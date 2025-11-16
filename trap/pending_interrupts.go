@@ -25,7 +25,7 @@ func OnPendingInterrupts(cpu *state.CPU) {
 			priv = state.PrivS
 		}
 
-		mcauseI := cpu.Xlen - 1
+		mcauseI := cpu.Len - 1
 		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
 			EnterWithoutTval(cpu, -1<<mcauseI|i)
 

@@ -9,24 +9,24 @@ type CPU struct {
 	Bus Bus
 }
 
-func (cpu *CPU) Xlen64() bool {
-	return cpu.Xlen == 64
+func (cpu *CPU) LenIs64() bool {
+	return cpu.Len == 64
 }
 
-func (cpu *CPU) Xmask() int {
-	return cpu.Xlen - 1
+func (cpu *CPU) Mask() int {
+	return cpu.Len - 1
 }
 
-func (cpu *CPU) Xint(val int) int {
-	if cpu.Xlen64() {
+func (cpu *CPU) Int(val int) int {
+	if cpu.LenIs64() {
 		return val
 	}
 
 	return int(int32(val))
 }
 
-func (cpu *CPU) Xuint(val int) uint {
-	if cpu.Xlen64() {
+func (cpu *CPU) Uint(val int) uint {
+	if cpu.LenIs64() {
 		return uint(val)
 	}
 
@@ -35,13 +35,5 @@ func (cpu *CPU) Xuint(val int) uint {
 
 func (cpu *CPU) Xset(rd, val int) {
 	cpu.Update.XReg = rd
-	cpu.Update.XVal = cpu.Xint(val)
-}
-
-func (cpu *CPU) XsetBool(rd int, val bool) {
-	if val {
-		cpu.Xset(rd, 1)
-	} else {
-		cpu.Xset(rd, 0)
-	}
+	cpu.Update.XVal = cpu.Int(val)
 }

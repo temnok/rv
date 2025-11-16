@@ -9,7 +9,7 @@ func Jal(cpu *state.CPU, op Op) {
 	imm := imm.J(op.Code())
 
 	savedPC := cpu.Update.PC
-	newPC := cpu.Xint(cpu.PC + imm)
+	newPC := cpu.Int(cpu.PC + imm)
 
 	cpu.Xset(op.Rd(), savedPC)
 	cpu.Update.PC = newPC

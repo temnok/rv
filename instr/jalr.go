@@ -12,5 +12,5 @@ func Jalr(cpu *state.CPU, op Op) {
 	newPC := (cpu.X[op.Rs1()] + imm) &^ 1
 
 	cpu.Xset(op.Rd(), savedPC)
-	cpu.Update.PC = cpu.Xint(newPC)
+	cpu.Update.PC = cpu.Int(newPC)
 }

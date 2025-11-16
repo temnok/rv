@@ -21,7 +21,7 @@ type PLIC struct {
 func New(cpu *state.CPU, baseAddr int) *PLIC {
 	return &PLIC{
 		cpu:      cpu,
-		baseAddr: cpu.Xint(baseAddr),
+		baseAddr: cpu.Int(baseAddr),
 	}
 }
 

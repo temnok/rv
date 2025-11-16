@@ -6,7 +6,7 @@ import (
 
 func sltiu(cpu *state.CPU, op Op) {
 	computeI(cpu, op, func(a, b int) int {
-		if cpu.Xuint(a) < cpu.Xuint(b) {
+		if cpu.Uint(a) < cpu.Uint(b) {
 			return 1
 		}
 

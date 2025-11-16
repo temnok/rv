@@ -1,10 +1,14 @@
 package state
 
 type UpdatedState struct {
-	TrapEnter, TrapExit   bool
-	TrapPriv, TrapPC      int
-	TrapMstatus, TrapXepc int
-	TrapXcause, TrapXtval int
+	TrapEnter   bool
+	TrapExit    bool
+	TrapMstatus int
+	TrapPC      int
+	TrapPriv    int
+	TrapXcause  int
+	TrapXepc    int
+	TrapXtval   int
 
 	PC         int
 	XReg, XVal int

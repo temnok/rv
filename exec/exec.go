@@ -40,7 +40,7 @@ func Exec(cpu *state.CPU, opcode int) {
 			return
 		}
 	}
-	cpu.Update.PC = cpu.Xint(cpu.PC + opcodeSize)
+	cpu.Update.PC = cpu.Int(cpu.PC + opcodeSize)
 
 	op := instr.Op(opcode)
 	f5 := op.F5()

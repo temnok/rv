@@ -10,7 +10,7 @@ import (
 func ComputeI64(cpu *state.CPU, op instr.Op) {
 	imm := imm.I(op.Code())
 
-	if cpu.Xlen64() {
+	if cpu.LenIs64() {
 		switch op.F3() {
 		case 0b_000:
 			instr.Addiw(cpu, op)

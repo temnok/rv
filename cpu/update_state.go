@@ -43,7 +43,7 @@ func updateState(cpu *state.CPU) {
 	if up.FReg >= 0 || up.CReg == csr.Fflags || up.CReg == csr.Frm || up.CReg == csr.Fcsr {
 		cpu.CSR.Mstatus &^= 0b_11 << csr.MstatusFS
 		cpu.CSR.Mstatus |= csr.FSdirty << csr.MstatusFS
-		cpu.CSR.Mstatus |= 1 << (cpu.Xlen - 1) // set SD bit
+		cpu.CSR.Mstatus |= 1 << (cpu.Len - 1) // set SD bit
 	}
 
 	if up.FReg >= 0 {
@@ -67,12 +67,12 @@ func updateState(cpu *state.CPU) {
 }
 
 func updateTimers(cpu *state.CPU) {
-	if cpu.CSR.Cycle = cpu.Xint(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
+	if cpu.CSR.Cycle = cpu.Int(cpu.CSR.Cycle + 1); cpu.CSR.Cycle == 0 {
 		cpu.CSR.Cycleh++
 	}
 
 	if cpu.CSR.Cycle%10_000 == 0 {
-		if cpu.CSR.Time = cpu.Xint(cpu.CSR.Time + 1); cpu.CSR.Time == 0 {
+		if cpu.CSR.Time = cpu.Int(cpu.CSR.Time + 1); cpu.CSR.Time == 0 {
 			cpu.CSR.Timeh++
 		}
 	}

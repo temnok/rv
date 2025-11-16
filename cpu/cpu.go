@@ -10,7 +10,7 @@ func New(xlen int, startAddr int) *state.CPU {
 
 	cpu := &state.CPU{
 		FixedState: state.FixedState{
-			Xlen: xlen,
+			Len: xlen,
 		},
 
 		StaticState: state.StaticState{
@@ -30,8 +30,8 @@ func New(xlen int, startAddr int) *state.CPU {
 		},
 	}
 
-	cpu.CSR.Mstatus = cpu.Xint(xl<<csr.MstatusSXL | xl<<csr.MstatusUXL)
-	cpu.Update.PC = cpu.Xint(startAddr)
+	cpu.CSR.Mstatus = cpu.Int(xl<<csr.MstatusSXL | xl<<csr.MstatusUXL)
+	cpu.Update.PC = cpu.Int(startAddr)
 
 	return cpu
 }

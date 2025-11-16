@@ -19,7 +19,7 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		panic("double Trap")
 	}
 
-	mcauseI := cpu.Xmask()
+	mcauseI := cpu.Mask()
 	isInterrupt := bi.T(cause, mcauseI) == 1
 	causeID := bi.Ts(cause, 0, 5)
 

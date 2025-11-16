@@ -8,7 +8,7 @@ import (
 )
 
 func ComputeR64(cpu *state.CPU, op instr.Op) {
-	if !cpu.Xlen64() {
+	if !cpu.LenIs64() {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}

@@ -43,7 +43,7 @@ func step(cpu *state.CPU) bool {
 }
 
 func Dump(cpu *state.CPU) {
-	isa, _ := rvda.New(uint(cpu.Xlen), rvda.RV64gc)
+	isa, _ := rvda.New(uint(cpu.Len), rvda.RV64gc)
 
 	for _, entry := range debugTrace {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))

@@ -2,7 +2,6 @@ package instr
 
 import (
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 )
 
 var atomics = []func(*state.CPU, Op){
@@ -22,7 +21,7 @@ var atomics = []func(*state.CPU, Op){
 func Atomic(cpu *state.CPU, op Op) {
 	i := op.F7() >> 2
 	if i >= len(atomics) || atomics[i] == nil {
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 		return
 	}
 

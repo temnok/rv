@@ -32,7 +32,7 @@ func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
 func slli_illegal(cpu *state.CPU, op Op) {
 	ins := illegal
 
-	if imm.I(op.Code())&^cpu.Xmask() == 0 {
+	if imm.I(op.Code())&^cpu.Mask() == 0 {
 		ins = slli
 	}
 
@@ -42,7 +42,7 @@ func slli_illegal(cpu *state.CPU, op Op) {
 func srli_srai(cpu *state.CPU, op Op) {
 	ins := illegal
 
-	switch imm.I(op.Code()) &^ cpu.Xmask() {
+	switch imm.I(op.Code()) &^ cpu.Mask() {
 	case 0:
 		ins = srli
 	case 1 << 10:

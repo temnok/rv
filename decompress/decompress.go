@@ -23,8 +23,8 @@ func Decompress(cpu *state.CPU, opcodePtr *int) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
 func decompressOpcode(cpu *state.CPU, opcode int) int {
-	xlen := cpu.Xlen
-	xlen64 := cpu.Xlen64()
+	xlen := cpu.Len
+	xlen64 := cpu.LenIs64()
 
 	f3 := bi.Ts(opcode, 13, 3)
 	ra := bi.Ts(opcode, 7, 5)
