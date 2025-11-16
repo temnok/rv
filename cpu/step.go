@@ -1,7 +1,7 @@
 package cpu
 
 import (
-	"github.com/temnok/rv/exec"
+	"github.com/temnok/rv/ins"
 	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -26,7 +26,7 @@ func InnerStep(cpu *state.CPU) int {
 		return 0
 	}
 
-	exec.Exec(cpu, opcode)
+	ins.Exec(cpu, opcode)
 
 	return opcode
 }
