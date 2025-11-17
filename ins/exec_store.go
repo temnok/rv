@@ -17,7 +17,7 @@ var stores = []func(*state.CPU, Op){
 	7: illegal,
 }
 
-func Store(cpu *state.CPU, op Op) {
+func execStore(cpu *state.CPU, op Op) {
 	stores[op.F3()](cpu, op)
 }
 

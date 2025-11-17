@@ -16,7 +16,7 @@ var insComputeI = []func(*state.CPU, Op){
 	7: andi,
 }
 
-func ComputeI(cpu *state.CPU, op Op) {
+func execComputeI(cpu *state.CPU, op Op) {
 	insComputeI[op.F3()](cpu, op)
 }
 

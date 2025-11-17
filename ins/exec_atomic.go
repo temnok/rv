@@ -18,7 +18,7 @@ var atomics = []func(*state.CPU, Op){
 	28: amomaxu,
 }
 
-func Atomic(cpu *state.CPU, op Op) {
+func execAtomic(cpu *state.CPU, op Op) {
 	i := op.F7() >> 2
 	if i >= len(atomics) || atomics[i] == nil {
 		illegal(cpu, op)

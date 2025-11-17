@@ -8,36 +8,27 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func LoadFP(cpu *state.CPU, op Op) {
+func execStoreFP(cpu *state.CPU, op Op) {
 	if csr.FpDisabled(cpu) {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		return
 	}
 
-	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
-
-	var val int
+	imm, rs1, rs2 := imm.S(op.Code()), op.Rs1(), op.Rs2()
 
 	switch op.F3() {
-	case 0b_010: // flw
-		if mem.Read(cpu, cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(cpu) {
-			cpu.Update.FVal = f32boxingBits | val
-		}
+	case 0b_010: // fsw
+		mem.Write(cpu, cpu.X[rs1]+imm, cpu.F[rs2], 4)
 
-	case 0b_011: // fld
+	case 0b_011: // fsd
 		if !csr.ExtD(cpu) {
 			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 			return
 		}
 
-		if mem.Read(cpu, cpu.X[rs1]+imm, &val, 8); !trap.IsEntered(cpu) {
-			cpu.Update.FVal = val
-		}
+		mem.Write(cpu, cpu.X[rs1]+imm, cpu.F[rs2], 8)
 
 	default:
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
-		return
 	}
-
-	cpu.Update.FReg = rd
 }

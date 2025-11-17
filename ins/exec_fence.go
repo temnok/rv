@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Fence(cpu *state.CPU, op Op) {
+func execFence(cpu *state.CPU, op Op) {
 	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
 
 	switch op.F3() {

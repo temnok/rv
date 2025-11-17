@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func ComputeI32(cpu *state.CPU, op Op) {
+func execComputeI32(cpu *state.CPU, op Op) {
 	imm := imm.I(op.Code())
 
 	if cpu.LenIs64() {

@@ -5,5 +5,5 @@ import (
 )
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#wfi
-func Wfi(cpu *state.CPU, op Op) {
+func wfi(cpu *state.CPU, op Op) {
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func System(cpu *state.CPU, op Op) {
+func execSystem(cpu *state.CPU, op Op) {
 	if op.F3() == 0 {
 		systemSpecial(cpu, op)
 	} else {
@@ -34,7 +34,7 @@ func systemSpecial(cpu *state.CPU, op Op) {
 		Sret(cpu, op)
 
 	case 0b_0001_000_00101:
-		Wfi(cpu, op)
+		wfi(cpu, op)
 
 	case 0b_0011_000_00010:
 		Mret(cpu, op)

@@ -16,7 +16,7 @@ var branches = []func(*state.CPU, Op){
 	7: bgeu,
 }
 
-func Branch(cpu *state.CPU, op Op) {
+func execBranch(cpu *state.CPU, op Op) {
 	branches[op.F3()](cpu, op)
 }
 

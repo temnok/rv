@@ -103,7 +103,7 @@ var rmToC = []C.int{
 	RmDYN: C.FE_TONEAREST,
 }
 
-func ComputeFP(cpu *state.CPU, op Op) {
+func execComputeFP(cpu *state.CPU, op Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.F7(), op.F5(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
 
 	if f7&1 == 1 && !csr.ExtD(cpu) || csr.FpDisabled(cpu) {

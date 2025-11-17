@@ -18,7 +18,7 @@ var loads = []func(*state.CPU, Op){
 	7: illegal,
 }
 
-func Load(cpu *state.CPU, op Op) {
+func execLoad(cpu *state.CPU, op Op) {
 	loads[op.F3()](cpu, op)
 }
 

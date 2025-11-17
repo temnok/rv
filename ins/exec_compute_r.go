@@ -15,7 +15,7 @@ var computesR = []func(*state.CPU, Op){
 	7: and,
 }
 
-func ComputeR(cpu *state.CPU, op Op) {
+func execComputeR(cpu *state.CPU, op Op) {
 	f3, f7 := op.F3(), op.F7()
 
 	ins := illegal

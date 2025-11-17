@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func ComputeR32(cpu *state.CPU, op Op) {
+func execComputeR32(cpu *state.CPU, op Op) {
 	f3, f7 := op.F3(), op.F7()
 
 	ins := illegal
