@@ -6,9 +6,9 @@ import (
 )
 
 func execFence(cpu *state.CPU, op Op) {
-	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+	imm, rd, rs1 := imm.I(op.code()), op.rd(), op.rs1()
 
-	switch op.F3() {
+	switch op.f3() {
 	case 0b_000:
 		if (imm&^0b_1111_1111) != 0 || rs1 != 0 || rd != 0 {
 			illegal(cpu, op)

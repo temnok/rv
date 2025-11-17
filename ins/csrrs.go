@@ -21,5 +21,5 @@ func csrrs(cpu *state.CPU, op Op) {
 		}
 	}
 
-	cpu.Xset(op.Rd(), val)
+	cpu.Xset(op.rd(), val)
 }

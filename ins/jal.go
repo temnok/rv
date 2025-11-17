@@ -6,11 +6,11 @@ import (
 )
 
 func jal(cpu *state.CPU, op Op) {
-	imm := imm.J(op.Code())
+	imm := imm.J(op.code())
 
 	savedPC := cpu.Update.PC
 	newPC := cpu.Int(cpu.PC + imm)
 
-	cpu.Xset(op.Rd(), savedPC)
+	cpu.Xset(op.rd(), savedPC)
 	cpu.Update.PC = newPC
 }

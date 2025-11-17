@@ -16,5 +16,5 @@ var insComputeM32 = []func(*state.CPU, Op){
 }
 
 func computeM32(cpu *state.CPU, op Op) {
-	insComputeM32[op.F3()](cpu, op)
+	insComputeM32[op.f3()](cpu, op)
 }

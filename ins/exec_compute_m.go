@@ -16,5 +16,5 @@ var computesM = []func(*state.CPU, Op){
 }
 
 func computeM(cpu *state.CPU, op Op) {
-	computesM[op.F3()](cpu, op)
+	computesM[op.f3()](cpu, op)
 }

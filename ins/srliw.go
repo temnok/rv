@@ -1,15 +1,11 @@
 package ins
 
 import (
-	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
 
 func srliw(cpu *state.CPU, op Op) {
-	a := uint32(cpu.X[op.Rs1()])
-	b := uint32(imm.I(op.Code())) & 31
-
-	c := int(int32(a >> b))
-
-	cpu.Xset(op.Rd(), c)
+	computeI32(cpu, op, func(a, b int32) int32 {
+		return int32(uint32(a) >> uint32(b))
+	})
 }

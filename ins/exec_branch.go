@@ -17,14 +17,14 @@ var branches = []func(*state.CPU, Op){
 }
 
 func execBranch(cpu *state.CPU, op Op) {
-	branches[op.F3()](cpu, op)
+	branches[op.f3()](cpu, op)
 }
 
 func branch(cpu *state.CPU, op Op, f func(a, b int) bool) {
-	a := cpu.X[op.Rs1()]
-	b := cpu.X[op.Rs2()]
+	a := cpu.X[op.rs1()]
+	b := cpu.X[op.rs2()]
 
 	if f(a, b) {
-		cpu.Update.PC = cpu.Int(cpu.PC + imm.B(op.Code()))
+		cpu.Update.PC = cpu.Int(cpu.PC + imm.B(op.code()))
 	}
 }

@@ -19,7 +19,7 @@ var loads = []func(*state.CPU, Op){
 }
 
 func execLoad(cpu *state.CPU, op Op) {
-	loads[op.F3()](cpu, op)
+	loads[op.f3()](cpu, op)
 }
 
 func load(cpu *state.CPU, op Op, n int, wrap func(val int) int) {
@@ -28,7 +28,7 @@ func load(cpu *state.CPU, op Op, n int, wrap func(val int) int) {
 		return
 	}
 
-	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+	imm, rd, rs1 := imm.I(op.code()), op.rd(), op.rs1()
 
 	var val int
 

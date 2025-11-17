@@ -53,7 +53,7 @@ func Exec(cpu *state.CPU, opcode int) {
 	cpu.Update.PC = cpu.Int(cpu.PC + opcodeSize)
 
 	op := Op(opcode)
-	f5 := op.F5()
+	f5 := op.f5()
 
 	insGroups[f5](cpu, op)
 }

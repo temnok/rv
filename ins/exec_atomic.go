@@ -21,7 +21,7 @@ var atomics = []func(*state.CPU, Op){
 }
 
 func execAtomic(cpu *state.CPU, op Op) {
-	i := op.F7() >> 2
+	i := op.f7() >> 2
 	if i >= len(atomics) || atomics[i] == nil {
 		illegal(cpu, op)
 		return
@@ -31,7 +31,7 @@ func execAtomic(cpu *state.CPU, op Op) {
 }
 
 func atomic(cpu *state.CPU, op Op, f func(cpu *state.CPU, addr int, val, old *int) bool) {
-	f7, f3, rd, rs1, rs2 := op.F7(), op.F3(), op.Rd(), op.Rs1(), op.Rs2()
+	f7, f3, rd, rs1, rs2 := op.f7(), op.f3(), op.rd(), op.rs1(), op.rs2()
 	f5 := f7 >> 2
 
 	if f3 != 2 && !(cpu.LenIs64() && f3 == 3) ||

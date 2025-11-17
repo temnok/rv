@@ -16,7 +16,7 @@ var computesR = []func(*state.CPU, Op){
 }
 
 func execComputeR(cpu *state.CPU, op Op) {
-	f3, f7 := op.F3(), op.F7()
+	f3, f7 := op.f3(), op.f7()
 
 	ins := illegal
 
@@ -38,10 +38,10 @@ func execComputeR(cpu *state.CPU, op Op) {
 }
 
 func computeR(cpu *state.CPU, op Op, f func(a, b int) int) {
-	a := cpu.X[op.Rs1()]
-	b := cpu.X[op.Rs2()]
+	a := cpu.X[op.rs1()]
+	b := cpu.X[op.rs2()]
 
 	c := f(a, b)
 
-	cpu.Xset(op.Rd(), c)
+	cpu.Xset(op.rd(), c)
 }

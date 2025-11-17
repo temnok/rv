@@ -19,11 +19,11 @@ var systemIns = []func(*state.CPU, Op){
 }
 
 func execSystem(cpu *state.CPU, op Op) {
-	systemIns[op.F3()](cpu, op)
+	systemIns[op.f3()](cpu, op)
 }
 
 func systemSpecial(cpu *state.CPU, op Op) {
-	imm, rd := imm.I(op.Code()), op.Rd()
+	imm, rd := imm.I(op.code()), op.rd()
 
 	if rd != 0 {
 		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)

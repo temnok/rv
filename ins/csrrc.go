@@ -23,14 +23,14 @@ func csrrc(cpu *state.CPU, op Op) {
 		}
 	}
 
-	cpu.Xset(op.Rd(), val)
+	cpu.Xset(op.rd(), val)
 }
 
 func csrRS(cpu *state.CPU, op Op) (int, int) {
-	r := bi.Ts(imm.I(op.Code()), 0, 12)
+	r := bi.Ts(imm.I(op.code()), 0, 12)
 
-	s := op.Rs1()
-	if (op.F3() & 4) == 0 {
+	s := op.rs1()
+	if (op.f3() & 4) == 0 {
 		s = cpu.X[s]
 	}
 

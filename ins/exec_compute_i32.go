@@ -6,10 +6,10 @@ import (
 )
 
 func execComputeI32(cpu *state.CPU, op Op) {
-	imm := imm.I(op.Code())
+	imm := imm.I(op.code())
 
 	if cpu.LenIs64() {
-		switch op.F3() {
+		switch op.f3() {
 		case 0b_000:
 			addiw(cpu, op)
 		case 0b_001:
@@ -31,10 +31,10 @@ func execComputeI32(cpu *state.CPU, op Op) {
 }
 
 func computeI32(cpu *state.CPU, op Op, f func(a, b int32) int32) {
-	a := int32(cpu.X[op.Rs1()])
-	b := int32(imm.I(op.Code()))
+	a := int32(cpu.X[op.rs1()])
+	b := int32(imm.I(op.code()))
 
 	c := int(f(a, b))
 
-	cpu.Xset(op.Rd(), c)
+	cpu.Xset(op.rd(), c)
 }

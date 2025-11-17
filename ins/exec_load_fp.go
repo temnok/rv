@@ -14,11 +14,11 @@ func execLoadFP(cpu *state.CPU, op Op) {
 		return
 	}
 
-	imm, rd, rs1 := imm.I(op.Code()), op.Rd(), op.Rs1()
+	imm, rd, rs1 := imm.I(op.code()), op.rd(), op.rs1()
 
 	var val int
 
-	switch op.F3() {
+	switch op.f3() {
 	case 0b_010: // flw
 		if mem.Read(cpu, cpu.X[rs1]+imm, &val, 4); !trap.IsEntered(cpu) {
 			cpu.Update.FVal = f32boxingBits | val

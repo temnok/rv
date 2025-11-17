@@ -17,22 +17,22 @@ var insComputeI = []func(*state.CPU, Op){
 }
 
 func execComputeI(cpu *state.CPU, op Op) {
-	insComputeI[op.F3()](cpu, op)
+	insComputeI[op.f3()](cpu, op)
 }
 
 func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
-	a := cpu.X[op.Rs1()]
-	b := imm.I(op.Code())
+	a := cpu.X[op.rs1()]
+	b := imm.I(op.code())
 
 	c := f(a, b)
 
-	cpu.Xset(op.Rd(), c)
+	cpu.Xset(op.rd(), c)
 }
 
 func slli_illegal(cpu *state.CPU, op Op) {
 	ins := illegal
 
-	if imm.I(op.Code())&^cpu.Mask() == 0 {
+	if imm.I(op.code())&^cpu.Mask() == 0 {
 		ins = slli
 	}
 
@@ -42,7 +42,7 @@ func slli_illegal(cpu *state.CPU, op Op) {
 func srli_srai(cpu *state.CPU, op Op) {
 	ins := illegal
 
-	switch imm.I(op.Code()) &^ cpu.Mask() {
+	switch imm.I(op.code()) &^ cpu.Mask() {
 	case 0:
 		ins = srli
 	case 1 << 10:

@@ -5,7 +5,7 @@ import (
 )
 
 func execComputeR32(cpu *state.CPU, op Op) {
-	f3, f7 := op.F3(), op.F7()
+	f3, f7 := op.f3(), op.f7()
 
 	ins := illegal
 
@@ -34,10 +34,10 @@ func execComputeR32(cpu *state.CPU, op Op) {
 }
 
 func computeR32(cpu *state.CPU, op Op, f func(a, b int32) int32) {
-	a := int32(cpu.X[op.Rs1()])
-	b := int32(cpu.X[op.Rs2()])
+	a := int32(cpu.X[op.rs1()])
+	b := int32(cpu.X[op.rs2()])
 
 	c := int(f(a, b))
 
-	cpu.Xset(op.Rd(), c)
+	cpu.Xset(op.rd(), c)
 }

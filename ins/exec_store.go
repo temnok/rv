@@ -18,7 +18,7 @@ var stores = []func(*state.CPU, Op){
 }
 
 func execStore(cpu *state.CPU, op Op) {
-	stores[op.F3()](cpu, op)
+	stores[op.f3()](cpu, op)
 }
 
 func store(cpu *state.CPU, op Op, n int) {
@@ -27,6 +27,6 @@ func store(cpu *state.CPU, op Op, n int) {
 		return
 	}
 
-	imm, rs1, rs2 := imm.S(op.Code()), op.Rs1(), op.Rs2()
+	imm, rs1, rs2 := imm.S(op.code()), op.rs1(), op.rs2()
 	mem.Write(cpu, cpu.X[rs1]+imm, cpu.X[rs2], n)
 }
