@@ -74,7 +74,6 @@ import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 	"math"
 )
 
@@ -107,7 +106,7 @@ func execComputeFP(cpu *state.CPU, op Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.f7(), op.f5(), op.f3(), op.rd(), op.rs1(), op.rs2()
 
 	if f7&1 == 1 && !csr.ExtD(cpu) || csr.FpDisabled(cpu) {
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 		return
 	}
 
@@ -353,7 +352,7 @@ func execComputeFP(cpu *state.CPU, op Op) {
 	}
 
 	if cpu.Update.XReg < 0 && cpu.Update.FReg < 0 {
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 	}
 }
 

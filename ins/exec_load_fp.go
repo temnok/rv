@@ -10,7 +10,7 @@ import (
 
 func execLoadFP(cpu *state.CPU, op Op) {
 	if csr.FpDisabled(cpu) {
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 		return
 	}
 
@@ -26,7 +26,7 @@ func execLoadFP(cpu *state.CPU, op Op) {
 
 	case 0b_011: // fld
 		if !csr.ExtD(cpu) {
-			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+			illegal(cpu, op)
 			return
 		}
 
@@ -35,7 +35,7 @@ func execLoadFP(cpu *state.CPU, op Op) {
 		}
 
 	default:
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 		return
 	}
 

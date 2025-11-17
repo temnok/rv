@@ -6,20 +6,20 @@ import (
 )
 
 func csrrs(cpu *state.CPU, op Op) {
-	r, s := csrRS(cpu, op)
-	val := 0
+	r, set := csrRS(cpu, op)
+	old := 0
 
-	if !csr.Read(cpu, r, &val) {
+	if !csr.Read(cpu, r, &old) {
 		illegal(cpu, op)
 		return
 	}
 
-	if s != 0 {
-		if !csr.Write(cpu, r, val|s) {
+	if set != 0 {
+		if !csr.Write(cpu, r, old|set) {
 			illegal(cpu, op)
 			return
 		}
 	}
 
-	cpu.Xset(op.rd(), val)
+	cpu.Xset(op.rd(), old)
 }

@@ -5,12 +5,11 @@ import (
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 )
 
 func execStoreFP(cpu *state.CPU, op Op) {
 	if csr.FpDisabled(cpu) {
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 		return
 	}
 
@@ -22,13 +21,13 @@ func execStoreFP(cpu *state.CPU, op Op) {
 
 	case 0b_011: // fsd
 		if !csr.ExtD(cpu) {
-			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+			illegal(cpu, op)
 			return
 		}
 
 		mem.Write(cpu, cpu.X[rs1]+imm, cpu.F[rs2], 8)
 
 	default:
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+		illegal(cpu, op)
 	}
 }
