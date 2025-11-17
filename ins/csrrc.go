@@ -1,11 +1,13 @@
 package ins
 
 import (
+	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
 
-func Csrrc(cpu *state.CPU, op Op) {
+func csrrc(cpu *state.CPU, op Op) {
 	r, s := csrRS(cpu, op)
 	val := 0
 
@@ -22,4 +24,15 @@ func Csrrc(cpu *state.CPU, op Op) {
 	}
 
 	cpu.Xset(op.Rd(), val)
+}
+
+func csrRS(cpu *state.CPU, op Op) (int, int) {
+	r := bi.Ts(imm.I(op.Code()), 0, 12)
+
+	s := op.Rs1()
+	if (op.F3() & 4) == 0 {
+		s = cpu.X[s]
+	}
+
+	return r, s
 }

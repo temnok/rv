@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Csrrw(cpu *state.CPU, op Op) {
+func csrrw(cpu *state.CPU, op Op) {
 	r, s := csrRS(cpu, op)
 	val := 0
 

@@ -11,16 +11,16 @@ func execComputeI32(cpu *state.CPU, op Op) {
 	if cpu.LenIs64() {
 		switch op.F3() {
 		case 0b_000:
-			Addiw(cpu, op)
+			addiw(cpu, op)
 		case 0b_001:
 			if imm < 32 {
-				Slliw(cpu, op)
+				slliw(cpu, op)
 			}
 		case 0b_101:
 			if imm < 32 {
-				Srliw(cpu, op)
+				srliw(cpu, op)
 			} else if imm&^0b0100000_00000 < 32 {
-				Sraiw(cpu, op)
+				sraiw(cpu, op)
 			}
 		}
 	}

@@ -5,6 +5,6 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Mret(cpu *state.CPU, op Op) {
+func mret(cpu *state.CPU, op Op) {
 	trap.Exit(cpu, state.PrivM)
 }

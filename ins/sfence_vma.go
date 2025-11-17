@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Sfence_vma(cpu *state.CPU, op Op) {
+func sfence_vma(cpu *state.CPU, op Op) {
 	cpu.TLB.Flush()
 	cpu.Update.ICache.Clear()
 

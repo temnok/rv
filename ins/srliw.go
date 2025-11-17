@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Srliw(cpu *state.CPU, op Op) {
+func srliw(cpu *state.CPU, op Op) {
 	a := uint32(cpu.X[op.Rs1()])
 	b := uint32(imm.I(op.Code())) & 31
 

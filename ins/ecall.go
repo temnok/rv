@@ -5,6 +5,6 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Ecall(cpu *state.CPU, op Op) {
+func ecall(cpu *state.CPU, op Op) {
 	trap.EnterWithoutTval(cpu, trap.EnvironmentCallFromUMode+cpu.Priv)
 }

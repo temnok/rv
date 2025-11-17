@@ -7,12 +7,19 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
+var systemIns = []func(*state.CPU, Op){
+	0: systemSpecial,
+	1: csrrw,
+	2: csrrs,
+	3: csrrc,
+	4: illegal,
+	5: csrrw,
+	6: csrrs,
+	7: csrrc,
+}
+
 func execSystem(cpu *state.CPU, op Op) {
-	if op.F3() == 0 {
-		systemSpecial(cpu, op)
-	} else {
-		systemCSR(cpu, op)
-	}
+	systemIns[op.F3()](cpu, op)
 }
 
 func systemSpecial(cpu *state.CPU, op Op) {
@@ -25,40 +32,27 @@ func systemSpecial(cpu *state.CPU, op Op) {
 
 	switch imm {
 	case 0b_0000_000_00000:
-		Ecall(cpu, op)
+		ecall(cpu, op)
 
 	case 0b_0000_000_00001:
-		Ebreak(cpu, op)
+		ebreak(cpu, op)
 
 	case 0b_0001_000_00010:
-		Sret(cpu, op)
+		sret(cpu, op)
 
 	case 0b_0001_000_00101:
 		wfi(cpu, op)
 
 	case 0b_0011_000_00010:
-		Mret(cpu, op)
+		mret(cpu, op)
 
 	default:
 		switch bi.Ts(imm, 5, 7) {
 		case 0b_0001_001:
-			Sfence_vma(cpu, op)
+			sfence_vma(cpu, op)
 
 		default:
 			trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 		}
-	}
-}
-
-func systemCSR(cpu *state.CPU, op Op) {
-	switch op.F3() & 3 {
-	case 1:
-		Csrrw(cpu, op)
-	case 2:
-		Csrrs(cpu, op)
-	case 3:
-		Csrrc(cpu, op)
-	default:
-		trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
 	}
 }
