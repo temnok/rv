@@ -2,6 +2,7 @@ package ins
 
 import (
 	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
@@ -49,4 +50,28 @@ func systemSpecial(cpu *state.CPU, op Op) {
 	}
 
 	ins(cpu, op)
+}
+
+func csrAccess(cpu *state.CPU, op Op, enforceRead, enforceWrite bool, f func(set, old int) int) {
+	reg, set, old := bi.Ts(imm.I(op.code()), 0, 12), op.rs1(), 0
+
+	if op.f3()&4 == 0 {
+		set = cpu.X[set]
+	}
+
+	if op.rd() != 0 || enforceRead {
+		if !csr.Read(cpu, reg, &old) {
+			illegal(cpu, op)
+			return
+		}
+	}
+
+	if set != 0 || enforceWrite {
+		if !csr.Write(cpu, reg, f(set, old)) {
+			illegal(cpu, op)
+			return
+		}
+	}
+
+	cpu.Xset(op.rd(), old)
 }

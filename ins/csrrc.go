@@ -1,38 +1,11 @@
 package ins
 
 import (
-	"github.com/temnok/rv/bi"
-	"github.com/temnok/rv/csr"
-	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
 
 func csrrc(cpu *state.CPU, op Op) {
-	r, set := csrRS(cpu, op)
-	old := 0
-
-	if !csr.Read(cpu, r, &old) {
-		illegal(cpu, op)
-		return
-	}
-
-	if set != 0 {
-		if !csr.Write(cpu, r, old&^set) {
-			illegal(cpu, op)
-			return
-		}
-	}
-
-	cpu.Xset(op.rd(), old)
-}
-
-func csrRS(cpu *state.CPU, op Op) (int, int) {
-	r := bi.Ts(imm.I(op.code()), 0, 12)
-
-	s := op.rs1()
-	if op.f3()&4 == 0 {
-		s = cpu.X[s]
-	}
-
-	return r, s
+	csrAccess(cpu, op, true, false, func(set, old int) int {
+		return old &^ set
+	})
 }
