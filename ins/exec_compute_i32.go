@@ -8,26 +8,24 @@ import (
 func execComputeI32(cpu *state.CPU, op Op) {
 	imm := imm.I(op.code())
 
-	if cpu.LenIs64() {
-		switch op.f3() {
-		case 0b_000:
-			addiw(cpu, op)
-		case 0b_001:
-			if imm < 32 {
-				slliw(cpu, op)
-			}
-		case 0b_101:
-			if imm < 32 {
-				srliw(cpu, op)
-			} else if imm&^0b0100000_00000 < 32 {
-				sraiw(cpu, op)
-			}
+	ins := illegal
+
+	switch op.f3() {
+	case 0:
+		ins = addiw
+	case 1:
+		if imm < 32 {
+			ins = slliw
+		}
+	case 5:
+		if imm < 32 {
+			ins = srliw
+		} else if imm&^0b0100000_00000 < 32 {
+			ins = sraiw
 		}
 	}
 
-	if cpu.Update.XReg < 0 {
-		illegal(cpu, op)
-	}
+	ins(cpu, op)
 }
 
 func computeI32(cpu *state.CPU, op Op, f func(a, b int32) int32) {
