@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var computesR = []func(*state.CPU, Op){
+var computeRIns = []func(*state.CPU, Op){
 	0: add,
 	1: sll,
 	2: slt,
@@ -22,7 +22,7 @@ func execComputeR(cpu *state.CPU, op Op) {
 
 	switch f7 {
 	case 0:
-		ins = computesR[f3]
+		ins = computeRIns[f3]
 	case 1:
 		ins = computeM
 	case 1 << 5:

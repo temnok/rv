@@ -4,7 +4,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var insComputeM32 = []func(*state.CPU, Op){
+var computeM32Ins = []func(*state.CPU, Op){
 	0: mulw,
 	1: illegal,
 	2: illegal,
@@ -16,5 +16,5 @@ var insComputeM32 = []func(*state.CPU, Op){
 }
 
 func computeM32(cpu *state.CPU, op Op) {
-	insComputeM32[op.f3()](cpu, op)
+	computeM32Ins[op.f3()](cpu, op)
 }

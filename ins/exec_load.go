@@ -7,7 +7,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-var loads = []func(*state.CPU, Op){
+var loadIns = []func(*state.CPU, Op){
 	0: lb,
 	1: lh,
 	2: lw,
@@ -19,7 +19,7 @@ var loads = []func(*state.CPU, Op){
 }
 
 func execLoad(cpu *state.CPU, op Op) {
-	loads[op.f3()](cpu, op)
+	loadIns[op.f3()](cpu, op)
 }
 
 func load(cpu *state.CPU, op Op, n int, wrap func(val int) int) {

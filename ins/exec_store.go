@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var stores = []func(*state.CPU, Op){
+var storeIns = []func(*state.CPU, Op){
 	0: sb,
 	1: sh,
 	2: sw,
@@ -18,7 +18,7 @@ var stores = []func(*state.CPU, Op){
 }
 
 func execStore(cpu *state.CPU, op Op) {
-	stores[op.f3()](cpu, op)
+	storeIns[op.f3()](cpu, op)
 }
 
 func store(cpu *state.CPU, op Op, n int) {

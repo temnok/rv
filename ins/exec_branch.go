@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var branches = []func(*state.CPU, Op){
+var branchIns = []func(*state.CPU, Op){
 	0: beq,
 	1: bne,
 	2: illegal,
@@ -17,7 +17,7 @@ var branches = []func(*state.CPU, Op){
 }
 
 func execBranch(cpu *state.CPU, op Op) {
-	branches[op.f3()](cpu, op)
+	branchIns[op.f3()](cpu, op)
 }
 
 func branch(cpu *state.CPU, op Op, f func(a, b int) bool) {

@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-var atomics = []func(*state.CPU, Op){
+var atomicIns = []func(*state.CPU, Op){
 	0:  amoadd,
 	1:  amoswap,
 	2:  lr,
@@ -22,15 +22,15 @@ var atomics = []func(*state.CPU, Op){
 
 func execAtomic(cpu *state.CPU, op Op) {
 	i := op.f7() >> 2
-	if i >= len(atomics) || atomics[i] == nil {
+	if i >= len(atomicIns) || atomicIns[i] == nil {
 		illegal(cpu, op)
 		return
 	}
 
-	atomics[i](cpu, op)
+	atomicIns[i](cpu, op)
 }
 
-func atomic(cpu *state.CPU, op Op, f func(cpu *state.CPU, addr int, val, old *int) bool) {
+func atomic(cpu *state.CPU, op Op, read bool, f func(cpu *state.CPU, addr int, val, old *int) bool) {
 	f7, f3, rd, rs1, rs2 := op.f7(), op.f3(), op.rd(), op.rs1(), op.rs2()
 	f5 := f7 >> 2
 
@@ -47,7 +47,7 @@ func atomic(cpu *state.CPU, op Op, f func(cpu *state.CPU, addr int, val, old *in
 	val := cpu.X[rs2]
 
 	var old int
-	if f5 != 3 { // for all except sc
+	if read {
 		if mem.Read(cpu, addr, &old, width); trap.IsEntered(cpu) {
 			return
 		}

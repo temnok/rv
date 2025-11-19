@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var insComputeI = []func(*state.CPU, Op){
+var computeIIns = []func(*state.CPU, Op){
 	0: addi,
 	1: slli_illegal,
 	2: slti,
@@ -17,7 +17,7 @@ var insComputeI = []func(*state.CPU, Op){
 }
 
 func execComputeI(cpu *state.CPU, op Op) {
-	insComputeI[op.f3()](cpu, op)
+	computeIIns[op.f3()](cpu, op)
 }
 
 func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
