@@ -16,18 +16,9 @@ function benchmark {
 
 ################################################################################
 
-if [[ "${RV_XLEN}" == "32" ]]; then
-    RV_ARCH=rv32imac
-    RV_ABI=ilp32
-else
-    RV_XLEN=64
-    RV_ARCH=rv64imac
-    RV_ABI=lp64
-fi
-
 export ARCH=riscv
 export CC="ccache riscv64-unknown-linux-gnu-gcc"
-export CFLAGS="-march=${RV_ARCH} -mabi=${RV_ABI}"
+export CFLAGS="-march=rv64imac -mabi=lp64"
 export CROSS_COMPILE=riscv64-unknown-linux-gnu-
 
 echo
@@ -96,7 +87,7 @@ echo -n "Building initramfs... "
 mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs && cd build/initramfs/fs
 mkdir bin && cp ~/build/busybox/busybox bin/
 
-if [[ "${VERSION_GO}" != "" ]] && [[ "${RV_XLEN}" == "64" ]]; then
+if [[ "${VERSION_GO}" != "" ]]; then
     mkdir -p usr/local
     tar -C usr/local -xf ~/cache/download/go*
 fi
@@ -117,7 +108,7 @@ tar -xf cache/download/linux-${VERSION_KERNEL}.tar.xz && mv linux-* build/kernel
 cd build/kernel
 
 flags_y=(
-    ARCH_RV${RV_XLEN}I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
+    ARCH_RV64I BINFMT_ELF BINFMT_SCRIPT BLK_DEV_INITRD DEBUG_INFO DEBUG_INFO_DWARF5
     DEBUG_KERNEL DEVTMPFS DEVTMPFS_MOUNT GDB_SCRIPTS KGDB KGDB_SERIAL_CONSOLE NONPORTABLE
     RISCV_INTC RISCV_ISA_C SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE SIFIVE_PLIC TIMER_OF
 
@@ -153,19 +144,17 @@ echo -n "Building opensbi... "
 tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
 cd build/opensbi
 
-sed "s/rv64/rv${RV_XLEN}/g" ~/input/rv.dts > rv.dts
-
 dtc $QUIET \
   -O dtb \
   -o rv.dtb \
-  rv.dts
+  ~/input/rv.dts
 
 make $QUIET \
   CC="${CC}" \
   FW_FDT_PATH=rv.dtb \
   FW_PAYLOAD_PATH=~/build/kernel/arch/riscv/boot/Image \
   PLATFORM=generic \
-  PLATFORM_RISCV_XLEN=${RV_XLEN} \
+  PLATFORM_RISCV_XLEN=64 \
   --jobs=$CPU_COUNT \
   > /dev/null 2>&1
 

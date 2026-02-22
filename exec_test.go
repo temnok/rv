@@ -1,7 +1,6 @@
 package rv
 
 import (
-	"fmt"
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/debug"
 	"github.com/temnok/rv/ram"
@@ -13,16 +12,8 @@ import (
 	"testing"
 )
 
-func TestInstructions32(t *testing.T) {
-	testInstructions(t, 32)
-}
-
-func TestInstructions64(t *testing.T) {
-	testInstructions(t, 64)
-}
-
-func testInstructions(t *testing.T, xlen int) {
-	matches, err := filepath.Glob(fmt.Sprintf("tests/pass/rv%v*", xlen))
+func TestInstructions(t *testing.T) {
+	matches, err := filepath.Glob("tests/pass/rv64*")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,19 +23,19 @@ func testInstructions(t *testing.T, xlen int) {
 		testName := file[i+1:]
 
 		t.Run(testName, func(t *testing.T) {
-			runTest(t, xlen, file)
+			runTest(t, file)
 		})
 	}
 }
 
-func runTest(t *testing.T, xlen int, file string) {
+func runTest(t *testing.T, file string) {
 	program, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	ramBaseAddr := 0x8000_0000
-	cpu := cp.New(xlen, ramBaseAddr)
+	cpu := cp.New(ramBaseAddr)
 	ram := ram.New(cpu, ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 

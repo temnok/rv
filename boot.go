@@ -16,19 +16,19 @@ import (
 	"strings"
 )
 
-func BootLinux(xlen int, dir string) {
+func BootLinux(dir string) {
 	state := check1(term.MakeRaw(0))
 	defer func() {
 		check(term.Restore(0, state))
 	}()
 
-	bootLinux(xlen, dir, os.Stdin, os.Stdout, 0)
+	bootLinux(dir, os.Stdin, os.Stdout, 0)
 }
 
-func bootLinux(xlen int, dir string, in io.Reader, out io.Writer, timeout int) {
+func bootLinux(dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
 		ramBaseAddr = 0x8000_0000
-		cpu         = cp.New(xlen, ramBaseAddr)
+		cpu         = cp.New(ramBaseAddr)
 		ram         = ram.New(cpu, ramBaseAddr, 128*1024*1024)
 		clint       = clint.New(cpu, 0x0200_0000)
 		plic        = plic.New(cpu, 0x0C00_0000)

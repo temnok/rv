@@ -7,13 +7,11 @@ import (
 	"testing"
 )
 
-func TestRunKernel64(t *testing.T) {
-	testRunKernel(t, 64, "biko/output-64", "user@rv")
-}
-
-func testRunKernel(t *testing.T, xlen int, kernelPath, stopString string) {
+func TestRunKernel(t *testing.T) {
 	t.Parallel()
 
+	kernelPath := "biko/output"
+	stopString := "user@rv"
 	inR, inW := io.Pipe()
 
 	outW := &matchWriter{
@@ -22,7 +20,7 @@ func testRunKernel(t *testing.T, xlen int, kernelPath, stopString string) {
 		input:      inW,
 	}
 
-	bootLinux(xlen, kernelPath, inR, outW, 200_000_000)
+	bootLinux(kernelPath, inR, outW, 200_000_000)
 
 	if !outW.success {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))

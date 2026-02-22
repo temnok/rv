@@ -13,7 +13,7 @@ func Decompress(cpu *state.CPU, opcodePtr *int) {
 	opcode := *opcodePtr
 
 	opcode = int(uint16(opcode))
-	decompressedOpcode := decompressOpcode(cpu, opcode)
+	decompressedOpcode := decompressOpcode(opcode)
 	if decompressedOpcode == 0 {
 		trap.Enter(cpu, trap.IllegalIstruction, opcode)
 		return
@@ -23,7 +23,7 @@ func Decompress(cpu *state.CPU, opcodePtr *int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func decompressOpcode(cpu *state.CPU, opcode int) int {
+func decompressOpcode(opcode int) int {
 	f3 := bi.Ts(opcode, 13, 3)
 	ra := bi.Ts(opcode, 7, 5)
 	ra8 := 8 | (ra & 7)

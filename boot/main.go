@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	rv.BootLinux(64, "biko/output-64")
+	rv.BootLinux("biko/output")
 }

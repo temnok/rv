@@ -1,0 +1,4 @@
+3d933204a757c1affa399885d897f80f564014297d59cd50703d2c8b0a0c66ee *build/busybox/busybox
+03912c28332cf25ec2214029ccbfce4de14aebc68bed37d290f2519026e443b1 *build/initramfs/initramfs.cpio
+ce587f3b965f99ed5ffb38f236e893ea9f5f6a8969b151a826c4d9ee20507135 *build/kernel/arch/riscv/boot/Image
+fa308430dbebe78443e0f0ab8951a899b6b1b6e05a3f721e18f23a8d4540b4c0 *output/biko.gz
