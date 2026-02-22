@@ -1,4 +1,4 @@
-/biko/output/
+biko/output/*
 .idea
 tmp
 .DS_Store
