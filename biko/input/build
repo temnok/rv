@@ -35,7 +35,7 @@ cd cache/download
 VERSION_BUSYBOX=1.36.1
 VERSION_KERNEL=6.19.3
 VERSION_OPENSBI=1.8.1
-#VERSION_GO=1.24.5
+#VERSION_GO=1.26.0
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     wget $QUIET https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
