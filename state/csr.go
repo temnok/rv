@@ -1,11 +1,9 @@
 package state
 
 type CSR struct {
-	Cycle  int
-	Cycleh int
-	Fcsr   int
-	Time   int
-	Timeh  int
+	Cycle int
+	Fcsr  int
+	Time  int
 
 	Satp       int
 	Scause     int
@@ -29,7 +27,6 @@ type CSR struct {
 	Misa       int
 	Mscratch   int
 	Mstatus    int
-	Mstatush   int
 	Mtval      int
 	Mtvec      int
 	Mvendorid  int

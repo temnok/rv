@@ -20,7 +20,6 @@ const (
 	Satp = 0x180
 
 	Mstatus    = 0x300
-	Mstatush   = 0x310
 	Misa       = 0x301
 	Medeleg    = 0x302
 	Mideleg    = 0x303
@@ -37,10 +36,6 @@ const (
 	Cycle   = 0xC00
 	Time    = 0xC01
 	Instret = 0xC02
-
-	Cycleh   = 0xC80
-	Timeh    = 0xC81
-	Instreth = 0xC82
 
 	Mvendorid = 0xF11
 	Marchid   = 0xF12
@@ -63,7 +58,6 @@ const (
 	MstatusSD64 = 63
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
-	SatpMODE32 = 31
 	SatpMODE64 = 60
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers

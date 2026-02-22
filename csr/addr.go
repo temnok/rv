@@ -76,12 +76,6 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 			mask = ^(3<<MstatusSXL | 3<<MstatusUXL)
 		}
 
-	case Mstatush: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-		reg = &csr.Mstatush
-		if write {
-			mask = 0
-		}
-
 	case Misa: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#misa
 		reg = &csr.Misa
 		if write {

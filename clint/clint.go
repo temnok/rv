@@ -32,12 +32,8 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 		reg = &clint.mswi
 	case 0x4000 + 0x0000: // mtimecmp
 		reg = &clint.mtimecmp
-	case 0x4000 + 0x0000 + 4: // mtimecmph
-		reg = &clint.mtimecmph
 	case 0x4000 + 0x7FF8: // mtime
 		reg = &clint.cpu.CSR.Time
-	case 0x4000 + 0x7FF8 + 4: // mtimeh
-		reg = &clint.cpu.CSR.Timeh
 	}
 
 	if write {
@@ -62,9 +58,7 @@ func (clint *CLINT) NotifyInterrupts() {
 		reg.Mip |= 1 << csr.MipMSI
 	}
 
-	if uint(reg.Timeh) > uint(clint.mtimecmph) ||
-		reg.Timeh == clint.mtimecmph && uint(reg.Time) >= uint(clint.mtimecmp) {
-
+	if uint(reg.Time) >= uint(clint.mtimecmp) {
 		reg.Mip |= 1 << csr.MipMTI
 	}
 }

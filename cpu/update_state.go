@@ -68,14 +68,10 @@ func updateState(cpu *state.CPU) {
 }
 
 func updateTimers(cpu *state.CPU) {
-	if cpu.CSR.Cycle = cpu.CSR.Cycle + 1; cpu.CSR.Cycle == 0 {
-		cpu.CSR.Cycleh++
-	}
+	cpu.CSR.Cycle++
 
 	if cpu.CSR.Cycle%10_000 == 0 {
-		if cpu.CSR.Time = cpu.CSR.Time + 1; cpu.CSR.Time == 0 {
-			cpu.CSR.Timeh++
-		}
+		cpu.CSR.Time++
 	}
 }
 
