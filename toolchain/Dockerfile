@@ -1,4 +1,4 @@
-FROM gcc:15.1-bookworm
+FROM gcc:15.2-trixie
 
 RUN apt update && \
     apt install -y \
@@ -45,7 +45,7 @@ RUN groupadd -r user && \
 USER user
 WORKDIR /home/user
 
-RUN git clone --depth 1 --single-branch --branch 2025.07.16 \
+RUN git clone --depth 1 --single-branch --branch 2026.02.13 \
     https://github.com/riscv/riscv-gnu-toolchain toolchain-source && \
     cd toolchain-source && \
     ./configure --prefix=/home/user/toolchain --enable-multilib && \

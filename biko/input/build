@@ -42,8 +42,8 @@ echo -n "Downloading sources... "
 cd cache/download
 
 VERSION_BUSYBOX=1.36.1
-VERSION_KERNEL=6.15.7
-VERSION_OPENSBI=1.7
+VERSION_KERNEL=6.19.3
+VERSION_OPENSBI=1.8.1
 #VERSION_GO=1.24.5
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
@@ -76,6 +76,9 @@ KCONFIG_NOTIMESTAMP=1 \
     make $QUIET \
         defconfig \
         > /dev/null 2>&1
+
+sed -i 's/CONFIG_TC=y/CONFIG_TC=n/' .config
+sed -i 's/CONFIG_TCPSVD=y/CONFIG_TCPSVD=n/' .config
 
 LDFLAGS="--static ${CFLAGS}" \
     make $QUIET \
