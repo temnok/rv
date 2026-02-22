@@ -89,7 +89,7 @@ func Exec(cpu *state.CPU, opcode int) {
 	f5 := op.f5()
 
 	groups[f5](cpu, op)
-	groupFreq[f5]++
+	//groupFreq[f5]++
 }
 
 func PrintFreqStats() {

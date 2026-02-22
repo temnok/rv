@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_START=$(date +%s)
-BM_START=$SCRIPT_START
+BM_START=${SCRIPT_START}
 CPU_COUNT=$(nproc)
 QUIET=--quiet
 
@@ -10,8 +10,8 @@ export CCACHE_DIR=/home/user/cache/cc
 
 function benchmark {
   BM_END=$(date +%s)
-  echo $((($BM_END-$BM_START)/60))m $((($BM_END-$BM_START)%60))s
-  BM_START=$BM_END
+  echo $(((${BM_END}-${BM_START})/60))m $(((${BM_END}-${BM_START})%60))s
+  BM_START=${BM_END}
 }
 
 ################################################################################
@@ -22,7 +22,6 @@ export CFLAGS="-march=rv64imac -mabi=lp64"
 export CROSS_COMPILE=riscv64-unknown-linux-gnu-
 
 echo
-echo "Target ${CFLAGS}"
 echo "Using CPUs: ${CPU_COUNT}"
 
 rm -rf build output && mkdir -p build output cache/{download,cc}
@@ -38,20 +37,20 @@ VERSION_OPENSBI=1.8.1
 #VERSION_GO=1.26.0
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
-    wget $QUIET https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
+    wget ${QUIET} https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
 fi
 
 if [ ! -f linux-${VERSION_KERNEL}.tar.xz ]; then
-    wget $QUIET https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${VERSION_KERNEL}.tar.xz
+    wget ${QUIET} https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${VERSION_KERNEL}.tar.xz
 fi
 
 if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
-    wget $QUIET https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
+    wget ${QUIET} https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
     mv v${VERSION_OPENSBI}.tar.gz opensbi-${VERSION_OPENSBI}.tar.gz
 fi
 
 if [[ "${VERSION_GO}" != "" ]] && [ ! -f go${VERSION_GO}.linux-riscv64.tar.gz ]; then
-    wget $QUIET https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
+    wget ${QUIET} https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
 fi
 
 cd ~
@@ -64,7 +63,7 @@ tar -xf cache/download/busybox-${VERSION_BUSYBOX}.tar.bz2 && mv busybox-* build/
 cd build/busybox
 
 KCONFIG_NOTIMESTAMP=1 \
-    make $QUIET \
+    make ${QUIET} \
         defconfig \
         > /dev/null 2>&1
 
@@ -72,9 +71,9 @@ sed -i 's/CONFIG_TC=y/CONFIG_TC=n/' .config
 sed -i 's/CONFIG_TCPSVD=y/CONFIG_TCPSVD=n/' .config
 
 LDFLAGS="--static ${CFLAGS}" \
-    make $QUIET \
+    make ${QUIET} \
         CC="${CC}" \
-        --jobs=$CPU_COUNT \
+        --jobs=${CPU_COUNT} \
         busybox \
         > /dev/null 2>&1
 
@@ -115,24 +114,24 @@ flags_y=(
     INITRAMFS_COMPRESSION_NONE
 )
 
-make $QUIET \
+make ${QUIET} \
     allnoconfig
 
 for f in ${flags_y[@]}; do
-    scripts/config --set-val $f y
+    scripts/config --set-val ${f} y
 done
 
 scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs.cpio\"
 
-make $QUIET \
+make ${QUIET} \
     olddefconfig
 
-make $QUIET \
+make ${QUIET} \
     CC="${CC}" \
     KBUILD_BUILD_HOST="buildhost" \
     KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
     KBUILD_BUILD_USER="builduser" \
-    --jobs=$CPU_COUNT \
+    --jobs=${CPU_COUNT} \
     Image
 
 cd ~
@@ -144,18 +143,18 @@ echo -n "Building opensbi... "
 tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
 cd build/opensbi
 
-dtc $QUIET \
+dtc ${QUIET} \
   -O dtb \
   -o rv.dtb \
   ~/input/rv.dts
 
-make $QUIET \
+make ${QUIET} \
   CC="${CC}" \
   FW_FDT_PATH=rv.dtb \
   FW_PAYLOAD_PATH=~/build/kernel/arch/riscv/boot/Image \
   PLATFORM=generic \
   PLATFORM_RISCV_XLEN=64 \
-  --jobs=$CPU_COUNT \
+  --jobs=${CPU_COUNT} \
   > /dev/null 2>&1
 
 gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/biko.gz
@@ -172,4 +171,4 @@ sha256sum -b \
   output/biko.gz > output/sha256.txt
 
 echo -n "Total execution time: "
-BM_START=$SCRIPT_START && benchmark
+BM_START=${SCRIPT_START} && benchmark
