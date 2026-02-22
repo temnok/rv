@@ -6,7 +6,7 @@ import (
 
 func amominu(cpu *state.CPU, op Op) {
 	atomic(cpu, op, true, func(cpu *state.CPU, addr int, val, old *int) bool {
-		if cpu.Uint(*old) < cpu.Uint(*val) {
+		if uint(*old) < uint(*val) {
 			*val = *old
 		}
 

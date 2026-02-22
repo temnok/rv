@@ -16,7 +16,7 @@ type CLINT struct {
 func New(cpu *state.CPU, baseAddr int) *CLINT {
 	return &CLINT{
 		cpu:      cpu,
-		baseAddr: cpu.Int(baseAddr),
+		baseAddr: baseAddr,
 	}
 }
 

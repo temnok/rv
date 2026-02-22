@@ -26,8 +26,8 @@ func New(xlen int, startAddr int) *state.CPU {
 		},
 	}
 
-	cpu.CSR.Mstatus = cpu.Int(xl<<csr.MstatusSXL | xl<<csr.MstatusUXL)
-	cpu.Update.PC = cpu.Int(startAddr)
+	cpu.CSR.Mstatus = xl<<csr.MstatusSXL | xl<<csr.MstatusUXL
+	cpu.Update.PC = startAddr
 
 	return cpu
 }

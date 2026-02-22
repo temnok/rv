@@ -14,13 +14,13 @@ type RAM struct {
 func New(cpu *state.CPU, baseAddr int, size int) *RAM {
 	return &RAM{
 		cpu:      cpu,
-		baseAddr: cpu.Int(baseAddr),
+		baseAddr: baseAddr,
 		words:    make([]int, size/8),
 	}
 }
 
 func (ram *RAM) Load(addr int, program []byte) {
-	addr = (ram.cpu.Int(addr) - ram.baseAddr) / 8
+	addr = (addr - ram.baseAddr) / 8
 	words := ram.words[addr : addr+int(len(program))/8+1]
 
 	clear(words)

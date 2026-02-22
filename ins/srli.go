@@ -6,6 +6,6 @@ import (
 
 func srli(cpu *state.CPU, op Op) {
 	computeI(cpu, op, func(a, b int) int {
-		return int(cpu.Uint(a) >> cpu.Uint(b))
+		return int(uint(a) >> uint(b))
 	})
 }

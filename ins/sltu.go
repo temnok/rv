@@ -4,7 +4,7 @@ import "github.com/temnok/rv/state"
 
 func sltu(cpu *state.CPU, op Op) {
 	computeR(cpu, op, func(a, b int) int {
-		if cpu.Uint(a) < cpu.Uint(b) {
+		if uint(a) < uint(b) {
 			return 1
 		}
 

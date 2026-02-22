@@ -10,6 +10,6 @@ func remu(cpu *state.CPU, op Op) {
 			return a
 		}
 
-		return int(cpu.Uint(a) % cpu.Uint(b))
+		return int(uint(a) % uint(b))
 	})
 }

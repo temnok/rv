@@ -1,6 +1,7 @@
 package trap
 
 import (
+	"github.com/temnok/rv/arch"
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
@@ -19,7 +20,7 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		panic("double Trap")
 	}
 
-	mcauseI := cpu.Mask()
+	mcauseI := arch.XMask
 	isInterrupt := bi.T(cause, mcauseI) == 1
 	causeID := bi.Ts(cause, 0, 5)
 

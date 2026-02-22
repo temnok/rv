@@ -10,6 +10,6 @@ func divu(cpu *state.CPU, op Op) {
 			return -1
 		}
 
-		return int(cpu.Uint(a) / cpu.Uint(b))
+		return int(uint(a) / uint(b))
 	})
 }
