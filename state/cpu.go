@@ -1,7 +1,8 @@
 package state
 
+import "github.com/temnok/rv/arch"
+
 type CPU struct {
-	FixedState
 	StaticState
 	Update UpdatedState
 
@@ -10,11 +11,11 @@ type CPU struct {
 }
 
 func (cpu *CPU) LenIs64() bool {
-	return cpu.Len == 64
+	return true
 }
 
 func (cpu *CPU) Mask() int {
-	return cpu.Len - 1
+	return arch.XMask
 }
 
 func (cpu *CPU) Int(val int) int {

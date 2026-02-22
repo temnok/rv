@@ -9,10 +9,6 @@ func New(xlen int, startAddr int) *state.CPU {
 	xl := xlen / 32
 
 	cpu := &state.CPU{
-		FixedState: state.FixedState{
-			Len: xlen,
-		},
-
 		StaticState: state.StaticState{
 			Priv: state.PrivM,
 

@@ -3,6 +3,7 @@ package debug
 import (
 	"fmt"
 	"github.com/deadsy/rvda"
+	"github.com/temnok/rv/arch"
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/state"
 	"math"
@@ -43,7 +44,7 @@ func step(cpu *state.CPU) bool {
 }
 
 func Dump(cpu *state.CPU) {
-	isa, _ := rvda.New(uint(cpu.Len), rvda.RV64gc)
+	isa, _ := rvda.New(uint(arch.XLen), rvda.RV64gc)
 
 	for _, entry := range debugTrace {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))

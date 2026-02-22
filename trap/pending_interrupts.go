@@ -1,6 +1,7 @@
 package trap
 
 import (
+	"github.com/temnok/rv/arch"
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/state"
 )
@@ -25,7 +26,7 @@ func OnPendingInterrupts(cpu *state.CPU) {
 			priv = state.PrivS
 		}
 
-		mcauseI := cpu.Len - 1
+		mcauseI := arch.XMask
 		if (priv == cpu.Priv && bi.T(cpu.CSR.Mstatus, priv) == 1) || priv > cpu.Priv {
 			EnterWithoutTval(cpu, -1<<mcauseI|i)
 

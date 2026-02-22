@@ -40,10 +40,11 @@ func updateState(cpu *state.CPU) {
 		up.XReg = -1
 	}
 
+	sd := csr.MstatusSD64
 	if up.FReg >= 0 || up.CReg == csr.Fflags || up.CReg == csr.Frm || up.CReg == csr.Fcsr {
 		cpu.CSR.Mstatus &^= 0b_11 << csr.MstatusFS
 		cpu.CSR.Mstatus |= csr.FSdirty << csr.MstatusFS
-		cpu.CSR.Mstatus |= 1 << (cpu.Len - 1) // set SD bit
+		cpu.CSR.Mstatus |= 1 << sd
 	}
 
 	if up.FReg >= 0 {

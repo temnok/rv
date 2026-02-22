@@ -1,6 +1,7 @@
 package decompress
 
 import (
+	"github.com/temnok/rv/arch"
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
@@ -23,7 +24,7 @@ func Decompress(cpu *state.CPU, opcodePtr *int) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
 func decompressOpcode(cpu *state.CPU, opcode int) int {
-	xlen := cpu.Len
+	xlen := arch.XLen
 	xlen64 := cpu.LenIs64()
 
 	f3 := bi.Ts(opcode, 13, 3)
