@@ -7,10 +7,6 @@ import (
 
 func mulh(cpu *state.CPU, op Op) {
 	computeR(cpu, op, func(a, b int) int {
-		if !cpu.LenIs64() {
-			return a * b >> 32
-		}
-
 		hi, _ := bits.Mul64(uint64(a), uint64(b))
 		s1 := (a >> 63) & b
 		s2 := (b >> 63) & a

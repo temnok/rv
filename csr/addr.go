@@ -127,21 +127,6 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 	case Instret: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_zicntr_extension_for_base_counters_and_timers
 		reg = &csr.Cycle
 
-	case Cycleh:
-		if !cpu.LenIs64() {
-			reg = &csr.Cycleh
-		}
-
-	case Timeh: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
-		if !cpu.LenIs64() {
-			reg = &csr.Timeh
-		}
-
-	case Instreth:
-		if !cpu.LenIs64() {
-			reg = &csr.Cycleh
-		}
-
 	case Mvendorid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_vendor_id_mvendorid_register
 		reg = &csr.Mvendorid
 

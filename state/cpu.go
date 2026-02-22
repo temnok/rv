@@ -8,10 +8,6 @@ type CPU struct {
 	Bus Bus
 }
 
-func (cpu *CPU) LenIs64() bool {
-	return true
-}
-
 func (cpu *CPU) Xset(rd, val int) {
 	cpu.Update.XReg = rd
 	cpu.Update.XVal = val

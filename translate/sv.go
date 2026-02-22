@@ -25,9 +25,5 @@ const (
 )
 
 func Sv(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
-	if cpu.LenIs64() {
-		sv39(cpu, virtAddr, physAddr, access)
-	} else {
-		sv32(cpu, virtAddr, physAddr, access)
-	}
+	sv39(cpu, virtAddr, physAddr, access)
 }

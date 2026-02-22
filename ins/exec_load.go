@@ -23,11 +23,6 @@ func execLoad(cpu *state.CPU, op Op) {
 }
 
 func load(cpu *state.CPU, op Op, n int, wrap func(val int) int) {
-	if n == 8 && !cpu.LenIs64() {
-		illegal(cpu, op)
-		return
-	}
-
 	imm, rd, rs1 := imm.I(op.code()), op.rd(), op.rs1()
 
 	var val int

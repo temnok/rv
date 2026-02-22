@@ -24,9 +24,6 @@ func Decompress(cpu *state.CPU, opcodePtr *int) {
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
 func decompressOpcode(cpu *state.CPU, opcode int) int {
-	xlen := arch.XLen
-	xlen64 := cpu.LenIs64()
-
 	f3 := bi.Ts(opcode, 13, 3)
 	ra := bi.Ts(opcode, 7, 5)
 	ra8 := 8 | (ra & 7)
@@ -47,27 +44,17 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 		case 0b_010: // c.lw
 			return encode.I(imm.CL(opcode), ra8, 0b_010, rb8, 0b_00000)
 
-		case 0b_011:
-			if xlen64 { // c.ld
-				return encode.I(imm.CL3(opcode), ra8, 0b_011, rb8, 0b_00000)
-			} else { // c.flw
-				return encode.I(imm.CL(opcode), ra8, 0b_010, rb8, 0b_00001)
-			}
+		case 0b_011: // c.ld
+			return encode.I(imm.CL3(opcode), ra8, 0b_011, rb8, 0b_00000)
 
 		case 0b_101: // c.fsd
-			if xlen64 {
-				return encode.S(imm.CL3(opcode), rb8, ra8, 0b_011, 0b_01001)
-			}
+			return encode.S(imm.CL3(opcode), rb8, ra8, 0b_011, 0b_01001)
 
 		case 0b_110: // c.sw
 			return encode.S(imm.CL(opcode), rb8, ra8, 0b_010, 0b_01000)
 
-		case 0b_111:
-			if xlen64 { // c.sd
-				return encode.S(imm.CL3(opcode), rb8, ra8, 0b_011, 0b_01000)
-			} else { // c.fsw
-				return encode.S(imm.CL(opcode), rb8, ra8, 0b_010, 0b_01001)
-			}
+		case 0b_111: // c.sd
+			return encode.S(imm.CL3(opcode), rb8, ra8, 0b_011, 0b_01000)
 		}
 
 	case 0b_01: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table1
@@ -76,12 +63,8 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 			return encode.I(imm.CI(opcode), ra, 0, ra, 4)
 
 		case 0b_001:
-			if xlen64 {
-				if ra != 0 {
-					return encode.I(imm.CI(opcode), ra, 0, ra, 6) // addiw
-				}
-			} else {
-				return encode.J(imm.CJ(opcode), 1, 27) // jal
+			if ra != 0 {
+				return encode.I(imm.CI(opcode), ra, 0, ra, 6) // addiw
 			}
 
 		case 0b_010: // li
@@ -102,10 +85,10 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 		case 0b_100:
 			switch bi.Ts(opcode, 10, 2) {
 			case 0b_00: // srli
-				return encode.R(0, imm.CI(opcode)&(xlen-1), ra8, 5, ra8, 4)
+				return encode.R(0, imm.CI(opcode)&arch.XMask, ra8, 5, ra8, 4)
 
 			case 0b_01: // srai
-				return encode.R(0b_0100000, imm.CI(opcode)&(xlen-1), ra8, 5, ra8, 4)
+				return encode.R(0b_0100000, imm.CI(opcode)&arch.XMask, ra8, 5, ra8, 4)
 
 			case 0b_10: // andi
 				return encode.I(imm.CI(opcode), ra8, 7, ra8, 4)
@@ -125,14 +108,10 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 					return encode.R(0, rb8, ra8, 7, ra8, 12)
 
 				case 0b_100: // c.subw
-					if xlen64 {
-						return encode.R(0b_0100000, rb8, ra8, 0, ra8, 0b_01110)
-					}
+					return encode.R(0b_0100000, rb8, ra8, 0, ra8, 0b_01110)
 
 				case 0b_101: // c.addw
-					if xlen64 {
-						return encode.R(0, rb8, ra8, 0, ra8, 0b_01110)
-					}
+					return encode.R(0, rb8, ra8, 0, ra8, 0b_01110)
 				}
 			}
 
@@ -149,7 +128,7 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 	case 2: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table2
 		switch f3 {
 		case 0b_000: // c.slli
-			return encode.R(0, imm.CI(opcode)&(xlen-1), ra, 1, ra, 0b_00100) // slli
+			return encode.R(0, imm.CI(opcode)&arch.XMask, ra, 1, ra, 0b_00100) // slli
 
 		case 0b_001: // c.fldsp
 			return encode.I(imm.CI3(opcode), 2, 0b_011, ra, 0b_00001) // fld
@@ -159,13 +138,9 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 				return encode.I(imm.CI2(opcode), 2, 0b_010, ra, 0b_00000) // lw
 			}
 
-		case 0b_011:
-			if xlen64 { // c.ldsp
-				if ra != 0 {
-					return encode.I(imm.CI3(opcode), 2, 0b_011, ra, 0b_00000) // ld
-				}
-			} else { // c.flwsp
-				return encode.I(imm.CI2(opcode), 2, 0b_010, ra, 0b_00001) // flw
+		case 0b_011: // c.ldsp
+			if ra != 0 {
+				return encode.I(imm.CI3(opcode), 2, 0b_011, ra, 0b_00000) // ld
 			}
 
 		case 0b_100:
@@ -192,12 +167,8 @@ func decompressOpcode(cpu *state.CPU, opcode int) int {
 		case 0b_110: // c.swsp
 			return encode.S(imm.CSS(opcode), rb, 2, 0b_010, 0b_01000) // sw
 
-		case 0b_111:
-			if xlen64 { // c.sdsp
-				return encode.S(imm.CSS3(opcode), rb, 2, 0b_011, 0b_01000) // sd
-			} else { // c.fswsp
-				return encode.S(imm.CSS(opcode), rb, 2, 0b_010, 0b_01001) // fsw
-			}
+		case 0b_111: // c.sdsp
+			return encode.S(imm.CSS3(opcode), rb, 2, 0b_011, 0b_01000) // sd
 		}
 	}
 

@@ -34,7 +34,7 @@ func atomic(cpu *state.CPU, op Op, read bool, f func(cpu *state.CPU, addr int, v
 	f7, f3, rd, rs1, rs2 := op.f7(), op.f3(), op.rd(), op.rs1(), op.rs2()
 	f5 := f7 >> 2
 
-	if f3 != 2 && !(cpu.LenIs64() && f3 == 3) ||
+	if f3 != 2 && f3 != 3 ||
 		(f5&0b_11100 != 0 && f5&0b_00011 != 0) {
 		illegal(cpu, op)
 
