@@ -43,12 +43,16 @@ var insGroups = []func(*state.CPU, Op){
 
 func Exec(cpu *state.CPU, opcode int) {
 	opcodeSize := 4
-	if isCompressed := opcode&3 != 3; isCompressed {
-		opcodeSize = 2
 
-		if decompress.Decompress(cpu, &opcode); trap.IsEntered(cpu) {
+	if isCompressed := opcode&3 != 3; isCompressed {
+		compressedOpcode := int(uint16(opcode))
+
+		if opcode = decompress.Decompress(compressedOpcode); opcode == 0 {
+			trap.Enter(cpu, trap.IllegalIstruction, compressedOpcode)
 			return
 		}
+
+		opcodeSize = 2
 	}
 	cpu.Update.PC = cpu.PC + opcodeSize
 

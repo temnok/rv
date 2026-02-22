@@ -5,25 +5,10 @@ import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
-	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/trap"
 )
 
-func Decompress(cpu *state.CPU, opcodePtr *int) {
-	opcode := *opcodePtr
-
-	opcode = int(uint16(opcode))
-	decompressedOpcode := decompressOpcode(opcode)
-	if decompressedOpcode == 0 {
-		trap.Enter(cpu, trap.IllegalIstruction, opcode)
-		return
-	}
-
-	*opcodePtr = decompressedOpcode
-}
-
 // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
-func decompressOpcode(opcode int) int {
+func Decompress(opcode int) int {
 	f3 := bi.Ts(opcode, 13, 3)
 	ra := bi.Ts(opcode, 7, 5)
 	ra8 := 8 | (ra & 7)
