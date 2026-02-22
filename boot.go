@@ -29,7 +29,7 @@ func bootLinux(dir string, in io.Reader, out io.Writer, timeout int) {
 	var (
 		ramBaseAddr = 0x8000_0000
 		cpu         = cp.New(ramBaseAddr)
-		ram         = ram.New(cpu, ramBaseAddr, 128*1024*1024)
+		ram         = ram.New(cpu, ramBaseAddr, 512*1024*1024)
 		clint       = clint.New(cpu, 0x0200_0000)
 		plic        = plic.New(cpu, 0x0C00_0000)
 		terminal    = terminal.New(in, out)
