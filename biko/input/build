@@ -122,7 +122,10 @@ for f in ${flags_y[@]}; do
     scripts/config --set-val ${f} y
 done
 
-for SUFFIX in "" "-go"; do
+BUILDS=("")
+#BUILDS=("" "-go")
+
+for SUFFIX in "${BUILDS[@]}"; do
   scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs${SUFFIX}.cpio\"
 
   make ${QUIET} \
@@ -153,7 +156,7 @@ dtc ${QUIET} \
   -o rv.dtb \
   ~/input/rv.dts
 
-for SUFFIX in "" "-go"; do
+for SUFFIX in "${BUILDS[@]}"; do
   make clean
 
   make ${QUIET} \
@@ -175,12 +178,9 @@ benchmark
 
 sha256sum -b \
   build/busybox/busybox \
-  build/initramfs/initramfs.cpio \
-  build/initramfs/initramfs-go.cpio \
-  build/kernel/Image \
-  build/kernel/Image-go \
-  output/biko.gz \
-  output/biko-go.gz > output/sha256.txt
+  build/initramfs/initramfs*.cpio \
+  build/kernel/Image* \
+  output/biko* > output/sha256.txt
 
 echo -n "Total execution time: "
 BM_START=${SCRIPT_START} && benchmark
