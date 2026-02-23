@@ -20,6 +20,7 @@ export ARCH=riscv
 export CC="ccache riscv64-unknown-linux-gnu-gcc"
 export CFLAGS="-march=rv64imac -mabi=lp64"
 export CROSS_COMPILE=riscv64-unknown-linux-gnu-
+export SOURCE_DATE_EPOCH=0
 
 echo
 echo "Using CPUs: ${CPU_COUNT}"
@@ -122,8 +123,7 @@ for f in ${flags_y[@]}; do
     scripts/config --set-val ${f} y
 done
 
-BUILDS=("")
-#BUILDS=("" "-go")
+BUILDS=("" "-go")
 
 for SUFFIX in "${BUILDS[@]}"; do
   scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs${SUFFIX}.cpio\"
