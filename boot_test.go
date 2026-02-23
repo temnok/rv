@@ -7,10 +7,18 @@ import (
 	"testing"
 )
 
-func TestRunKernel(t *testing.T) {
+func TestBoot(t *testing.T) {
+	testBoot(t, "biko.gz", 200_000_000)
+}
+
+func TestBootGo(t *testing.T) {
+	testBoot(t, "biko-go.gz", 5_000_000_000)
+}
+
+func testBoot(t *testing.T, kernelFileName string, timeout int) {
 	t.Parallel()
 
-	kernelPath := "biko/output"
+	kernelPath := "biko/output/" + kernelFileName
 	stopString := "user@rv"
 	inR, inW := io.Pipe()
 
@@ -20,7 +28,7 @@ func TestRunKernel(t *testing.T) {
 		input:      inW,
 	}
 
-	bootLinux(kernelPath, inR, outW, 200_000_000)
+	bootLinux(kernelPath, inR, outW, timeout)
 
 	if !outW.success {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))

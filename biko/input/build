@@ -34,7 +34,7 @@ cd cache/download
 VERSION_BUSYBOX=1.36.1
 VERSION_KERNEL=6.19.3
 VERSION_OPENSBI=1.8.1
-#VERSION_GO=1.26.0
+VERSION_GO=1.26.0
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     wget ${QUIET} https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
@@ -49,7 +49,7 @@ if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
     mv v${VERSION_OPENSBI}.tar.gz opensbi-${VERSION_OPENSBI}.tar.gz
 fi
 
-if [[ "${VERSION_GO}" != "" ]] && [ ! -f go${VERSION_GO}.linux-riscv64.tar.gz ]; then
+if [ ! -f go${VERSION_GO}.linux-riscv64.tar.gz ]; then
     wget ${QUIET} https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
 fi
 
@@ -84,17 +84,18 @@ benchmark
 
 echo -n "Building initramfs... "
 mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs && cd build/initramfs/fs
-mkdir bin && cp ~/build/busybox/busybox bin/
-
-if [[ "${VERSION_GO}" != "" ]]; then
-    mkdir -p usr/local
-    tar -C usr/local -xf ~/cache/download/go*
-fi
+mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
 
 find . -exec touch -t 197001010000.00 {} +
 find . ! -path . | sort | cpio \
     --reproducible --quiet --create --owner +0:+0 --format newc \
     > ../initramfs.cpio
+
+tar -C usr/local -xf ~/cache/download/go*
+find usr/local -exec touch -t 197001010000.00 {} +
+find . ! -path . | sort | cpio \
+    --reproducible --quiet --create --owner +0:+0 --format newc \
+    > ../initramfs-go.cpio
 
 cd ~
 benchmark
@@ -121,18 +122,22 @@ for f in ${flags_y[@]}; do
     scripts/config --set-val ${f} y
 done
 
-scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs.cpio\"
+for SUFFIX in "" "-go"; do
+  scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs${SUFFIX}.cpio\"
 
-make ${QUIET} \
-    olddefconfig
+  make ${QUIET} \
+      olddefconfig
 
-make ${QUIET} \
-    CC="${CC}" \
-    KBUILD_BUILD_HOST="buildhost" \
-    KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
-    KBUILD_BUILD_USER="builduser" \
-    --jobs=${CPU_COUNT} \
-    Image
+  make ${QUIET} \
+      CC="${CC}" \
+      KBUILD_BUILD_HOST="buildhost" \
+      KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
+      KBUILD_BUILD_USER="builduser" \
+      --jobs=${CPU_COUNT} \
+      Image
+
+  mv arch/riscv/boot/Image Image${SUFFIX}
+done
 
 cd ~
 benchmark
@@ -148,16 +153,20 @@ dtc ${QUIET} \
   -o rv.dtb \
   ~/input/rv.dts
 
-make ${QUIET} \
-  CC="${CC}" \
-  FW_FDT_PATH=rv.dtb \
-  FW_PAYLOAD_PATH=~/build/kernel/arch/riscv/boot/Image \
-  PLATFORM=generic \
-  PLATFORM_RISCV_XLEN=64 \
-  --jobs=${CPU_COUNT} \
-  > /dev/null 2>&1
+for SUFFIX in "" "-go"; do
+  make clean
 
-gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/biko.gz
+  make ${QUIET} \
+    CC="${CC}" \
+    FW_FDT_PATH=rv.dtb \
+    FW_PAYLOAD_PATH=~/build/kernel/Image${SUFFIX} \
+    PLATFORM=generic \
+    PLATFORM_RISCV_XLEN=64 \
+    --jobs=${CPU_COUNT} \
+    > /dev/null 2>&1
+
+  gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/biko${SUFFIX}.gz
+done
 
 cd ~
 benchmark
@@ -167,8 +176,11 @@ benchmark
 sha256sum -b \
   build/busybox/busybox \
   build/initramfs/initramfs.cpio \
-  build/kernel/arch/riscv/boot/Image \
-  output/biko.gz > output/sha256.txt
+  build/initramfs/initramfs-go.cpio \
+  build/kernel/Image \
+  build/kernel/Image-go \
+  output/biko.gz \
+  output/biko-go.gz > output/sha256.txt
 
 echo -n "Total execution time: "
 BM_START=${SCRIPT_START} && benchmark

@@ -25,7 +25,7 @@ func BootLinux(dir string) {
 	bootLinux(dir, os.Stdin, os.Stdout, 0)
 }
 
-func bootLinux(dir string, in io.Reader, out io.Writer, timeout int) {
+func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) {
 	var (
 		ramBaseAddr = 0x8000_0000
 		cpu         = cp.New(ramBaseAddr)
@@ -35,8 +35,6 @@ func bootLinux(dir string, in io.Reader, out io.Writer, timeout int) {
 		terminal    = terminal.New(in, out)
 		uart        = uart.New(plic, 0x0300_0000, 1, terminal.Callback)
 	)
-
-	kernelPath := dir + "/biko.gz"
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
 
