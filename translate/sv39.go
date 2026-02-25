@@ -60,8 +60,6 @@ func loadPTEsv39(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
 
 	pteAddr := bi.Ts(cpu.CSR.Satp, 0, 44)<<12 | bi.Ts(virtAddr, 30, 9)<<3
 
-	//panic(fmt.Sprintf("*** oops: virtAddr:%x, pteAddr:%x, pte:%x", uint(virtAddr), uint(pteAddr), uint(pte)))
-
 	if !cpu.Bus.Read(pteAddr, &pte, 8) {
 		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return

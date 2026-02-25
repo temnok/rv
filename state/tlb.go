@@ -1,29 +1,36 @@
 package state
 
 type TLB struct {
-	entries                []TLBEntry
+	nodes                  *tlbNode
 	LookupCount, MissCount int
 }
 
-type TLBEntry struct {
-	virtAddr, pte int
+type tlbNode struct {
+	va, shift, pte int
+	next           *tlbNode
 }
 
 const tlbSize = 16
 
 func (tlb *TLB) Flush() {
-	tlb.entries = tlb.entries[:0]
+	tlb.nodes = nil
 }
 
 func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 	tlb.LookupCount++
 
-	for i, e := range tlb.entries {
-		shift := e.virtAddr & 0xFFF
-		if virtAddr>>shift == e.virtAddr>>shift {
-			copy(tlb.entries[1:i+1], tlb.entries[:i])
-			tlb.entries[0] = e
-			return e.pte, shift
+	for p, n, i := (*tlbNode)(nil), tlb.nodes, 0; n != nil; p, n = n, n.next {
+		if n.va == virtAddr&(-1<<n.shift) {
+			if p != nil {
+				p.next, n.next = n.next, tlb.nodes
+				tlb.nodes = n
+			}
+			return n.pte, n.shift
+		}
+
+		if i++; i == tlbSize {
+			n.next = nil
+			break
 		}
 	}
 
@@ -32,19 +39,10 @@ func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 }
 
 func (tlb *TLB) Append(virtAddr, shift, pte int) {
-	if tlbSize == 0 {
-		return
-	}
-
-	tlb.entries = append(tlb.entries, TLBEntry{})
-	n := len(tlb.entries)
-	copy(tlb.entries[1:n], tlb.entries[:n-1])
-	tlb.entries[0] = TLBEntry{
-		virtAddr: virtAddr>>shift<<shift | shift,
-		pte:      pte,
-	}
-
-	if n > tlbSize {
-		tlb.entries = tlb.entries[:tlbSize]
+	tlb.nodes = &tlbNode{
+		va:    virtAddr & (-1 << shift),
+		shift: shift,
+		pte:   pte,
+		next:  tlb.nodes,
 	}
 }
