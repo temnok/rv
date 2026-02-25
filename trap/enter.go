@@ -16,6 +16,8 @@ func EnterWithoutTval(cpu *state.CPU, cause int) {
 }
 
 func Enter(cpu *state.CPU, cause, tval int) {
+	cpu.TrapCount++
+
 	if IsEntered(cpu) {
 		panic("double Trap")
 	}

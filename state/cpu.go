@@ -6,6 +6,8 @@ type CPU struct {
 
 	TLB TLB
 	Bus Bus
+
+	InstrCount, CInstrCount, TrapCount int
 }
 
 func (cpu *CPU) Xset(rd, val int) {

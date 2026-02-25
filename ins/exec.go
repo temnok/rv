@@ -71,9 +71,13 @@ var (
 )
 
 func Exec(cpu *state.CPU, opcode int) {
+	cpu.InstrCount++
+
 	opcodeSize := 4
 
 	if isCompressed := opcode&3 != 3; isCompressed {
+		cpu.CInstrCount++
+
 		compressedOpcode := int(uint16(opcode))
 
 		if opcode = decompress.Decompress(compressedOpcode); opcode == 0 {

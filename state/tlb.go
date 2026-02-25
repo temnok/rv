@@ -1,20 +1,23 @@
 package state
 
 type TLB struct {
-	entries []TLBEntry
+	entries                []TLBEntry
+	LookupCount, MissCount int
 }
 
 type TLBEntry struct {
 	virtAddr, pte int
 }
 
-const tlbSize = 4
+const tlbSize = 16
 
 func (tlb *TLB) Flush() {
 	tlb.entries = tlb.entries[:0]
 }
 
 func (tlb *TLB) Lookup(virtAddr int) (int, int) {
+	tlb.LookupCount++
+
 	for i, e := range tlb.entries {
 		shift := e.virtAddr & 0xFFF
 		if virtAddr>>shift == e.virtAddr>>shift {
@@ -24,6 +27,7 @@ func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 		}
 	}
 
+	tlb.MissCount++
 	return 0, 0
 }
 

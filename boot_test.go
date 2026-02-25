@@ -8,11 +8,11 @@ import (
 )
 
 func TestBoot(t *testing.T) {
-	testBoot(t, "biko.gz", 200_000_000)
+	testBoot(t, "biko.gz", 50_000_000)
 }
 
 func TestBootGo(t *testing.T) {
-	testBoot(t, "biko-go.gz", 5_000_000_000)
+	testBoot(t, "biko-go.gz", 1_000_000_000)
 }
 
 func testBoot(t *testing.T, kernelFileName string, timeout int) {
@@ -28,11 +28,14 @@ func testBoot(t *testing.T, kernelFileName string, timeout int) {
 		input:      inW,
 	}
 
-	bootLinux(kernelPath, inR, outW, timeout)
+	cpu := bootLinux(kernelPath, inR, outW, timeout)
 
 	if !outW.success {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))
 	}
+
+	fmt.Printf("Instr/CInstr: %v/%v, traps: %v, TLB lookups/misses: %v/%v\n",
+		cpu.InstrCount, cpu.CInstrCount, cpu.TrapCount, cpu.TLB.LookupCount, cpu.TLB.MissCount)
 }
 
 type matchWriter struct {
