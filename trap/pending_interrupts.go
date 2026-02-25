@@ -16,7 +16,7 @@ func OnPendingInterrupts(cpu *state.CPU) {
 		return
 	}
 
-	for i := 12; i > 0; i-- {
+	for i := 9; i >= 3; i -= 2 {
 		if bi.T(mi, i) == 0 {
 			continue
 		}

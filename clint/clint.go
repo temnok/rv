@@ -3,6 +3,7 @@ package clint
 import (
 	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
+	re "github.com/temnok/rv/reg"
 	"github.com/temnok/rv/state"
 )
 
@@ -21,31 +22,17 @@ func New(cpu *state.CPU, baseAddr int) *CLINT {
 }
 
 func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
-	if addr = (addr - clint.baseAddr) / 4; addr < 0 || addr >= 0x10000/4 || width < 4 {
+	if addr -= clint.baseAddr; addr < 0 || addr >= 0x10000 {
 		return false
 	}
 
-	var reg *int
-
-	switch addr * 4 {
+	switch reg, offset := addr&^7, addr&7; reg {
 	case 0x0: // mswi
-		reg = &clint.mswi
+		re.Access(&clint.mswi, data, offset, width, write)
 	case 0x4000 + 0x0000: // mtimecmp
-		reg = &clint.mtimecmp
+		re.Access(&clint.mtimecmp, data, offset, width, write)
 	case 0x4000 + 0x7FF8: // mtime
-		reg = &clint.cpu.CSR.Time
-	}
-
-	if write {
-		if reg != nil {
-			*reg = *data
-		}
-	} else {
-		if reg != nil {
-			*data = *reg
-		} else {
-			*data = 0
-		}
+		re.Access(&clint.cpu.CSR.Time, data, offset, width, write)
 	}
 
 	return true

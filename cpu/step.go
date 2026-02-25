@@ -17,8 +17,10 @@ func Step(cpu *state.CPU) bool {
 func InnerStep(cpu *state.CPU) int {
 	updateState(cpu)
 
-	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
-		return 0
+	if cpu.InstrCount%20 == 0 {
+		if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
+			return 0
+		}
 	}
 
 	var opcode int
