@@ -1,7 +1,6 @@
 package clint
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	re "github.com/temnok/rv/reg"
 	"github.com/temnok/rv/state"
@@ -15,10 +14,14 @@ type CLINT struct {
 }
 
 func New(cpu *state.CPU, baseAddr int) *CLINT {
-	return &CLINT{
+	clint := &CLINT{
 		cpu:      cpu,
 		baseAddr: baseAddr,
 	}
+
+	cpu.CSR.TimerCallbacks = append(cpu.CSR.TimerCallbacks, clint.notifyInterrupts)
+
+	return clint
 }
 
 func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
@@ -30,7 +33,7 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 	case 0x0: // msip
 		re.Access(&clint.msip, data, offset, width, write)
 		if write {
-			clint.clearSoftwareInterrupt()
+			clint.initSoftwareInterrupt()
 		}
 
 	case 0x4000: // mtimecmp
@@ -52,18 +55,16 @@ func (clint *CLINT) clearTimerInterrupt() {
 	}
 }
 
-func (clint *CLINT) clearSoftwareInterrupt() {
+func (clint *CLINT) initSoftwareInterrupt() {
 	if clint.msip&1 == 0 {
 		clint.cpu.CSR.Mip &^= 1 << csr.MipMSI
+	} else {
+		clint.cpu.CSR.Mip |= 1 << csr.MipMSI
 	}
 }
 
-func (clint *CLINT) NotifyInterrupts() {
+func (clint *CLINT) notifyInterrupts() {
 	reg := &clint.cpu.CSR
-
-	if bi.T(clint.msip, 1) == 1 {
-		reg.Mip |= 1 << csr.MipMSI
-	}
 
 	if uint(reg.Time) >= uint(clint.mtimecmp) {
 		reg.Mip |= 1 << csr.MipMTI

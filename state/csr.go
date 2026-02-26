@@ -30,4 +30,6 @@ type CSR struct {
 	Mtval      int
 	Mtvec      int
 	Mvendorid  int
+
+	TimerCallbacks []func()
 }

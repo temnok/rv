@@ -71,5 +71,8 @@ func updateTimers(cpu *state.CPU) {
 
 	if cpu.CSR.Cycle%10_000 == 0 {
 		cpu.CSR.Time++
+		for _, c := range cpu.CSR.TimerCallbacks {
+			c()
+		}
 	}
 }
