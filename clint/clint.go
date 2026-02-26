@@ -31,11 +31,21 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 		re.Access(&clint.mswi, data, offset, width, write)
 	case 0x4000 + 0x0000: // mtimecmp
 		re.Access(&clint.mtimecmp, data, offset, width, write)
+
+		if write {
+			clint.clearTimerInterrupt()
+		}
 	case 0x4000 + 0x7FF8: // mtime
 		re.Access(&clint.cpu.CSR.Time, data, offset, width, write)
 	}
 
 	return true
+}
+
+func (clint *CLINT) clearTimerInterrupt() {
+	if uint(clint.cpu.CSR.Time) < uint(clint.mtimecmp) {
+		clint.cpu.CSR.Mip &^= 1<<csr.MipMTI | 1<<csr.MipSTI
+	}
 }
 
 func (clint *CLINT) NotifyInterrupts() {

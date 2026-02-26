@@ -76,5 +76,5 @@ func updateTimers(cpu *state.CPU) {
 }
 
 func clearPendingInterrupts(cpu *state.CPU) {
-	cpu.CSR.Mip &^= 1<<csr.MipSEI | 1<<csr.MipMTI | 1<<csr.MipMSI
+	cpu.CSR.Mip &^= 1<<csr.MipSEI | 1<<csr.MipMSI
 }
