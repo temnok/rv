@@ -11,7 +11,7 @@ type CLINT struct {
 	cpu      *state.CPU
 	baseAddr int
 
-	mswi, mtimecmp, mtimecmph int
+	msip, mtimecmp, mtimecmph int
 }
 
 func New(cpu *state.CPU, baseAddr int) *CLINT {
@@ -27,15 +27,19 @@ func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
 	}
 
 	switch reg, offset := addr&^7, addr&7; reg {
-	case 0x0: // mswi
-		re.Access(&clint.mswi, data, offset, width, write)
-	case 0x4000 + 0x0000: // mtimecmp
+	case 0x0: // msip
+		re.Access(&clint.msip, data, offset, width, write)
+		if write {
+			clint.clearSoftwareInterrupt()
+		}
+
+	case 0x4000: // mtimecmp
 		re.Access(&clint.mtimecmp, data, offset, width, write)
 
 		if write {
 			clint.clearTimerInterrupt()
 		}
-	case 0x4000 + 0x7FF8: // mtime
+	case 0xBFF8: // mtime
 		re.Access(&clint.cpu.CSR.Time, data, offset, width, write)
 	}
 
@@ -48,10 +52,16 @@ func (clint *CLINT) clearTimerInterrupt() {
 	}
 }
 
+func (clint *CLINT) clearSoftwareInterrupt() {
+	if clint.msip&1 == 0 {
+		clint.cpu.CSR.Mip &^= 1 << csr.MipMSI
+	}
+}
+
 func (clint *CLINT) NotifyInterrupts() {
 	reg := &clint.cpu.CSR
 
-	if bi.T(clint.mswi, 1) == 1 {
+	if bi.T(clint.msip, 1) == 1 {
 		reg.Mip |= 1 << csr.MipMSI
 	}
 

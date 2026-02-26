@@ -104,5 +104,7 @@ func (plic *PLIC) NotifyInterrupts() {
 
 	if irq > 0 {
 		plic.cpu.CSR.Mip |= 1 << csr.MipSEI
+	} else {
+		plic.cpu.CSR.Mip &^= 1 << csr.MipSEI
 	}
 }

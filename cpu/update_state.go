@@ -7,7 +7,6 @@ import (
 
 func updateState(cpu *state.CPU) {
 	updateTimers(cpu)
-	clearPendingInterrupts(cpu)
 
 	up := &cpu.Update
 
@@ -73,8 +72,4 @@ func updateTimers(cpu *state.CPU) {
 	if cpu.CSR.Cycle%10_000 == 0 {
 		cpu.CSR.Time++
 	}
-}
-
-func clearPendingInterrupts(cpu *state.CPU) {
-	cpu.CSR.Mip &^= 1<<csr.MipSEI | 1<<csr.MipMSI
 }
