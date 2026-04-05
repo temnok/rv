@@ -1,12 +1,10 @@
 package imm
 
-import "github.com/temnok/rv/bi"
+func CIW(op int) int {
+	a := op >> 7 & 15
+	b := op >> 11 & 3
+	c := op >> 5 & 1
+	d := op >> 6 & 1
 
-func CIW(instr int) int {
-	a := bi.T(instr, 6)
-	b := bi.T(instr, 5)
-	c := bi.Ts(instr, 11, 2)
-	d := bi.Ts(instr, 7, 4)
-
-	return d<<6 | c<<4 | b<<3 | a<<2
+	return a<<6 | b<<4 | c<<3 | d<<2
 }

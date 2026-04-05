@@ -1,10 +1,8 @@
 package imm
 
-import "github.com/temnok/rv/bi"
+func CSS(op int) int {
+	a := op >> 7 & 3
+	b := op >> 9 & 15
 
-func CSS(instr int) int {
-	a := bi.Ts(instr, 9, 4)
-	b := bi.Ts(instr, 7, 2)
-
-	return b<<6 | a<<2
+	return a<<6 | b<<2
 }

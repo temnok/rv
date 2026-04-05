@@ -1,16 +1,14 @@
 package imm
 
-import "github.com/temnok/rv/bi"
+func CJ(op int) int {
+	a := op >> 12 & 1
+	b := op >> 8 & 1
+	c := op >> 9 & 3
+	d := op >> 6 & 1
+	e := op >> 7 & 1
+	f := op >> 2 & 1
+	g := op >> 11 & 1
+	h := op >> 3 & 7
 
-func CJ(instr int) int {
-	a := bi.Ts(instr, 3, 3)
-	b := bi.T(instr, 11)
-	c := bi.T(instr, 2)
-	d := bi.T(instr, 7)
-	e := bi.T(instr, 6)
-	f := bi.Ts(instr, 9, 2)
-	g := bi.T(instr, 8)
-	h := bi.T(instr, 12)
-
-	return -h<<11 | g<<10 | f<<8 | e<<7 | d<<6 | c<<5 | b<<4 | a<<1
+	return -a<<11 | b<<10 | c<<8 | d<<7 | e<<6 | f<<5 | g<<4 | h<<1
 }

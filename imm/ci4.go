@@ -1,13 +1,11 @@
 package imm
 
-import "github.com/temnok/rv/bi"
+func CI4(op int) int {
+	a := op >> 12 & 1
+	b := op >> 3 & 3
+	c := op >> 5 & 1
+	d := op >> 2 & 1
+	e := op >> 6 & 1
 
-func CI4(instr int) int {
-	a := bi.T(instr, 6)
-	b := bi.T(instr, 2)
-	c := bi.T(instr, 5)
-	d := bi.Ts(instr, 3, 2)
-	e := bi.T(instr, 12)
-
-	return -e<<9 | d<<7 | c<<6 | b<<5 | a<<4
+	return -a<<9 | b<<7 | c<<6 | d<<5 | e<<4
 }

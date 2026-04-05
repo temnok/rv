@@ -1,10 +1,8 @@
 package imm
 
-import "github.com/temnok/rv/bi"
+func CSS3(op int) int {
+	a := op >> 7 & 7
+	b := op >> 10 & 7
 
-func CSS3(instr int) int {
-	a := bi.Ts(instr, 10, 3)
-	b := bi.Ts(instr, 7, 3)
-
-	return b<<6 | a<<3
+	return a<<6 | b<<3
 }

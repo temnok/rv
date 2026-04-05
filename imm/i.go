@@ -1,5 +1,8 @@
 package imm
 
-func I(opcode int) int {
-	return int(int32(opcode) >> 20)
+func I(op int) int {
+	a := op >> 31 & 1
+	b := op >> 20 & 2047
+
+	return -a<<11 | b
 }

@@ -1,7 +1,8 @@
 package imm
 
-import "github.com/temnok/rv/bi"
+func U(op int) int {
+	a := op >> 31 & 1
+	b := op >> 12 & (1<<19 - 1)
 
-func U(opcode int) int {
-	return int(int32(bi.Ts(opcode, 12, 20) << 12))
+	return -a<<31 | b<<12
 }
