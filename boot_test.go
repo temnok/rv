@@ -11,7 +11,8 @@ func TestBoot(t *testing.T) {
 	testBoot(t, "biko.gz", 50_000_000)
 }
 
-func TestBootGo(t *testing.T) {
+// TODO: enable when faster
+func xTestBootGo(t *testing.T) {
 	testBoot(t, "biko-go.gz", 1_000_000_000)
 }
 

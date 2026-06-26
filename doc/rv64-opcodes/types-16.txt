@@ -1,0 +1,12 @@
+https://riscv.github.io/riscv-isa-manual/snapshot/spec/#rvc-form
+
+15    12  10     7   5     2   0
+|     f4|   rd/rs1|      rs2| op| CR
+|   f3|i|   rd/rs1|      imm| op| CI
+|   f3|        imm|      rs2| op| CSS
+|   f3|            imm|   rd| op| CIW
+|   f3|  imm|  rs1|imm|   rd| op| CL
+|   f3|  imm|  rs1|imm|  rs2| op| CS
+|         f6|rd/s1| f2|  rs2| op| CA
+|   f3|  imm|rd/s1|      imm| op| CB
+|   f3|                  imm| op| CJ

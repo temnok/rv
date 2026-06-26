@@ -6,16 +6,18 @@ import (
 	"github.com/temnok/rv/imm"
 )
 
-// https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_rvc_instruction_set_listings
+// https://riscv.github.io/riscv-isa-manual/snapshot/spec/#rvc-form
 func Decompress(opcode int) int {
 	f3 := opcode >> 13 & 7
+
 	ra := opcode >> 7 & 31
-	ra8 := 8 | (ra & 7)
 	rb := opcode >> 2 & 31
-	rb8 := 8 | (rb & 7)
+
+	ra8 := 8 | ra&7
+	rb8 := 8 | rb&7
 
 	switch op := opcode & 3; op {
-	case 0: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table0
+	case 0: // https://riscv.github.io/riscv-isa-manual/snapshot/spec/#rvc-form
 		switch f3 {
 		case 0: // c.addi4spn
 			if imm := imm.CIW(opcode); imm != 0 {
