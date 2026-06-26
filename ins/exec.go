@@ -2,7 +2,7 @@ package ins
 
 import (
 	"fmt"
-	"github.com/temnok/rv/decompress"
+	"github.com/temnok/rv/extc"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
@@ -80,7 +80,7 @@ func Exec(cpu *state.CPU, opcode int) {
 
 		compressedOpcode := int(uint16(opcode))
 
-		if opcode = decompress.Decompress(compressedOpcode); opcode == 0 {
+		if opcode = extc.Decompress(compressedOpcode); opcode == 0 {
 			trap.Enter(cpu, trap.IllegalIstruction, compressedOpcode)
 			return
 		}
