@@ -33,16 +33,16 @@ echo -n "Downloading sources... "
 cd cache/download
 
 VERSION_BUSYBOX=1.36.1
-VERSION_KERNEL=6.19.3
+VERSION_KERNEL=7.1.1
 VERSION_OPENSBI=1.8.1
-VERSION_GO=1.26.0
+VERSION_GO=1.26.4
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     wget ${QUIET} https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
 fi
 
 if [ ! -f linux-${VERSION_KERNEL}.tar.xz ]; then
-    wget ${QUIET} https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-${VERSION_KERNEL}.tar.xz
+    wget ${QUIET} https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-${VERSION_KERNEL}.tar.xz
 fi
 
 if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
