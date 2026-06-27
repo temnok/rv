@@ -1,9 +1,0 @@
-https://riscv.github.io/riscv-isa-manual/snapshot/spec/#rv32-64g
-
-31          25        20        15    12           7         2   0
-|           f7|      rs2|      rs1|   f3|         rd|       op|  3| R
-|              imm[11:0]|      rs1|   f3|         rd|       op|  3| I
-|    imm[11:5]|      rs2|      rs1|   f3|   imm[4:0]|       op|  3| S
-| imm[12,10:5]|      rs2|      rs1|   f3|imm[4:1,11]|       op|  3| B
-|                             imm[31:12]|         rd|       op|  3| U
-|                  imm[20,10:1,11,19:12]|         rd|       op|  3| J
