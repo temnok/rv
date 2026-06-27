@@ -38,19 +38,23 @@ VERSION_OPENSBI=1.8.1
 VERSION_GO=1.26.4
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
+    rm -rf busybox-*
     wget ${QUIET} https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
 fi
 
 if [ ! -f linux-${VERSION_KERNEL}.tar.xz ]; then
+    rm -rf linux-*
     wget ${QUIET} https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-${VERSION_KERNEL}.tar.xz
 fi
 
 if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
+    rm -rf opensbi-*
     wget ${QUIET} https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
     mv v${VERSION_OPENSBI}.tar.gz opensbi-${VERSION_OPENSBI}.tar.gz
 fi
 
 if [ ! -f go${VERSION_GO}.linux-riscv64.tar.gz ]; then
+    rm -rf go*
     wget ${QUIET} https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
 fi
 
@@ -60,6 +64,7 @@ benchmark
 ################################################################################
 
 echo -n "Building busybox... "
+rm -rf busybox-* build/busybox
 tar -xf cache/download/busybox-${VERSION_BUSYBOX}.tar.bz2 && mv busybox-* build/busybox
 cd build/busybox
 
@@ -84,7 +89,10 @@ benchmark
 ################################################################################
 
 echo -n "Building initramfs... "
-mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs && cd build/initramfs/fs
+rm -rf build/initramfs
+mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs
+
+cd build/initramfs/fs
 mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
 
 find . -exec touch -t 197001010000.00 {} +
@@ -104,6 +112,7 @@ benchmark
 ################################################################################
 
 echo -n "Building kernel... "
+rm -rf linux-* build/kernel
 tar -xf cache/download/linux-${VERSION_KERNEL}.tar.xz && mv linux-* build/kernel
 
 cd build/kernel
@@ -148,6 +157,7 @@ benchmark
 ################################################################################
 
 echo -n "Building opensbi... "
+rm -rf opensbi-* build/opensbi
 tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
 cd build/opensbi
 

@@ -1,4 +1,4 @@
-FROM gcc:15.2-trixie
+FROM gcc:16.1-trixie
 
 RUN apt update && \
     apt install -y \
@@ -10,6 +10,7 @@ RUN apt update && \
         bzip2 \
         ccache \
         cmake \
+
         cpio \
         curl \
         device-tree-compiler \
@@ -45,7 +46,7 @@ RUN groupadd -r user && \
 USER user
 WORKDIR /home/user
 
-RUN git clone --depth 1 --single-branch --branch 2026.02.13 \
+RUN git clone --depth 1 --single-branch --branch 2026.06.06 \
     https://github.com/riscv/riscv-gnu-toolchain toolchain-source && \
     cd toolchain-source && \
     ./configure --prefix=/home/user/toolchain --enable-multilib && \
