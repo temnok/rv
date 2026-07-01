@@ -22,7 +22,7 @@ func New(in io.Reader, out io.Writer) *Terminal {
 	go func() {
 		for {
 			buf := []byte{0}
-			if check1(in.Read(buf)) > 0 {
+			if n, _ := in.Read(buf); n > 0 {
 				t.stdin <- buf[0]
 
 				if buf[0] == ctrlC {
@@ -35,33 +35,20 @@ func New(in io.Reader, out io.Writer) *Terminal {
 	return t
 }
 
-func (t *Terminal) Callback(data *byte, write bool) bool {
-	if write {
-		check1(t.out.Write([]byte{*data}))
-		return true
-	}
+func (t *Terminal) PutChar(char byte) {
+	t.out.Write([]byte{char})
+}
 
+func (t *Terminal) GetChar() (byte, bool) {
 	select {
 	case ch := <-t.stdin:
 		if ch == ctrlC {
 			t.Closed = true
 		}
 
-		*data = ch
-		return true
+		return ch, true
 
 	default:
-		return false
-	}
-}
-
-func check1[A any](a A, err error) A {
-	check(err)
-	return a
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
+		return 0, false
 	}
 }

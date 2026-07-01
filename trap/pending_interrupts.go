@@ -8,8 +8,6 @@ import (
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func OnPendingInterrupts(cpu *state.CPU) {
-	cpu.Bus.NotifyInterrupts()
-
 	mi := cpu.CSR.Mip & cpu.CSR.Mie
 
 	if mi == 0 {

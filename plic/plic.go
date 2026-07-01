@@ -56,8 +56,13 @@ func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
 	return true
 }
 
-func (plic *PLIC) TriggerInterrupt(source int) {
-	plic.pending |= 1 << source
+func (plic *PLIC) PendInterrupt(source int, enable bool) {
+	if mask := 1 << source; enable {
+		plic.pending |= mask
+	} else {
+		plic.pending &^= mask
+	}
+
 	plic.sync()
 }
 

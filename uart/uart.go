@@ -1,142 +1,109 @@
 package uart
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/plic"
+	"github.com/temnok/rv/terminal"
 )
 
 type UART struct {
 	plic        *plic.PLIC
 	baseAddr    int
 	interruptID int
-	callback    func(ch *byte, write bool) bool
 
-	rx, tx                           fifo
-	txctrl, rxctrl, ip, ie, div, clk int
+	tx, rx, ip, ie int
 }
 
-type fifo struct {
-	buf  uint64
-	size int
-}
-
-func New(plic *plic.PLIC, baseAddr int, interuptID int, callback func(ch *byte, write bool) bool) *UART {
+func New(plic *plic.PLIC, baseAddr int, interuptID int) *UART {
 	return &UART{
 		plic:        plic,
 		baseAddr:    baseAddr,
 		interruptID: interuptID,
-		callback:    callback,
 
-		div: 3,
+		tx: -1,
+		rx: -1,
 	}
 }
 
 func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
-	if addr = (addr - uart.baseAddr) / 4; addr < 0 || addr >= 8 || width != 4 {
+	if addr = addr - uart.baseAddr; addr < 0 || addr >= 32 || width != 4 {
 		return false
 	}
 
 	switch addr {
-	case 0: // txdata
+	case 0x00: // txdata
 		if write {
-			uart.tx.put(*data)
+			uart.tx = *data & 0xFF
+
+			uart.sync()
 		} else {
-			*data = (uart.tx.size / 8) << 31
+			if uart.tx >= 0 {
+				*data = 1 << 31
+			} else {
+				*data = 0
+			}
 		}
-	case 1: // rxdata
+
+	case 0x04: // rxdata
 		if !write {
-			size := uart.rx.size
-			*data = ((8-size)/8)<<31 | uart.rx.get()
+			if uart.rx < 0 {
+				*data = 1 << 31
+			} else {
+				*data = uart.rx
+				uart.rx = -1
+
+				uart.sync()
+			}
 		}
-	case 2: // txctrl
+
+	case 0x10: // ie
 		if write {
-			uart.txctrl = *data & 0x0007_0003
-		} else {
-			*data = uart.txctrl
-		}
-	case 3: // rxctrl
-		if write {
-			uart.rxctrl = *data & 0x0007_0001
-		} else {
-			*data = uart.rxctrl
-		}
-	case 4: // ie
-		if write {
-			uart.ie = *data & 3
+			uart.ie = *data
+
+			uart.sync()
 		} else {
 			*data = uart.ie
 		}
-	case 5: // ip
+
+	case 0x14: // ip
 		if !write {
 			*data = uart.ip
-		}
-	case 6: // div
-		if write {
-			uart.div = *data & 0xFFFF
-		} else {
-			*data = uart.div
-		}
-	case 7: // unused
-		if !write {
-			*data = 0
 		}
 	}
 
 	return true
 }
 
-func (uart *UART) NotifyInterrupts() {
-	ch := byte(uart.tx.buf & 0xFF)
-	if uart.clk++; uart.clk >= uart.div {
-		if bi.T(uart.txctrl, 0) == 1 && uart.tx.size > 0 {
-			if uart.callback != nil && uart.callback(&ch, true) {
-				uart.tx.get()
-			}
-		}
+func (uart *UART) Sync(term *terminal.Terminal) {
+	sync := false
 
-		if bi.T(uart.rxctrl, 0) == 1 && uart.rx.size < 8 {
-			if uart.callback != nil && uart.callback(&ch, false) {
-				uart.rx.put(int(ch))
-			}
-		}
-
-		uart.clk = 0
+	if char, ok := term.GetChar(); ok {
+		uart.rx = int(char)
+		sync = true
 	}
 
-	if (uart.txctrl>>16) > uart.tx.size && bi.T(uart.ie, 0) == 1 {
+	if uart.tx >= 0 {
+		term.PutChar(byte(uart.tx))
+		uart.tx = -1
+		sync = true
+	}
+
+	if sync {
+		uart.sync()
+	}
+}
+
+func (uart *UART) sync() {
+	if uart.tx < 0 && uart.ie&1 == 1 {
 		uart.ip |= 1
 	} else {
 		uart.ip &^= 1
 	}
 
-	if (uart.rxctrl>>16) < uart.rx.size && bi.T(uart.ie, 1) == 1 {
+	if uart.rx >= 0 && uart.ie&2 == 2 {
 		uart.ip |= 2
 	} else {
 		uart.ip &^= 2
 	}
 
-	if uart.ip != 0 && uart.plic != nil {
-		uart.plic.TriggerInterrupt(uart.interruptID)
-	}
-}
-
-func (fifo *fifo) put(ch int) {
-	if fifo.size == 8 {
-		return
-	}
-
-	fifo.buf |= uint64(byte(ch)) << (fifo.size * 8)
-	fifo.size++
-}
-
-func (fifo *fifo) get() int {
-	if fifo.size == 0 {
-		return 0
-	}
-
-	ch := int(fifo.buf & 0xFF)
-	fifo.buf >>= 8
-	fifo.size--
-
-	return ch
+	uart.plic.PendInterrupt(uart.interruptID, uart.ip != 0)
 }

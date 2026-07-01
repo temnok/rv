@@ -6,10 +6,6 @@ type device interface {
 	Access(addr int, data *int, width int, write bool) bool
 }
 
-type withNotifyInterrupts interface {
-	NotifyInterrupts()
-}
-
 func (bus Bus) Read(addr int, data *int, width int) bool {
 	return bus.Access(addr, data, width, false)
 }
@@ -26,12 +22,4 @@ func (bus Bus) Access(addr int, data *int, width int, write bool) bool {
 	}
 
 	return false
-}
-
-func (bus Bus) NotifyInterrupts() {
-	for _, device := range bus {
-		if target, ok := device.(withNotifyInterrupts); ok {
-			target.NotifyInterrupts()
-		}
-	}
 }
