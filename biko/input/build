@@ -151,6 +151,7 @@ for SUFFIX in "${BUILDS[@]}"; do
       Image
 
   mv arch/riscv/boot/Image Image${SUFFIX}
+  gzip -9 -n -c Image${SUFFIX} > ~/output/kernel${SUFFIX}.gz
 done
 
 cd ~
@@ -181,6 +182,8 @@ for SUFFIX in "${BUILDS[@]}"; do
     > /dev/null 2>&1
 
   gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/biko${SUFFIX}.gz
+
+  cp rv.dtb ~/output/
 done
 
 cd ~

@@ -15,7 +15,7 @@ var (
 	debugTrace     [][]int
 )
 
-func step(cpu *state.CPU) bool {
+func Step(cpu *state.CPU) bool {
 	opcode := cp.InnerStep(cpu)
 
 	entry := []int{cpu.PC, opcode}
@@ -60,6 +60,8 @@ func Dump(cpu *state.CPU) {
 			uint(up.TrapXepc), uint(up.TrapXcause), uint(up.TrapXtval))
 		fmt.Printf("mtvec:%x, stvec:%x\r\n",
 			uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
+		fmt.Printf("satp:%x\r\n",
+			uint(cpu.CSR.Satp))
 	}
 
 	//for i := range 16 {

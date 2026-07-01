@@ -8,8 +8,6 @@ import (
 )
 
 func Step(cpu *state.CPU) bool {
-	//return debugStep(cpu)
-
 	InnerStep(cpu)
 	return true
 }

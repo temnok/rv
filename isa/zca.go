@@ -1,6 +1,6 @@
 package isa
 
-type ZcaInstructions interface { //                      34 =
+type ZcaInstructions interface { //          34 =
 	compressedComputationalInstructions   // 18 +
 	compressedControlTransferInstructions //  6 +
 	compressedLoadStoreInstructions       //  8 +
