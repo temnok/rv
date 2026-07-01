@@ -62,17 +62,11 @@ func (plic *PLIC) TriggerInterrupt(source int) {
 }
 
 func (plic *PLIC) sync() {
-	irq := 0
-
 	if active := plic.pending & plic.enable; active != 0 {
-		irq = bits.TrailingZeros(uint(active))
-	}
-
-	plic.claim = irq
-
-	if irq > 0 {
+		plic.claim = bits.TrailingZeros(uint(active))
 		plic.cpu.CSR.Mip |= 1 << csr.MipSEI
 	} else {
+		plic.claim = 0
 		plic.cpu.CSR.Mip &^= 1 << csr.MipSEI
 	}
 }
