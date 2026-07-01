@@ -1,21 +1,18 @@
 package plic
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
+	"math/bits"
 )
 
 type PLIC struct {
 	cpu      *state.CPU
 	baseAddr int
 
-	priority  [32]int
-	pending   int
-	enable    int
-	threshold int
-	claim     int
-	claiming  int
+	pending int
+	enable  int
+	claim   int
 }
 
 func New(cpu *state.CPU, baseAddr int) *PLIC {
@@ -26,78 +23,49 @@ func New(cpu *state.CPU, baseAddr int) *PLIC {
 }
 
 func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
-	if addr = addr - plic.baseAddr; addr < 0 || addr >= 0x400_0000 || addr&3 != 0 || width < 4 {
+	if addr = addr - plic.baseAddr; addr < 0 || addr >= 0x200004+4 || addr&3 != 0 || width != 4 {
 		return false
 	}
 
-	var reg *int
-	val := *data
-
 	switch addr {
-	case 0x1000:
-		reg = &plic.pending
-		val &^= 1
+	case 0x1000: // pending
+		if !write {
+			*data = plic.pending
+		}
 
-	case 0x2000:
-		reg = &plic.enable
-		val &^= 1
-
-	case 0x200000:
-		reg = &plic.threshold
-
-	case 0x200004:
-		reg = &plic.claim
-
+	case 0x2000: // enable
 		if write {
-			if val > 0 && val < 32 {
-				plic.claiming &^= 1 << val
-			}
-		} else {
-			if plic.claim > 0 && plic.claim < 32 && bi.T(plic.pending, plic.claim) == 1 {
-				plic.claiming |= 1 << plic.claim
-			}
-		}
-	default:
-		if addr > 0 && addr/4 < len(plic.priority) {
-			reg = &plic.priority[addr/4]
-		}
-	}
+			plic.enable = *data
 
-	if write {
-		if reg != nil {
-			*reg = val
-		}
-	} else {
-		if reg != nil {
-			*data = *reg
+			plic.sync()
 		} else {
-			*data = 0
+			*data = plic.enable
 		}
+
+	case 0x200004: // claim
+		if write {
+			plic.claim = *data
+		} else {
+			*data = plic.claim
+			plic.pending &^= 1 << plic.claim
+		}
+
+		plic.sync()
 	}
 
 	return true
 }
 
 func (plic *PLIC) TriggerInterrupt(source int) {
-	if source > 0 && source < 32 && bi.T(plic.claiming, source) == 0 && bi.T(plic.pending, source) == 0 {
-		plic.pending |= 1 << source
-	}
+	plic.pending |= 1 << source
+	plic.sync()
 }
 
-func (plic *PLIC) NotifyInterrupts() {
-	maxPriority := 0
+func (plic *PLIC) sync() {
 	irq := 0
-	for i := 1; i < 32; i++ {
-		if bi.T(plic.claiming, i) == 1 {
-			plic.pending &^= 1 << i
-		} else if bi.T(plic.enable, i) == 1 &&
-			bi.T(plic.pending, i) == 1 &&
-			plic.priority[i] >= maxPriority &&
-			plic.priority[i] >= plic.threshold {
 
-			irq = i
-			maxPriority = plic.priority[i]
-		}
+	if active := plic.pending & plic.enable; active != 0 {
+		irq = bits.TrailingZeros(uint(active))
 	}
 
 	plic.claim = irq
