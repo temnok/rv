@@ -23,13 +23,13 @@ func New(cpu *state.CPU, baseAddr int) *PLIC {
 }
 
 func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
-	if addr = addr - plic.baseAddr; addr < 0 || addr >= 0x200004+4 || addr&3 != 0 || width != 4 {
+	if addr = addr - plic.baseAddr; addr < 0 || addr >= 0x200004+4 {
 		return false
 	}
 
 	switch addr {
 	case 0x1000: // pending
-		if !write {
+		if read := !write; read {
 			*data = plic.pending
 		}
 

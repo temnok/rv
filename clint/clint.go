@@ -2,7 +2,6 @@ package clint
 
 import (
 	"github.com/temnok/rv/csr"
-	"github.com/temnok/rv/reg"
 	"github.com/temnok/rv/state"
 )
 
@@ -25,30 +24,32 @@ func New(cpu *state.CPU, baseAddr int) *CLINT {
 }
 
 func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
-	if addr -= clint.baseAddr; addr < 0 || addr >= 0x10000 || addr&7 != 0 {
+	if addr -= clint.baseAddr; addr < 0 || addr >= 0x10000 {
 		return false
 	}
 
 	switch addr {
 	case 0x0000: // msip
-		reg.Access(&clint.msip, data, 0, width, write)
-
-		if write {
-			clint.sync()
-		}
+		clint.accessReg(&clint.msip, data, write)
 
 	case 0x4000: // mtimecmp
-		reg.Access(&clint.mtimecmp, data, 0, width, write)
-
-		if write {
-			clint.sync()
-		}
+		clint.accessReg(&clint.mtimecmp, data, write)
 
 	case 0xBFF8: // mtime
-		reg.Access(&clint.cpu.CSR.Time, data, 0, width, write)
+		clint.accessReg(&clint.cpu.CSR.Time, data, write)
 	}
 
 	return true
+}
+
+func (clint *CLINT) accessReg(reg, data *int, write bool) {
+	if write {
+		*reg = *data
+
+		clint.sync()
+	} else {
+		*data = *reg
+	}
 }
 
 func (clint *CLINT) sync() {
