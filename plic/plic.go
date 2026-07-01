@@ -26,7 +26,7 @@ func New(cpu *state.CPU, baseAddr int) *PLIC {
 }
 
 func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
-	if addr = (addr - plic.baseAddr) / 4; addr < 0 || addr >= 0x400_0000/4 || width < 4 {
+	if addr = addr - plic.baseAddr; addr < 0 || addr >= 0x400_0000 || addr&3 != 0 || width < 4 {
 		return false
 	}
 
@@ -34,18 +34,18 @@ func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
 	val := *data
 
 	switch addr {
-	case 0x1000 / 4:
+	case 0x1000:
 		reg = &plic.pending
 		val &^= 1
 
-	case 0x2000 / 4:
+	case 0x2000:
 		reg = &plic.enable
 		val &^= 1
 
-	case 0x200000 / 4:
+	case 0x200000:
 		reg = &plic.threshold
 
-	case 0x200004 / 4:
+	case 0x200004:
 		reg = &plic.claim
 
 		if write {
@@ -58,8 +58,8 @@ func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
 			}
 		}
 	default:
-		if addr > 0 && addr < len(plic.priority) {
-			reg = &plic.priority[addr]
+		if addr > 0 && addr/4 < len(plic.priority) {
+			reg = &plic.priority[addr/4]
 		}
 	}
 
