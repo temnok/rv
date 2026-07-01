@@ -111,6 +111,9 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 
 	case Mip: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
 		reg = &csr.Mip
+		if write {
+			mask = 1 << MipSSI
+		}
 
 	case Cycle:
 		reg = &csr.Cycle

@@ -73,6 +73,7 @@ const (
 	MstatusTVM  = 20
 	MstatusTSR  = 22
 
+	MipSSI = 1
 	MipMSI = 3
 	MipSTI = 5
 	MipMTI = 7
