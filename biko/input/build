@@ -164,21 +164,20 @@ cd build/opensbi
 
 dtc ${QUIET} \
   -O dtb \
-  -o rv.dtb \
+  -o ~/output/rv.dtb \
   ~/input/rv.dts
 
 make clean
 
 make ${QUIET} \
   CC="${CC}" \
-  FW_FDT_PATH=rv.dtb \
-  FW_JUMP_ADDR=0x80200000 \
+  FW_DYNAMIC=y \
   PLATFORM=generic \
   PLATFORM_RISCV_XLEN=64 \
   --jobs=${CPU_COUNT} \
   > /dev/null 2>&1
 
-gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/opensbi.gz
+gzip -9 -n -c build/platform/generic/firmware/fw_dynamic.bin > ~/output/opensbi.gz
 
 cd ~
 benchmark

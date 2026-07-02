@@ -3,8 +3,10 @@ package rv
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/binary"
 	"github.com/temnok/rv/clint"
 	cp "github.com/temnok/rv/cpu"
+	"github.com/temnok/rv/isa"
 	"github.com/temnok/rv/plic"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
@@ -24,19 +26,32 @@ func BootLinux(opensbiPath, kernelPath string) {
 func bootLinux(opensbiPath, kernelPath string, in io.Reader, out io.Writer, timeout int) *state.CPU {
 	var (
 		ramBaseAddr = 0x8000_0000
+		opensbiAddr = ramBaseAddr
 		kernelAddr  = 0x8020_0000
-		cpu         = cp.New(ramBaseAddr)
-		ram         = ram.New(cpu, ramBaseAddr, 512*1024*1024)
-		clint       = clint.New(cpu, 0x100_0000)
-		plic        = plic.New(cpu, 0x200_0000)
-		terminal    = terminal.New(in, out)
-		uart        = uart.New(plic, 0x300_0000, 1, terminal.GetChar, terminal.PutChar)
+		dtbAddr     = kernelAddr - 0x1000
+		dynInfoAddr = kernelAddr - 0x20
+
+		cpu      = cp.New(opensbiAddr)
+		ram      = ram.New(cpu, ramBaseAddr, 512*1024*1024)
+		clint    = clint.New(cpu, 0x100_0000)
+		plic     = plic.New(cpu, 0x200_0000)
+		terminal = terminal.New(in, out)
+		uart     = uart.New(plic, 0x300_0000, 1, terminal.GetChar, terminal.PutChar)
 	)
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
 
-	ram.Load(ramBaseAddr, readFile(opensbiPath))
+	ram.Load(opensbiAddr, readFile(opensbiPath))
+	ram.Load(dtbAddr, readFile("biko/output/rv.dtb"))
+
+	buf := make([]byte, 4*8)
+	binary.Encode(buf, binary.LittleEndian, [...]uint32{0x4249534f, 0x2, uint32(kernelAddr), 1, 0, 0})
+	ram.Load(dynInfoAddr, buf)
+
 	ram.Load(kernelAddr, readFile(kernelPath))
+
+	cpu.X[isa.A1] = dtbAddr
+	cpu.X[isa.A2] = dynInfoAddr
 
 	for step := 0; !terminal.Closed; step++ {
 		ok := cp.Step(cpu)
