@@ -28,10 +28,10 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) (*st
 		ramBaseAddr = 0x8000_0000
 		cpu         = cp.New(ramBaseAddr)
 		ram         = ram.New(cpu, ramBaseAddr, 512*1024*1024)
-		clint       = clint.New(cpu, 0x0200_0000)
-		plic        = plic.New(cpu, 0x0C00_0000)
+		clint       = clint.New(cpu, 0x100_0000)
+		plic        = plic.New(cpu, 0x200_0000)
 		terminal    = terminal.New(in, out)
-		uart        = uart.New(plic, 0x0300_0000, 1, terminal.GetChar, terminal.PutChar)
+		uart        = uart.New(plic, 0x300_0000, 1, terminal.GetChar, terminal.PutChar)
 	)
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
