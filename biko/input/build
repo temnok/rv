@@ -123,6 +123,8 @@ flags_y=(
     BLK_DEV_INITRD INITRAMFS_COMPRESSION_NONE
     DEVTMPFS DEVTMPFS_MOUNT
     BINFMT_ELF BINFMT_SCRIPT
+
+    DEV_PMEM FS_DAX EXT4_FS_DAX
 )
 
 make ${QUIET} \
@@ -132,7 +134,8 @@ for f in ${flags_y[@]}; do
     scripts/config --set-val ${f} y
 done
 
-BUILDS=("" "-go")
+#BUILDS=("" "-go")
+BUILDS=("")
 
 for SUFFIX in "${BUILDS[@]}"; do
   scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs${SUFFIX}.cpio\"
