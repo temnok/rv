@@ -15,17 +15,16 @@ import (
 	"strings"
 )
 
-func BootLinux(dir string) (err error) {
+func BootLinux(opensbiPath, kernelPath string) {
 	terminal.WithRaw(func(in io.Reader, out io.Writer) {
-		_, err = bootLinux(dir, in, out, 0)
+		bootLinux(opensbiPath, kernelPath, in, out, 0)
 	})
-
-	return
 }
 
-func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) (*state.CPU, error) {
+func bootLinux(opensbiPath, kernelPath string, in io.Reader, out io.Writer, timeout int) *state.CPU {
 	var (
 		ramBaseAddr = 0x8000_0000
+		kernelAddr  = 0x8020_0000
 		cpu         = cp.New(ramBaseAddr)
 		ram         = ram.New(cpu, ramBaseAddr, 512*1024*1024)
 		clint       = clint.New(cpu, 0x100_0000)
@@ -36,12 +35,8 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) (*st
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
 
-	kernelBytes, err := readFile(kernelPath)
-	if err != nil {
-		return nil, err
-	}
-
-	ram.Load(ramBaseAddr, kernelBytes)
+	ram.Load(ramBaseAddr, readFile(opensbiPath))
+	ram.Load(kernelAddr, readFile(kernelPath))
 
 	for step := 0; !terminal.Closed; step++ {
 		ok := cp.Step(cpu)
@@ -53,23 +48,26 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) (*st
 		uart.IO()
 	}
 
-	return cpu, nil
+	return cpu
 }
 
-func readFile(path string) ([]byte, error) {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
+func readFile(path string) []byte {
+	content := check1(os.ReadFile(path))
 	if !strings.HasSuffix(path, ".gz") {
-		return content, nil
+		return content
 	}
 
-	r, err := gzip.NewReader(bytes.NewReader(content))
+	r := check1(gzip.NewReader(bytes.NewReader(content)))
+	return check1(io.ReadAll(r))
+}
+
+func check1[A any](a A, err error) A {
+	check(err)
+	return a
+}
+
+func check(err error) {
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-
-	return io.ReadAll(r)
 }

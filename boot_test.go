@@ -8,17 +8,18 @@ import (
 )
 
 func TestBoot(t *testing.T) {
-	testBoot(t, "biko.gz", 50_000_000)
+	testBoot(t, "kernel.gz", 50_000_000)
 }
 
 // TODO: enable when faster
 func xTestBootGo(t *testing.T) {
-	testBoot(t, "biko-go.gz", 1_000_000_000)
+	testBoot(t, "kernel-go.gz", 1_000_000_000)
 }
 
 func testBoot(t *testing.T, kernelFileName string, timeout int) {
 	t.Parallel()
 
+	opensbiPath := "biko/output/opensbi.gz"
 	kernelPath := "biko/output/" + kernelFileName
 	stopString := "user@rv"
 	inR, inW := io.Pipe()
@@ -29,10 +30,7 @@ func testBoot(t *testing.T, kernelFileName string, timeout int) {
 		input:      inW,
 	}
 
-	cpu, err := bootLinux(kernelPath, inR, outW, timeout)
-	if err != nil {
-		t.Fatalf("Boot error: %v", err)
-	}
+	cpu := bootLinux(opensbiPath, kernelPath, inR, outW, timeout)
 
 	if !outW.success {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))

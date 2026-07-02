@@ -149,6 +149,7 @@ for SUFFIX in "${BUILDS[@]}"; do
       Image
 
   mv arch/riscv/boot/Image Image${SUFFIX}
+  gzip -9 -n -c Image${SUFFIX} > ~/output/kernel${SUFFIX}.gz
 done
 
 cd ~
@@ -166,20 +167,18 @@ dtc ${QUIET} \
   -o rv.dtb \
   ~/input/rv.dts
 
-for SUFFIX in "${BUILDS[@]}"; do
-  make clean
+make clean
 
-  make ${QUIET} \
-    CC="${CC}" \
-    FW_FDT_PATH=rv.dtb \
-    FW_PAYLOAD_PATH=~/build/kernel/Image${SUFFIX} \
-    PLATFORM=generic \
-    PLATFORM_RISCV_XLEN=64 \
-    --jobs=${CPU_COUNT} \
-    > /dev/null 2>&1
+make ${QUIET} \
+  CC="${CC}" \
+  FW_FDT_PATH=rv.dtb \
+  FW_JUMP_ADDR=0x80200000 \
+  PLATFORM=generic \
+  PLATFORM_RISCV_XLEN=64 \
+  --jobs=${CPU_COUNT} \
+  > /dev/null 2>&1
 
-  gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/biko${SUFFIX}.gz
-done
+gzip -9 -n -c build/platform/generic/firmware/fw_payload.bin > ~/output/opensbi.gz
 
 cd ~
 benchmark
@@ -190,7 +189,7 @@ sha256sum -b \
   build/busybox/busybox \
   build/initramfs/initramfs*.cpio \
   build/kernel/Image* \
-  output/biko* > output/sha256.txt
+  output/* > output/sha256.txt
 
 echo -n "Total execution time: "
 BM_START=${SCRIPT_START} && benchmark
