@@ -100,11 +100,25 @@ find . ! -path . | sort | cpio \
     --reproducible --quiet --create --owner +0:+0 --format newc \
     > ../initramfs.cpio
 
-tar -C usr/local -xf ~/cache/download/go*
-find usr/local -exec touch -t 197001010000.00 {} +
-find . ! -path . | sort | cpio \
-    --reproducible --quiet --create --owner +0:+0 --format newc \
-    > ../initramfs-go.cpio
+#tar -C usr/local -xf ~/cache/download/go*
+#find usr/local -exec touch -t 197001010000.00 {} +
+#find . ! -path . | sort | cpio \
+#    --reproducible --quiet --create --owner +0:+0 --format newc \
+#    > ../initramfs-go.cpio
+
+#truncate -s 64M ../disk.img
+#mkfs.ext4 -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" -T 0 \
+#  -q -O ^has_journal -E root_owner=0:0 -d . ../disk.img
+
+SOURCE_DATE_EPOCH=0 \
+  mke2fs -q -t ext4 \
+  -d . \
+  -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
+  -O ^has_journal \
+  -E hash_seed="c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
+  ../disk.img 64M
+
+mv ../disk.img ~/output/
 
 cd ~
 benchmark

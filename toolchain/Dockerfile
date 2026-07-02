@@ -57,3 +57,7 @@ RUN git clone --depth 1 --single-branch --branch 2026.06.06 \
 ENV PATH="$PATH:/home/user/toolchain/bin"
 
 RUN mkdir cache
+
+USER root
+RUN apt install -y e2fsprogs
+USER user
