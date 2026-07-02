@@ -1,7 +1,9 @@
 package terminal
 
 import (
+	"golang.org/x/term"
 	"io"
+	"os"
 )
 
 type Terminal struct {
@@ -11,7 +13,20 @@ type Terminal struct {
 	Closed bool
 }
 
-const ctrlC = 3
+const ctrlD = 4
+
+func WithRaw(f func(stdin io.Reader, stdout io.Writer)) {
+	state, err := term.MakeRaw(0)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		term.Restore(0, state)
+	}()
+
+	f(os.Stdin, os.Stdout)
+}
 
 func New(in io.Reader, out io.Writer) *Terminal {
 	t := &Terminal{
@@ -20,12 +35,13 @@ func New(in io.Reader, out io.Writer) *Terminal {
 	}
 
 	go func() {
+		buf := []byte{0}
+
 		for {
-			buf := []byte{0}
 			if n, _ := in.Read(buf); n > 0 {
 				t.stdin <- buf[0]
 
-				if buf[0] == ctrlC {
+				if buf[0] == ctrlD {
 					break
 				}
 			}
@@ -35,20 +51,20 @@ func New(in io.Reader, out io.Writer) *Terminal {
 	return t
 }
 
-func (t *Terminal) PutChar(char byte) {
-	t.out.Write([]byte{char})
+func (t *Terminal) PutChar(char int) {
+	t.out.Write([]byte{byte(char)})
 }
 
-func (t *Terminal) GetChar() (byte, bool) {
+func (t *Terminal) GetChar() int {
 	select {
 	case ch := <-t.stdin:
-		if ch == ctrlC {
+		if ch == ctrlD {
 			t.Closed = true
 		}
 
-		return ch, true
+		return int(ch)
 
 	default:
-		return 0, false
+		return -1
 	}
 }

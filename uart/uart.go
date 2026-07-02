@@ -2,22 +2,25 @@ package uart
 
 import (
 	"github.com/temnok/rv/plic"
-	"github.com/temnok/rv/terminal"
 )
 
 type UART struct {
 	plic        *plic.PLIC
 	baseAddr    int
 	interruptID int
+	getc        func() int
+	putc        func(int)
 
 	tx, rx, ip, ie int
 }
 
-func New(plic *plic.PLIC, baseAddr int, interuptID int) *UART {
+func New(plic *plic.PLIC, baseAddr int, interuptID int, getc func() int, putc func(int)) *UART {
 	return &UART{
 		plic:        plic,
 		baseAddr:    baseAddr,
 		interruptID: interuptID,
+		getc:        getc,
+		putc:        putc,
 
 		tx: -1,
 		rx: -1,
@@ -73,16 +76,16 @@ func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
 	return true
 }
 
-func (uart *UART) Sync(term *terminal.Terminal) {
+func (uart *UART) IO() {
 	sync := false
 
-	if char, ok := term.GetChar(); ok {
-		uart.rx = int(char)
+	if char := uart.getc(); char >= 0 {
+		uart.rx = char
 		sync = true
 	}
 
 	if uart.tx >= 0 {
-		term.PutChar(byte(uart.tx))
+		uart.putc(uart.tx)
 		uart.tx = -1
 		sync = true
 	}

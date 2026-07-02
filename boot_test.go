@@ -29,7 +29,10 @@ func testBoot(t *testing.T, kernelFileName string, timeout int) {
 		input:      inW,
 	}
 
-	cpu := bootLinux(kernelPath, inR, outW, timeout)
+	cpu, err := bootLinux(kernelPath, inR, outW, timeout)
+	if err != nil {
+		t.Fatalf("Boot error: %v", err)
+	}
 
 	if !outW.success {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))
