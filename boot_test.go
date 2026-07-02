@@ -19,7 +19,6 @@ func xTestBootGo(t *testing.T) {
 func testBoot(t *testing.T, kernelFileName string, timeout int) {
 	t.Parallel()
 
-	opensbiPath := "biko/output/opensbi.gz"
 	kernelPath := "biko/output/" + kernelFileName
 	stopString := "user@rv"
 	inR, inW := io.Pipe()
@@ -30,7 +29,7 @@ func testBoot(t *testing.T, kernelFileName string, timeout int) {
 		input:      inW,
 	}
 
-	cpu := bootLinux(opensbiPath, kernelPath, inR, outW, timeout)
+	cpu := bootLinux(kernelPath, inR, outW, timeout)
 
 	if !outW.success {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))

@@ -15,7 +15,7 @@ var (
 	debugTrace     [][]int
 )
 
-func step(cpu *state.CPU) bool {
+func Step(cpu *state.CPU) bool {
 	opcode := cp.InnerStep(cpu)
 
 	entry := []int{cpu.PC, opcode}
