@@ -1,4 +1,4 @@
 ::sysinit:syslogd
-::sysinit:cttyhack su -l user
-::respawn:cttyhack su -l user
+::sysinit:cttyhack su -l root
+::respawn:cttyhack su -l root
 ::ctrlaltdel:reboot
