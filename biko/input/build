@@ -106,9 +106,7 @@ find . ! -path . | sort | cpio \
 #    --reproducible --quiet --create --owner +0:+0 --format newc \
 #    > ../initramfs-go.cpio
 
-#truncate -s 64M ../disk.img
-#mkfs.ext4 -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" -T 0 \
-#  -q -O ^has_journal -E root_owner=0:0 -d . ../disk.img
+sudo chown -R 0:0 .
 
 SOURCE_DATE_EPOCH=0 \
   mke2fs -q -t ext4 -b 4096 \
@@ -116,9 +114,9 @@ SOURCE_DATE_EPOCH=0 \
   -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
   -O ^has_journal \
   -E hash_seed="c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
-  ../disk.img 64M
+  ../ramdisk.img 64M
 
-mv ../disk.img ~/output/
+mv ../ramdisk.img ~/output/
 
 cd ~
 benchmark
@@ -149,26 +147,21 @@ for f in ${flags_y[@]}; do
     scripts/config --set-val ${f} y
 done
 
-#BUILDS=("" "-go")
-BUILDS=("")
+scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs.cpio\"
 
-for SUFFIX in "${BUILDS[@]}"; do
-  scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs${SUFFIX}.cpio\"
+make ${QUIET} \
+    olddefconfig
 
-  make ${QUIET} \
-      olddefconfig
+make ${QUIET} \
+    CC="${CC}" \
+    KBUILD_BUILD_HOST="buildhost" \
+    KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
+    KBUILD_BUILD_USER="builduser" \
+    --jobs=${CPU_COUNT} \
+    Image
 
-  make ${QUIET} \
-      CC="${CC}" \
-      KBUILD_BUILD_HOST="buildhost" \
-      KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
-      KBUILD_BUILD_USER="builduser" \
-      --jobs=${CPU_COUNT} \
-      Image
-
-  mv arch/riscv/boot/Image Image${SUFFIX}
-  gzip -9 -n -c Image${SUFFIX} > ~/output/kernel${SUFFIX}.gz
-done
+mv arch/riscv/boot/Image Image
+gzip -9 -n -c Image > ~/output/kernel.gz
 
 cd ~
 benchmark

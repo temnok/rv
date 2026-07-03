@@ -59,5 +59,7 @@ ENV PATH="$PATH:/home/user/toolchain/bin"
 RUN mkdir cache
 
 USER root
-RUN apt install -y e2fsprogs
+RUN apt install -y e2fsprogs sudo && \
+    usermod -aG sudo user && \
+    echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 USER user

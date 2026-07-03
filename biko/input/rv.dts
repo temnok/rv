@@ -10,7 +10,7 @@
 	};
 
 	chosen {
-		bootargs = "no4lvl earlycon=sifive,0x03000000 console=ttySIF0";
+		bootargs = "root=/dev/pmem0 rootflags=dax rw init=/init no4lvl earlycon=sifive,0x03000000 console=ttySIF0";
 		stdout-path = "/soc/serial@3000000";
 	};
 
@@ -20,7 +20,7 @@
 	};
 
     pmem@84000000 {
-        compatible = "pmem-region";
+        compatible = "pmem-region-v2";
         reg = <0x84000000 0x04000000>;
         volatile;
     };

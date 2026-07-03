@@ -52,7 +52,7 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *sta
 	ram.Load(dynInfoAddr, buf)
 
 	ram.Load(kernelAddr, readFile(kernelPath))
-	ram.Load(diskBaseAddr, readFile(dir+"disk.img"))
+	ram.Load(diskBaseAddr, readFile(dir+"ramdisk.img"))
 
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr
