@@ -16,24 +16,13 @@
 
 	memory@80000000 {
 		device_type = "memory";
-		reg = <0x80000000 0x08000000>;
+		reg = <0x80000000 0x04000000>;
 	};
 
-    reserved-memory {
-        #address-cells = <1>;
-        #size-cells = <1>;
-        ranges;
-
-        phram_reserved: phram@84000000 {
-            compatible = "phram";
-            reg = <0x84000000 0x04000000>;
-            no-map;
-        };
-    };
-
-    phram {
-        compatible = "phram";
-        memory-region = <&phram_reserved>;
+    pmem@84000000 {
+        compatible = "pmem-region";
+        reg = <0x84000000 0x04000000>;
+        volatile;
     };
 
 	timer: timer@0 {

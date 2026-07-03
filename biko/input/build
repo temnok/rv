@@ -111,7 +111,7 @@ find . ! -path . | sort | cpio \
 #  -q -O ^has_journal -E root_owner=0:0 -d . ../disk.img
 
 SOURCE_DATE_EPOCH=0 \
-  mke2fs -q -t ext4 \
+  mke2fs -q -t ext4 -b 4096 \
   -d . \
   -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
   -O ^has_journal \
@@ -138,7 +138,8 @@ flags_y=(
     DEVTMPFS DEVTMPFS_MOUNT
     BINFMT_ELF BINFMT_SCRIPT
     EXT4_FS
-    MTD MTD_PHRAM MTD_RAM MTD_BLOCK
+    LIBNVDIMM OF_PMEM BLK_DEV_PMEM DAX
+    SPARSEMEM_MANUAL MEMORY_HOTPLUG MEMORY_HOTREMOVE ZONE_DEVICE FS_DAX
 )
 
 make ${QUIET} \
