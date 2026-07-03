@@ -1,5 +1,5 @@
 #!/bin/busybox sh
-/bin/busybox mkdir -p /dev /dev/pts /home/user /proc /root /run /sbin /sys /tmp /usr/bin /usr/sbin /var/log /var/run
+/bin/busybox mkdir -p /dev /dev/pts /home/user /mnt /proc /root /run /sbin /sys /tmp /usr/bin /usr/sbin /var/log /var/run
 /bin/busybox --install -s
 chmod a+rwx /tmp
 mount -t devtmpfs none /dev

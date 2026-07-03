@@ -19,12 +19,6 @@
 		reg = <0x80000000 0x04000000>;
 	};
 
-    pmem@84000000 {
-        compatible = "pmem-region";
-        reg = <0x84000000 0x04000000>;
-        volatile;
-    };
-
 	timer: timer@0 {
 		#clock-cells = <0>;
 		compatible = "riscv", "riscv,timer";
