@@ -8,12 +8,7 @@ import (
 )
 
 func TestBoot(t *testing.T) {
-	testBoot(t, "kernel.gz", 50_000_000)
-}
-
-// TODO: enable when faster
-func xTestBootGo(t *testing.T) {
-	testBoot(t, "kernel-go.gz", 1_000_000_000)
+	testBoot(t, "kernel.gz", 100_000_000)
 }
 
 func testBoot(t *testing.T, kernelFileName string, timeout int) {

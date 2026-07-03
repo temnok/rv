@@ -96,9 +96,6 @@ cd build/initramfs/fs
 mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
 
 find . -exec touch -t 197001010000.00 {} +
-find . ! -path . | sort | cpio \
-    --reproducible --quiet --create --owner +0:+0 --format newc \
-    > ../initramfs.cpio
 
 #tar -C usr/local -xf ~/cache/download/go*
 #find usr/local -exec touch -t 197001010000.00 {} +
@@ -132,7 +129,7 @@ cd build/kernel
 flags_y=(
     ARCH_RV64I
     SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE
-    BLK_DEV BLK_DEV_INITRD INITRAMFS_COMPRESSION_NONE
+    BLK_DEV
     DEVTMPFS DEVTMPFS_MOUNT
     BINFMT_ELF BINFMT_SCRIPT
     EXT4_FS
@@ -146,8 +143,6 @@ make ${QUIET} \
 for f in ${flags_y[@]}; do
     scripts/config --set-val ${f} y
 done
-
-scripts/config --set-val INITRAMFS_SOURCE \"/home/user/build/initramfs/initramfs.cpio\"
 
 make ${QUIET} \
     olddefconfig
@@ -197,7 +192,6 @@ benchmark
 
 sha256sum -b \
   build/busybox/busybox \
-  build/initramfs/initramfs*.cpio \
   build/kernel/Image* \
   output/* > output/sha256.txt
 
