@@ -10,7 +10,7 @@
 	};
 
 	chosen {
-		bootargs = "no4lvl earlycon=sifive,0x3000000 console=ttySIF0";
+		bootargs = "no4lvl earlycon=sifive,0x03000000 console=ttySIF0";
 		stdout-path = "/soc/serial@3000000";
 	};
 
@@ -18,6 +18,12 @@
 		device_type = "memory";
 		reg = <0x80000000 0x04000000>;
 	};
+
+    pmem@84000000 {
+        compatible = "pmem-region";
+        reg = <0x84000000 0x04000000>;
+        volatile;
+    };
 
 	timer: timer@0 {
 		#clock-cells = <0>;
@@ -62,7 +68,7 @@
 		clint: clint@1000000 {
 			#interrupt-cells = <1>;
 			compatible = "riscv,clint0";
-			reg = <0x1000000 0x10000>;
+			reg = <0x01000000 0x10000>;
 			interrupts-extended =  <&intc 3 &intc 7>;
 		};
 
@@ -71,7 +77,7 @@
 			#interrupt-cells = <1>;
 			#size-cells = <1>;
 			compatible = "riscv,plic0";
-			reg = <0x2000000 0x300000>;
+			reg = <0x02000000 0x300000>;
 			interrupts-extended = <&intc 9 &intc 0xFFFFFFFF>;
 			riscv,ndev = <32>;
 			interrupt-controller;
@@ -79,7 +85,7 @@
 
 		uart0: serial@3000000 {
 			compatible = "sifive,uart0";
-			reg = <0x3000000 0x20>;
+			reg = <0x03000000 0x20>;
 			interrupt-parent = <&plic>;
 			interrupts = <1>;
 			clocks = <&hfclk>;

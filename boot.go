@@ -25,14 +25,15 @@ func BootLinux(kernelPath string) {
 
 func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *state.CPU {
 	var (
-		ramBaseAddr = 0x8000_0000
-		opensbiAddr = ramBaseAddr
-		kernelAddr  = 0x8020_0000
-		dtbAddr     = kernelAddr - 0x2000
-		dynInfoAddr = kernelAddr - 0x40
+		ramBaseAddr  = 0x8000_0000
+		opensbiAddr  = ramBaseAddr
+		kernelAddr   = 0x8020_0000
+		dtbAddr      = kernelAddr - 0x2000
+		dynInfoAddr  = kernelAddr - 0x40
+		diskBaseAddr = 0x8400_0000
 
 		cpu      = cp.New(opensbiAddr)
-		ram      = ram.New(cpu, ramBaseAddr, 64*1024*1024)
+		ram      = ram.New(ramBaseAddr, 128*1024*1024)
 		clint    = clint.New(cpu, 0x100_0000)
 		plic     = plic.New(cpu, 0x200_0000)
 		terminal = terminal.New(in, out)
@@ -51,6 +52,7 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *sta
 	ram.Load(dynInfoAddr, buf)
 
 	ram.Load(kernelAddr, readFile(kernelPath))
+	ram.Load(diskBaseAddr, readFile(dir+"disk.img"))
 
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr

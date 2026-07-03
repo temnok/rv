@@ -2,18 +2,15 @@ package ram
 
 import (
 	"fmt"
-	"github.com/temnok/rv/state"
 )
 
 type RAM struct {
-	cpu      *state.CPU
 	baseAddr int
 	words    []int
 }
 
-func New(cpu *state.CPU, baseAddr int, size int) *RAM {
+func New(baseAddr int, size int) *RAM {
 	return &RAM{
-		cpu:      cpu,
 		baseAddr: baseAddr,
 		words:    make([]int, size/8),
 	}
@@ -21,7 +18,7 @@ func New(cpu *state.CPU, baseAddr int, size int) *RAM {
 
 func (ram *RAM) Load(addr int, program []byte) {
 	addr = (addr - ram.baseAddr) / 8
-	words := ram.words[addr : addr+int(len(program))/8+1]
+	words := ram.words[addr : addr+int(len(program)+7)/8]
 
 	clear(words)
 	for i, b := range program {

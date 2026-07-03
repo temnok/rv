@@ -93,7 +93,7 @@ rm -rf build/initramfs
 mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs
 
 cd build/initramfs/fs
-mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
+mkdir -p bin mnt usr/local && cp ~/build/busybox/busybox bin/
 
 find . -exec touch -t 197001010000.00 {} +
 find . ! -path . | sort | cpio \
@@ -134,11 +134,10 @@ cd build/kernel
 flags_y=(
     ARCH_RV64I
     SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE
-    BLK_DEV_INITRD INITRAMFS_COMPRESSION_NONE
+    BLK_DEV BLK_DEV_INITRD INITRAMFS_COMPRESSION_NONE
     DEVTMPFS DEVTMPFS_MOUNT
     BINFMT_ELF BINFMT_SCRIPT
-
-    DEV_PMEM FS_DAX EXT4_FS_DAX
+    LIBNVDIMM OF_PMEM BLK_DEV_PMEM DAX FS_DAX
 )
 
 make ${QUIET} \
