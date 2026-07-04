@@ -10,7 +10,7 @@
 	};
 
 	chosen {
-		bootargs = "root=/dev/pmem0 rw init=/init no4lvl earlycon=sifive,0x03000000 console=ttySIF0";
+		bootargs = "root=/dev/pmem0 rw no4lvl earlycon=sifive,0x03000000 console=ttySIF0";
 		stdout-path = "/soc/serial@3000000";
 	};
 

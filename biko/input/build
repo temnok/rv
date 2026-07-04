@@ -93,7 +93,8 @@ rm -rf build/ramdisk
 mkdir -p build/ramdisk && cp -R input/ramdisk build/ramdisk/fs
 
 cd build/ramdisk/fs
-mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
+mkdir -p bin dev home/user proc root run sbin sys tmp usr/bin usr/local usr/sbin var/log var/run
+cp ~/build/busybox/busybox bin/
 
 tar -C usr/local -xf ~/cache/download/go*
 

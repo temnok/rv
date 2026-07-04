@@ -1,0 +1,7 @@
+#!/bin/busybox sh
+/bin/busybox --install -s
+mount -t proc none /proc
+mount -t sysfs none /sys
+echo rv > /proc/sys/kernel/hostname
+chown user:user /home/user
+exec /sbin/init
