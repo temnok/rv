@@ -2,27 +2,40 @@ package uart
 
 import (
 	"github.com/temnok/rv/plic"
+	"io"
 )
 
 type UART struct {
 	plic        *plic.PLIC
 	baseAddr    int
 	interruptID int
-	getc        func() int
-	putc        func(int)
 
-	tx, rx, ip, ie int
+	input  chan byte
+	output io.Writer
+
+	rx, ip, ie int
 }
 
-func New(plic *plic.PLIC, baseAddr int, interuptID int, getc func() int, putc func(int)) *UART {
+func New(plic *plic.PLIC, baseAddr int, interuptID int, r io.Reader, w io.Writer) *UART {
+	input := make(chan byte)
+
+	go func() {
+		buf := []byte{0}
+
+		for {
+			if n, _ := r.Read(buf); n > 0 {
+				input <- buf[0]
+			}
+		}
+	}()
+
 	return &UART{
 		plic:        plic,
 		baseAddr:    baseAddr,
 		interruptID: interuptID,
-		getc:        getc,
-		putc:        putc,
+		input:       input,
+		output:      w,
 
-		tx: -1,
 		rx: -1,
 	}
 }
@@ -35,15 +48,8 @@ func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
 	switch addr {
 	case 0x00: // txdata
 		if write {
-			uart.tx = *data & 0xFF
-
+			uart.output.Write([]byte{byte(*data)})
 			uart.sync()
-		} else {
-			if uart.tx >= 0 {
-				*data = 1 << 31
-			} else {
-				*data = 0
-			}
 		}
 
 	case 0x04: // rxdata
@@ -76,27 +82,21 @@ func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
 	return true
 }
 
-func (uart *UART) IO() {
-	sync := false
-
-	if char := uart.getc(); char >= 0 {
-		uart.rx = char
-		sync = true
-	}
-
-	if uart.tx >= 0 {
-		uart.putc(uart.tx)
-		uart.tx = -1
-		sync = true
-	}
-
-	if sync {
+func (uart *UART) Input() int {
+	select {
+	case char := <-uart.input:
+		uart.rx = int(char)
 		uart.sync()
+
+		return int(char)
+
+	default:
+		return -1
 	}
 }
 
 func (uart *UART) sync() {
-	if uart.tx < 0 && uart.ie&1 == 1 {
+	if uart.ie&1 == 1 {
 		uart.ip |= 1
 	} else {
 		uart.ip &^= 1

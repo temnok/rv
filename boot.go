@@ -10,17 +10,24 @@ import (
 	"github.com/temnok/rv/plic"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/terminal"
 	"github.com/temnok/rv/uart"
+	"golang.org/x/term"
 	"io"
 	"os"
 	"strings"
 )
 
 func BootLinux(kernelPath string) {
-	terminal.WithRaw(func(in io.Reader, out io.Writer) {
-		bootLinux(kernelPath, in, out, 0)
-	})
+	termState, err := term.MakeRaw(0)
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		term.Restore(0, termState)
+	}()
+
+	bootLinux(kernelPath, os.Stdin, os.Stdout, 0)
 }
 
 func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *state.CPU {
@@ -32,12 +39,11 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *sta
 		dynInfoAddr  = kernelAddr - 0x40
 		diskBaseAddr = 0x8400_0000
 
-		cpu      = cp.New(opensbiAddr)
-		ram      = ram.New(ramBaseAddr, 128*1024*1024)
-		clint    = clint.New(cpu, 0x100_0000)
-		plic     = plic.New(cpu, 0x200_0000)
-		terminal = terminal.New(in, out)
-		uart     = uart.New(plic, 0x300_0000, 1, terminal.GetChar, terminal.PutChar)
+		cpu   = cp.New(opensbiAddr)
+		ram   = ram.New(ramBaseAddr, 128*1024*1024)
+		clint = clint.New(cpu, 0x100_0000)
+		plic  = plic.New(cpu, 0x200_0000)
+		uart  = uart.New(plic, 0x300_0000, 1, in, out)
 	)
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
@@ -57,14 +63,12 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *sta
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr
 
-	for step := 0; !terminal.Closed; step++ {
+	for step := 0; uart.Input() != 'D'-'@'; step++ {
 		ok := cp.Step(cpu)
 
 		if !ok || (timeout > 0 && step > timeout) {
 			break
 		}
-
-		uart.IO()
 	}
 
 	return cpu
