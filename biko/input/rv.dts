@@ -14,16 +14,16 @@
 		stdout-path = "/soc/serial@3000000";
 	};
 
-	memory@80000000 {
+	memory {
 		device_type = "memory";
 		reg = <0x80000000 0x08000000>;
 	};
 
-    pmem@84000000 {
-        compatible = "pmem-region-v2";
-        reg = <0x88000000 0x18000000>;
-        volatile;
-    };
+	pmem {
+		compatible = "pmem-region-v2";
+		reg = <0x88000000 0x18000000>;
+		volatile;
+	};
 
 	timer: timer@0 {
 		#clock-cells = <0>;
