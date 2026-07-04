@@ -88,11 +88,11 @@ benchmark
 
 ################################################################################
 
-echo -n "Building initramfs... "
-rm -rf build/initramfs
-mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs
+echo -n "Building ramdisk... "
+rm -rf build/ramdisk
+mkdir -p build/ramdisk && cp -R input/ramdisk build/ramdisk/fs
 
-cd build/initramfs/fs
+cd build/ramdisk/fs
 mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
 
 tar -C usr/local -xf ~/cache/download/go*
