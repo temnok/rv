@@ -8,7 +8,7 @@ import (
 )
 
 func TestBoot(t *testing.T) {
-	testBoot(t, "kernel.gz", 100_000_000)
+	testBoot(t, "kernel.gz", 120_000_000)
 }
 
 func testBoot(t *testing.T, kernelFileName string, timeout int) {
@@ -47,7 +47,7 @@ func (m *matchWriter) Write(p []byte) (n int, err error) {
 	m.output = append(m.output, p...)
 	if bytes.HasSuffix(m.output, []byte(m.stopString)) {
 		m.success = true
-		fmt.Fprintf(m.input, "\x03")
+		fmt.Fprintf(m.input, "\x04")
 	}
 
 	return len(p), nil

@@ -37,10 +37,10 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *sta
 		kernelAddr   = 0x8020_0000
 		dtbAddr      = kernelAddr - 0x2000
 		dynInfoAddr  = kernelAddr - 0x40
-		diskBaseAddr = 0x8400_0000
+		diskBaseAddr = 0x8800_0000
 
 		cpu   = cp.New(opensbiAddr)
-		ram   = ram.New(ramBaseAddr, 128*1024*1024)
+		ram   = ram.New(ramBaseAddr, 512*1024*1024)
 		clint = clint.New(cpu, 0x100_0000)
 		plic  = plic.New(cpu, 0x200_0000)
 		uart  = uart.New(plic, 0x300_0000, 1, in, out)

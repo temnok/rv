@@ -95,13 +95,9 @@ mkdir -p build/initramfs && cp -R input/initramfs build/initramfs/fs
 cd build/initramfs/fs
 mkdir -p bin usr/local && cp ~/build/busybox/busybox bin/
 
-find . -exec touch -t 197001010000.00 {} +
+tar -C usr/local -xf ~/cache/download/go*
 
-#tar -C usr/local -xf ~/cache/download/go*
-#find usr/local -exec touch -t 197001010000.00 {} +
-#find . ! -path . | sort | cpio \
-#    --reproducible --quiet --create --owner +0:+0 --format newc \
-#    > ../initramfs-go.cpio
+find . -exec touch -t 197001010000.00 {} +
 
 sudo chown -R 0:0 .
 
@@ -111,7 +107,7 @@ SOURCE_DATE_EPOCH=0 \
   -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
   -O ^has_journal \
   -E hash_seed="c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
-  ../ramdisk.img 64M
+  ../ramdisk.img 384M
 
 mv ../ramdisk.img ~/output/
 
