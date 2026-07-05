@@ -30,12 +30,13 @@ rm -rf build output && mkdir -p build output cache/{download,cc}
 ################################################################################
 
 echo -n "Downloading sources... "
-cd cache/download
 
 VERSION_BUSYBOX=1.36.1
 VERSION_KERNEL=7.1.1
 VERSION_OPENSBI=1.8.1
 VERSION_GO=1.26.4
+
+cd cache/download
 
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     rm -rf busybox-*
@@ -49,13 +50,14 @@ fi
 
 if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
     rm -rf opensbi-*
-    wget ${QUIET} https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
-    mv v${VERSION_OPENSBI}.tar.gz opensbi-${VERSION_OPENSBI}.tar.gz
+    wget ${QUIET} -O opensbi-${VERSION_OPENSBI}.tar.gz \
+        https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
 fi
 
-if [ ! -f go${VERSION_GO}.linux-riscv64.tar.gz ]; then
-    rm -rf go*
-    wget ${QUIET} https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
+if [ ! -f go-${VERSION_GO}.tar.gz ]; then
+    rm -rf go-*
+    wget ${QUIET} -O go-${VERSION_GO}.tar.gz \
+        https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
 fi
 
 cd ~
@@ -63,28 +65,30 @@ benchmark
 
 ################################################################################
 
-echo -n "Building busybox... "
-rm -rf busybox-* build/busybox
-tar -xf cache/download/busybox-${VERSION_BUSYBOX}.tar.bz2 && mv busybox-* build/busybox
-cd build/busybox
+if [ ! -d prev-output/ ]; then
+  echo -n "Building busybox... "
+  rm -rf busybox-* build/busybox
+  tar -xf cache/download/busybox-${VERSION_BUSYBOX}.tar.bz2 && mv busybox-* build/busybox
+  cd build/busybox
 
-KCONFIG_NOTIMESTAMP=1 \
-    make ${QUIET} \
-        defconfig \
-        > /dev/null 2>&1
+  KCONFIG_NOTIMESTAMP=1 \
+      make ${QUIET} \
+          defconfig \
+          > /dev/null 2>&1
 
-sed -i 's/CONFIG_TC=y/CONFIG_TC=n/' .config
-sed -i 's/CONFIG_TCPSVD=y/CONFIG_TCPSVD=n/' .config
+  sed -i 's/CONFIG_TC=y/CONFIG_TC=n/' .config
+  sed -i 's/CONFIG_TCPSVD=y/CONFIG_TCPSVD=n/' .config
 
-LDFLAGS="--static ${CFLAGS}" \
-    make ${QUIET} \
-        CC="${CC}" \
-        --jobs=${CPU_COUNT} \
-        busybox \
-        > /dev/null 2>&1
+  LDFLAGS="--static ${CFLAGS}" \
+      make ${QUIET} \
+          CC="${CC}" \
+          --jobs=${CPU_COUNT} \
+          busybox \
+          > /dev/null 2>&1
 
-cd ~
-benchmark
+  cd ~
+  benchmark
+fi
 
 ################################################################################
 
@@ -96,7 +100,7 @@ cd build/ramdisk/fs
 mkdir -p bin dev home/user proc root run sbin sys tmp usr/bin usr/local usr/sbin var/log var/run
 cp ~/build/busybox/busybox bin/
 
-tar -C usr/local -xf ~/cache/download/go*
+tar -C usr/local -xf ~/cache/download/go-${VERSION_GO}.tar.gz
 
 find . -exec touch -t 197001010000.00 {} +
 
@@ -187,10 +191,7 @@ benchmark
 
 ################################################################################
 
-sha256sum -b \
-  build/busybox/busybox \
-  build/kernel/Image* \
-  output/* > output/sha256.txt
+sha256sum -b output/* > output/sha256.txt
 
 echo -n "Total execution time: "
 BM_START=${SCRIPT_START} && benchmark
