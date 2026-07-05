@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	rv.BootLinux("biko/output/kernel.gz")
+	rv.BootLinux("build/output/kernel.gz")
 	//ins.PrintFreqStats()
 }

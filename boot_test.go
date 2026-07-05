@@ -8,26 +8,18 @@ import (
 )
 
 func TestBoot(t *testing.T) {
-	testBoot(t, "kernel.gz", 120_000_000)
-}
-
-func testBoot(t *testing.T, kernelFileName string, timeout int) {
-	t.Parallel()
-
-	kernelPath := "biko/output/" + kernelFileName
-	stopString := "user@rv"
 	inR, inW := io.Pipe()
 
 	outW := &matchWriter{
 		t:          t,
-		stopString: stopString,
+		stopString: "user@rv",
 		input:      inW,
 	}
 
-	cpu := bootLinux(kernelPath, inR, outW, timeout)
+	cpu := bootLinux("build/output/kernel.gz", inR, outW, 120_000_000)
 
 	if !outW.success {
-		t.Fatalf("Expected '%v' stop string, got:\n%v", stopString, string(outW.output))
+		t.Fatalf("Expected '%v' stop string, got:\n%v", outW.stopString, string(outW.output))
 	}
 
 	fmt.Printf("Instr/CInstr: %v/%v, traps: %v, TLB lookups/misses: %v/%v\n",
