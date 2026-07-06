@@ -1,4 +1,3 @@
 ::sysinit:syslogd
 ::sysinit:cttyhack su -l user
 ::respawn:cttyhack su -l user
-::ctrlaltdel:reboot

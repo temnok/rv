@@ -12,7 +12,6 @@ BM_START=${SCRIPT_START}
 CPU_COUNT=$(nproc)
 QUIET=--quiet
 
-export CCACHE_DIR=/home/user/cache/cc
 
 function benchmark {
   BM_END=$(date +%s)
@@ -24,6 +23,7 @@ function benchmark {
 
 export ARCH=riscv
 export CC="ccache riscv64-unknown-linux-gnu-gcc"
+export CCACHE_DIR=/home/user/cache/cc
 export CFLAGS="-march=rv64imac -mabi=lp64"
 export CROSS_COMPILE=riscv64-unknown-linux-gnu-
 export SOURCE_DATE_EPOCH=0
@@ -71,7 +71,7 @@ benchmark
 
 ################################################################################
 
-if $BUILD_BUSYBOX; then
+if $BUILD_BUSYBOX || $BUILD_RAMDISK; then
   echo -n "Building busybox... "
 
   BUILD_RAMDISK=true
@@ -188,7 +188,7 @@ fi
 
 ################################################################################
 
-if $BUILD_RAMDISK; then
+if $BUILD_BUSYBOX || $BUILD_RAMDISK; then
   echo -n "Building ramdisk... "
   rm -rf build/ramdisk
   mkdir -p build/ramdisk && cp -R input/ramdisk build/ramdisk/fs

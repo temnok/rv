@@ -3,6 +3,7 @@ package rv
 import (
 	"bytes"
 	"fmt"
+	"github.com/temnok/rv/debug"
 	"io"
 	"testing"
 )
@@ -16,9 +17,11 @@ func TestBoot(t *testing.T) {
 		input:      inW,
 	}
 
-	cpu := bootLinux("build/output/kernel.gz", inR, outW, 120_000_000)
+	cpu := bootLinux(inR, outW, 110_000_000)
 
 	if !outW.success {
+		debug.Dump(cpu)
+
 		t.Fatalf("Expected '%v' stop string, got:\n%v", outW.stopString, string(outW.output))
 	}
 

@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-func BootLinux(kernelPath string) {
+func BootLinux() {
 	termState, err := term.MakeRaw(0)
 	if err != nil {
 		panic(err)
@@ -27,10 +27,10 @@ func BootLinux(kernelPath string) {
 		term.Restore(0, termState)
 	}()
 
-	bootLinux(kernelPath, os.Stdin, os.Stdout, 0)
+	bootLinux(os.Stdin, os.Stdout, 0)
 }
 
-func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *state.CPU {
+func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	var (
 		ramBaseAddr  = 0x8000_0000
 		opensbiAddr  = ramBaseAddr
@@ -48,23 +48,24 @@ func bootLinux(kernelPath string, in io.Reader, out io.Writer, timeout int) *sta
 
 	cpu.Bus = state.Bus{ram, clint, plic, uart}
 
-	dir := kernelPath[:strings.LastIndexByte(kernelPath, '/')+1]
+	dir := "build/output/"
 
-	ram.Load(opensbiAddr, readFile(dir+"opensbi.gz"))
-	ram.Load(dtbAddr, readFile(dir+"rv.dtb"))
+	ram.Load(opensbiAddr, readFile(dir+"/opensbi.gz"))
+	ram.Load(dtbAddr, readFile(dir+"/rv.dtb"))
 
 	buf := make([]byte, 8*6)
 	binary.Encode(buf, binary.LittleEndian, []uint64{0x4942534f, 2, uint64(kernelAddr), 1, 0, 0})
 	ram.Load(dynInfoAddr, buf)
 
-	ram.Load(kernelAddr, readFile(kernelPath))
-	ram.Load(diskBaseAddr, readFile(dir+"ramdisk.img"))
+	ram.Load(kernelAddr, readFile(dir+"/kernel.gz"))
+	ram.Load(diskBaseAddr, readFile(dir+"/ramdisk.img"))
 
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr
 
 	for step := 0; uart.Input() != 'D'-'@'; step++ {
 		ok := cp.Step(cpu)
+		//ok := debug.Step(cpu)
 
 		if !ok || (timeout > 0 && step > timeout) {
 			break

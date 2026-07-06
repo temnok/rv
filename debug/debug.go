@@ -53,14 +53,14 @@ func Dump(cpu *state.CPU) {
 	fmt.Printf("\r\nCycle: %v, Trap: %v\r\n", cpu.CSR.Cycle, debugTrapCount)
 
 	up := &cpu.Update
-	if cpu.Update.TrapEnter {
-		fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
-			cpu.Priv, uint(up.TrapPriv), uint(up.PC), uint(up.TrapMstatus))
-		fmt.Printf("xepc:%x, xcause:%x, xtval:%x\r\n",
-			uint(up.TrapXepc), uint(up.TrapXcause), uint(up.TrapXtval))
-		fmt.Printf("mtvec:%x, stvec:%x\r\n",
-			uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
-	}
+	//if cpu.Update.TrapEnter {
+	fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
+		cpu.Priv, uint(up.TrapPriv), uint(up.PC), uint(up.TrapMstatus))
+	fmt.Printf("xepc:%x, xcause:%x, xtval:%x\r\n",
+		uint(up.TrapXepc), uint(up.TrapXcause), uint(up.TrapXtval))
+	fmt.Printf("mtvec:%x, stvec:%x\r\n",
+		uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
+	//}
 
 	//for i := range 16 {
 	//	fmt.Printf("% 5v:%16x      % 5v:%16x\r\n",
