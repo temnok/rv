@@ -1,7 +1,6 @@
 package ins
 
 import (
-	"fmt"
 	"github.com/temnok/rv/extc"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -42,32 +41,6 @@ var (
 		30: illegal,
 		31: illegal,
 	}
-
-	groupNames = []string{
-		0:  "execLoad",
-		1:  "execLoadFP",
-		3:  "execFence",
-		4:  "execComputeI",
-		5:  "auipc",
-		6:  "execComputeI32",
-		8:  "execStore",
-		9:  "execStoreFP",
-		11: "execAtomic",
-		12: "execComputeR",
-		13: "lui",
-		14: "execComputeR32",
-		16: "execComputeFP",
-		17: "execComputeFP",
-		18: "execComputeFP",
-		19: "execComputeFP",
-		20: "execComputeFP",
-		24: "execBranch",
-		25: "jalr",
-		27: "jal",
-		28: "execSystem",
-	}
-
-	groupFreq = make([]int, 32)
 )
 
 func Exec(cpu *state.CPU, opcode int) {
@@ -87,20 +60,11 @@ func Exec(cpu *state.CPU, opcode int) {
 
 		opcodeSize = 2
 	}
+
 	cpu.Update.PC = cpu.PC + opcodeSize
 
 	op := Op(opcode)
 	f5 := op.f5()
 
 	groups[f5](cpu, op)
-	//groupFreq[f5]++
-}
-
-func PrintFreqStats() {
-	fmt.Printf("\n\n")
-	for i, name := range groupNames {
-		if name != "" {
-			fmt.Printf("%2v %14v: %8v\n", i, name, groupFreq[i])
-		}
-	}
 }

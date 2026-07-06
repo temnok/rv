@@ -7,20 +7,11 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Step(cpu *state.CPU) bool {
-	//return debugStep(cpu)
-
-	InnerStep(cpu)
-	return true
-}
-
-func InnerStep(cpu *state.CPU) int {
+func Step(cpu *state.CPU) int {
 	updateState(cpu)
 
-	if cpu.InstrCount%20 == 0 {
-		if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
-			return 0
-		}
+	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
+		return 0
 	}
 
 	var opcode int

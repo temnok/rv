@@ -16,7 +16,7 @@ var (
 )
 
 func Step(cpu *state.CPU) bool {
-	opcode := cp.InnerStep(cpu)
+	opcode := cp.Step(cpu)
 
 	entry := []int{cpu.PC, opcode}
 

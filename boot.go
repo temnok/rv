@@ -64,10 +64,10 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	cpu.X[isa.A2] = dynInfoAddr
 
 	for step := 0; uart.Input() != 'D'-'@'; step++ {
-		ok := cp.Step(cpu)
-		//ok := debug.Step(cpu)
+		cp.Step(cpu)
+		//debug.Step(cpu)
 
-		if !ok || (timeout > 0 && step > timeout) {
+		if timeout != 0 && step > timeout {
 			break
 		}
 	}
