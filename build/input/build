@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+BUILD_BUSYBOX=true
+BUILD_DEVTREE=true
+BUILD_KERNEL=true
+BUILD_OPENSBI=true
+BUILD_RAMDISK=true
+
 SCRIPT_START=$(date +%s)
 BM_START=${SCRIPT_START}
 CPU_COUNT=$(nproc)
@@ -32,7 +38,7 @@ rm -rf build output && mkdir -p build output cache/{download,cc}
 echo -n "Downloading sources... "
 
 VERSION_BUSYBOX=1.36.1
-VERSION_KERNEL=7.1.1
+VERSION_KERNEL=7.1.3
 VERSION_OPENSBI=1.8.1
 VERSION_GO=1.26.4
 
@@ -41,6 +47,12 @@ cd cache/download
 if [ ! -f busybox-${VERSION_BUSYBOX}.tar.bz2 ]; then
     rm -rf busybox-*
     wget ${QUIET} https://busybox.net/downloads/busybox-${VERSION_BUSYBOX}.tar.bz2
+fi
+
+if [ ! -f go-${VERSION_GO}.tar.gz ]; then
+    rm -rf go-*
+    wget ${QUIET} -O go-${VERSION_GO}.tar.gz \
+        https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
 fi
 
 if [ ! -f linux-${VERSION_KERNEL}.tar.xz ]; then
@@ -54,19 +66,16 @@ if [ ! -f opensbi-${VERSION_OPENSBI}.tar.gz ]; then
         https://github.com/riscv-software-src/opensbi/archive/refs/tags/v${VERSION_OPENSBI}.tar.gz
 fi
 
-if [ ! -f go-${VERSION_GO}.tar.gz ]; then
-    rm -rf go-*
-    wget ${QUIET} -O go-${VERSION_GO}.tar.gz \
-        https://go.dev/dl/go${VERSION_GO}.linux-riscv64.tar.gz
-fi
-
 cd ~
 benchmark
 
 ################################################################################
 
-if [ ! -d prev-output/ ]; then
+if $BUILD_BUSYBOX; then
   echo -n "Building busybox... "
+
+  BUILD_RAMDISK=true
+
   rm -rf busybox-* build/busybox
   tar -xf cache/download/busybox-${VERSION_BUSYBOX}.tar.bz2 && mv busybox-* build/busybox
   cd build/busybox
@@ -92,106 +101,122 @@ fi
 
 ################################################################################
 
-echo -n "Building ramdisk... "
-rm -rf build/ramdisk
-mkdir -p build/ramdisk && cp -R input/ramdisk build/ramdisk/fs
+if $BUILD_DEVTREE; then
+  echo -n "Building devtree... "
 
-cd build/ramdisk/fs
-mkdir -p bin dev home/user proc root run sbin sys tmp usr/bin usr/local usr/sbin var/log var/run
-cp ~/build/busybox/busybox bin/
+  dtc ${QUIET} \
+    -O dtb \
+    -o ~/output/rv.dtb \
+    ~/input/rv.dts
 
-tar -C usr/local -xf ~/cache/download/go-${VERSION_GO}.tar.gz
-
-find . -exec touch -t 197001010000.00 {} +
-
-sudo chown -R 0:0 .
-
-SOURCE_DATE_EPOCH=0 \
-  mke2fs -q -t ext4 -b 4096 \
-  -d . \
-  -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
-  -O ^has_journal \
-  -E hash_seed="c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
-  ../ramdisk.img 384M
-
-mv ../ramdisk.img ~/output/
-
-cd ~
-benchmark
+  benchmark
+fi
 
 ################################################################################
 
-echo -n "Building kernel... "
-rm -rf linux-* build/kernel
-tar -xf cache/download/linux-${VERSION_KERNEL}.tar.xz && mv linux-* build/kernel
+if $BUILD_KERNEL; then
+  echo -n "Building kernel... "
+  rm -rf linux-* build/kernel
+  tar -xf cache/download/linux-${VERSION_KERNEL}.tar.xz && mv linux-* build/kernel
 
-cd build/kernel
+  cd build/kernel
 
-flags_y=(
-    ARCH_RV64I
-    SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE
-    BLK_DEV
-    DEVTMPFS DEVTMPFS_MOUNT
-    BINFMT_ELF BINFMT_SCRIPT
-    EXT4_FS
-    LIBNVDIMM OF_PMEM BLK_DEV_PMEM DAX
-    SPARSEMEM_MANUAL MEMORY_HOTPLUG MEMORY_HOTREMOVE ZONE_DEVICE FS_DAX
-)
+  flags_y=(
+      ARCH_RV64I
+      SERIAL_SIFIVE SERIAL_SIFIVE_CONSOLE
+      BLK_DEV
+      DEVTMPFS DEVTMPFS_MOUNT
+      BINFMT_ELF BINFMT_SCRIPT
+      EXT4_FS
+      LIBNVDIMM OF_PMEM BLK_DEV_PMEM DAX
+      SPARSEMEM_MANUAL MEMORY_HOTPLUG MEMORY_HOTREMOVE ZONE_DEVICE FS_DAX
+  )
 
-make ${QUIET} \
-    allnoconfig
+  make ${QUIET} \
+      allnoconfig
 
-for f in ${flags_y[@]}; do
-    scripts/config --set-val ${f} y
-done
+  for f in ${flags_y[@]}; do
+      scripts/config --set-val ${f} y
+  done
 
-make ${QUIET} \
-    olddefconfig
+  make ${QUIET} \
+      olddefconfig
 
-make ${QUIET} \
+  make ${QUIET} \
+      CC="${CC}" \
+      KBUILD_BUILD_HOST="buildhost" \
+      KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
+      KBUILD_BUILD_USER="builduser" \
+      --jobs=${CPU_COUNT} \
+      Image
+
+  mv arch/riscv/boot/Image Image
+  gzip -9 -n -c Image > ~/output/kernel.gz
+
+  cd ~
+  benchmark
+fi
+
+################################################################################
+
+if $BUILD_OPENSBI; then
+  echo -n "Building opensbi... "
+  rm -rf opensbi-* build/opensbi
+  tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
+  cd build/opensbi
+
+  dtc ${QUIET} \
+    -O dtb \
+    -o ~/output/rv.dtb \
+    ~/input/rv.dts
+
+  make clean
+
+  make ${QUIET} \
     CC="${CC}" \
-    KBUILD_BUILD_HOST="buildhost" \
-    KBUILD_BUILD_TIMESTAMP="Thu Jan 1 00:00:00 UTC 1970" \
-    KBUILD_BUILD_USER="builduser" \
+    FW_DYNAMIC=y \
+    PLATFORM=generic \
+    PLATFORM_RISCV_XLEN=64 \
     --jobs=${CPU_COUNT} \
-    Image
+    > /dev/null 2>&1
 
-mv arch/riscv/boot/Image Image
-gzip -9 -n -c Image > ~/output/kernel.gz
+  gzip -9 -n -c build/platform/generic/firmware/fw_dynamic.bin > ~/output/opensbi.gz
 
-cd ~
-benchmark
-
-################################################################################
-
-echo -n "Building opensbi... "
-rm -rf opensbi-* build/opensbi
-tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
-cd build/opensbi
-
-dtc ${QUIET} \
-  -O dtb \
-  -o ~/output/rv.dtb \
-  ~/input/rv.dts
-
-make clean
-
-make ${QUIET} \
-  CC="${CC}" \
-  FW_DYNAMIC=y \
-  PLATFORM=generic \
-  PLATFORM_RISCV_XLEN=64 \
-  --jobs=${CPU_COUNT} \
-  > /dev/null 2>&1
-
-gzip -9 -n -c build/platform/generic/firmware/fw_dynamic.bin > ~/output/opensbi.gz
-
-cd ~
-benchmark
+  cd ~
+  benchmark
+fi
 
 ################################################################################
 
-sha256sum -b output/* > output/sha256.txt
+if $BUILD_RAMDISK; then
+  echo -n "Building ramdisk... "
+  rm -rf build/ramdisk
+  mkdir -p build/ramdisk && cp -R input/ramdisk build/ramdisk/fs
+
+  cd build/ramdisk/fs
+  mkdir -p bin dev home/user proc root run sbin sys tmp usr/bin usr/local usr/sbin var/log var/run
+  cp ~/build/busybox/busybox bin/
+
+  tar -C usr/local -xf ~/cache/download/go-${VERSION_GO}.tar.gz
+
+  find . -exec touch -t 197001010000.00 {} +
+
+  sudo chown -R 0:0 .
+
+  mke2fs -q -t ext4 -b 4096 \
+    -d . \
+    -U "c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
+    -O ^has_journal \
+    -E hash_seed="c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
+    ../ramdisk.img 384M
+
+  mv ../ramdisk.img ~/output/
+
+  cd ~
+  benchmark
+fi
+
+################################################################################
 
 echo -n "Total execution time: "
 BM_START=${SCRIPT_START} && benchmark

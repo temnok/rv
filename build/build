@@ -2,7 +2,8 @@
 set -e
 cd $(dirname "$0")
 
-rm -rf tmp output && mkdir tmp
+rm -rf tmp && mkdir tmp
+mkdir -p output
 
 docker run -ti \
     --cidfile tmp/.cid \
@@ -11,7 +12,7 @@ docker run -ti \
     rv-toolchain \
     bash input/build
 
-docker cp --quiet $(cat tmp/.cid):/home/user/output output
-mv output/sha256.txt .
+docker cp --quiet $(cat tmp/.cid):/home/user/output/. output/
+sha256sum -b output/* > sha256.txt
 
 docker rm $(cat tmp/.cid) > /dev/null && rm -rf tmp
