@@ -72,6 +72,7 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		}
 	}
 
+	//debug.Dump(cpu)
 	return cpu
 }
 

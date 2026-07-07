@@ -16,9 +16,11 @@ var (
 )
 
 func Step(cpu *state.CPU) bool {
+	pc := cpu.PC
+
 	opcode := cp.Step(cpu)
 
-	entry := []int{cpu.PC, opcode}
+	entry := []int{pc, opcode}
 
 	switch {
 	case cpu.Update.XReg > 0:

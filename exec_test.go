@@ -57,9 +57,9 @@ func runTest(t *testing.T, file string) {
 			lastPCs = lastPCs[:n]
 		}
 
-		cp.Step(cpu)
+		isTrap := cp.Step(cpu) < 0
 
-		if trap.IsEntered(cpu) {
+		if isTrap {
 			trapCount++
 
 			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Update.TrapXcause)})
@@ -87,7 +87,7 @@ func runTest(t *testing.T, file string) {
 			break
 		}
 
-		if trap.IsEntered(cpu) {
+		if isTrap {
 			if cause := cpu.Update.TrapXcause; cause == trap.EnvironmentCallFromUMode ||
 				cause == trap.EnvironmentCallFromSMode ||
 				cause == trap.EnvironmentCallFromMMode {
