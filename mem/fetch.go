@@ -1,17 +1,13 @@
 package mem
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/translate"
 	"github.com/temnok/rv/trap"
 )
 
 func Fetch(cpu *state.CPU, addr int, data *int) {
-	const (
-		xbytes   = 8
-		pageMask = state.PageSize - 1
-	)
+	const xbytes = 8
 
 	shift := addr & (xbytes - 1)
 	virtAddr := addr &^ (xbytes - 1)
@@ -36,8 +32,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 	if fullyLoaded := isCompressedInstruction || shift+4 <= xbytes; fullyLoaded {
 		*data = lo
 
-		cpu.Update.ICache = state.Cache{
-			VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
+		cpu.Update.ICache = state.Cache{VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
 
 		return
 	}
@@ -45,7 +40,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 	virtAddr += xbytes
 	physAddr += xbytes
 
-	if virtAddr&pageMask == 0 {
+	if pageMask := state.PageSize - 1; virtAddr&pageMask == 0 {
 		if translate.Sv(cpu, virtAddr, &physAddr, state.AccessExecute); trap.IsEntered(cpu) {
 			return
 		}
@@ -56,8 +51,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 		return
 	}
 
-	cpu.Update.ICache = state.Cache{
-		VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
+	cpu.Update.ICache = state.Cache{VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
 
-	*data = val<<16 | bi.Ts(lo, 0, 16)
+	*data = (val&0xffff)<<16 | lo&0xffff
 }
