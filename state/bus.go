@@ -1,13 +1,11 @@
 package state
 
-type Bus []device
+type Bus []func(addr int, data *int, width int, write bool) bool
 
-type device interface {
-	Access(addr int, data *int, width int, write bool) bool
-}
-
-func (bus Bus) Read(addr int, data *int, width int) bool {
-	return bus.Access(addr, data, width, false)
+func (bus Bus) Read(addr int, width int) (int, bool) {
+	var data int
+	ok := bus.Access(addr, &data, width, false)
+	return data, ok
 }
 
 func (bus Bus) Write(addr int, data int, width int) bool {
@@ -16,7 +14,7 @@ func (bus Bus) Write(addr int, data int, width int) bool {
 
 func (bus Bus) Access(addr int, data *int, width int, write bool) bool {
 	for _, device := range bus {
-		if device.Access(addr, data, width, write) {
+		if device(addr, data, width, write) {
 			return true
 		}
 	}

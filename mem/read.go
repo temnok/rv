@@ -17,7 +17,8 @@ func Read(cpu *state.CPU, virtAddr int, data *int, width int) {
 		return
 	}
 
-	if !cpu.Bus.Read(physAddr, data, width) {
+	var ok bool
+	if *data, ok = cpu.Bus.Read(physAddr, width); !ok {
 		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 	}
 }

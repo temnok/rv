@@ -60,7 +60,8 @@ func loadPTEsv39(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
 
 	pteAddr := bi.Ts(cpu.CSR.Satp, 0, 44)<<12 | bi.Ts(virtAddr, 30, 9)<<3
 
-	if !cpu.Bus.Read(pteAddr, &pte, 8) {
+	var ok bool
+	if pte, ok = cpu.Bus.Read(pteAddr, 8); !ok {
 		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}
@@ -80,7 +81,7 @@ func loadPTEsv39(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
 	}
 
 	pteAddr = bi.Ts(pte, 10, 44)<<12 | bi.Ts(virtAddr, 21, 9)<<3
-	if !cpu.Bus.Read(pteAddr, &pte, 8) {
+	if pte, ok = cpu.Bus.Read(pteAddr, 8); !ok {
 		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}
@@ -100,7 +101,7 @@ func loadPTEsv39(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
 	}
 
 	pteAddr = bi.Ts(pte, 10, 44)<<12 | bi.Ts(virtAddr, 12, 9)<<3
-	if !cpu.Bus.Read(pteAddr, &pte, 8) {
+	if pte, ok = cpu.Bus.Read(pteAddr, 8); !ok {
 		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
 		return
 	}

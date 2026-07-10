@@ -46,7 +46,7 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		uart  = uart.New(plic, 0x300_0000, 1, in, out)
 	)
 
-	cpu.Bus = state.Bus{ram, clint, plic, uart}
+	cpu.Bus = state.Bus{ram.Access, clint.Access, plic.Access, uart.Access}
 
 	dir := "build/output/"
 

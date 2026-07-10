@@ -13,6 +13,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 	virtAddr := addr &^ (xbytes - 1)
 
 	var physAddr, val int
+	var ok bool
 	if cpu.ICache.Hit(virtAddr) {
 		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
 	} else {
@@ -20,7 +21,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 			return
 		}
 
-		if !cpu.Bus.Read(physAddr, &val, xbytes) {
+		if val, ok = cpu.Bus.Read(physAddr, xbytes); !ok {
 			trap.Enter(cpu, trap.InstructionAccessFault, addr)
 			return
 		}
@@ -46,7 +47,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 		}
 	}
 
-	if !cpu.Bus.Read(physAddr, &val, xbytes) {
+	if val, ok = cpu.Bus.Read(physAddr, xbytes); !ok {
 		trap.Enter(cpu, trap.InstructionAccessFault, virtAddr)
 		return
 	}

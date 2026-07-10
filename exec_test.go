@@ -39,7 +39,7 @@ func runTest(t *testing.T, file string) {
 	ram := ram.New(ramBaseAddr, 64*1024)
 	ram.Load(ramBaseAddr, program)
 
-	cpu.Bus = state.Bus{ram}
+	cpu.Bus = state.Bus{ram.Access}
 
 	instrCounts := make([]int, len(program))
 	trapCount := 0
