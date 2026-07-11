@@ -14,16 +14,6 @@ const (
 	PteD = 7
 )
 
-const (
-	PrivU = 0
-	PrivS = 1
-	PrivM = 3
-
-	AccessExecute = 0
-	AccessRead    = 1
-	AccessWrite   = 3
-)
-
 func Sv(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 	sv39(cpu, virtAddr, physAddr, access)
 }

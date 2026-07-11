@@ -60,16 +60,16 @@ const (
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
 	SatpMODE64 = 60
 
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	MstatusSIE  = 1
 	MstatusMIE  = 3
 	MstatusSPIE = 5
 	MstatusMPIE = 7
 	MstatusSPP  = 8
-	MstatusMPP  = 11
-	MstatusMPRV = 17
-	MstatusSUM  = 18
-	MstatusMXR  = 19
+	MstatusMPP  = 11 // Machine Previous Privilege
+	MstatusMPRV = 17 // Modify PRiVilege
+	MstatusSUM  = 18 // permit Supervisor User Memory access
+	MstatusMXR  = 19 // Make eXecutable Readable
 	MstatusTVM  = 20
 	MstatusTSR  = 22
 
