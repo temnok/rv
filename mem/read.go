@@ -8,7 +8,7 @@ import (
 
 func Read(cpu *state.CPU, virtAddr int, data *int, width int) {
 	var physAddr int
-	if translate.Sv(cpu, virtAddr, &physAddr, state.AccessRead); trap.IsEntered(cpu) {
+	if translate.Sv(cpu, virtAddr, &physAddr, state.AccessLoad); trap.IsEntered(cpu) {
 		return
 	}
 

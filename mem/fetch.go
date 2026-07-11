@@ -17,7 +17,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 	if cpu.ICache.Hit(virtAddr) {
 		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
 	} else {
-		if translate.Sv(cpu, virtAddr, &physAddr, state.AccessExecute); trap.IsEntered(cpu) {
+		if translate.Sv(cpu, virtAddr, &physAddr, state.AccessFetch); trap.IsEntered(cpu) {
 			return
 		}
 
@@ -42,7 +42,7 @@ func Fetch(cpu *state.CPU, addr int, data *int) {
 	physAddr += xbytes
 
 	if pageMask := state.PageSize - 1; virtAddr&pageMask == 0 {
-		if translate.Sv(cpu, virtAddr, &physAddr, state.AccessExecute); trap.IsEntered(cpu) {
+		if translate.Sv(cpu, virtAddr, &physAddr, state.AccessFetch); trap.IsEntered(cpu) {
 			return
 		}
 	}

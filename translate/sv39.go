@@ -6,10 +6,14 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
+const (
+	pteLeafMask = 1<<PteR | 1<<PteX
+)
+
 func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	epriv := cpu.Priv
-	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != state.AccessExecute {
+	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != state.AccessFetch {
 		epriv = cpu.CSR.Mstatus >> csr.MstatusMPP & 3
 	}
 
@@ -28,23 +32,20 @@ func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 
 	pte, shift := cpu.TLB.Lookup(virtAddr)
 	if pte == 0 {
-		if loadPTEsv39(cpu, virtAddr, &pte, &shift); trap.IsEntered(cpu) {
+		if pte, shift = loadPTEsv39(cpu, virtAddr, access); trap.IsEntered(cpu) {
 			return
 		}
 
-		if pte != 0 {
-			cpu.TLB.Append(virtAddr, shift, pte)
-		}
+		cpu.TLB.Append(virtAddr, shift, pte)
 	}
 
 	sum, mxr := cpu.CSR.Mstatus>>csr.MstatusSUM&1, cpu.CSR.Mstatus>>csr.MstatusMXR&1
 
-	if pte == 0 ||
-		epriv == state.PrivU && pte>>PteU&1 == 0 ||
-		epriv == state.PrivS && pte>>PteU&1 == 1 && !(sum == 1 && access != state.AccessExecute) ||
-		access == state.AccessExecute && pte>>PteX&1 == 0 ||
-		access == state.AccessRead && pte>>PteR&1 == 0 && !(mxr == 1 && pte>>PteX&1 == 1) ||
-		access == state.AccessWrite && !(pte>>PteW&1 == 1 && pte>>PteD&1 == 1) ||
+	if epriv == state.PrivU && pte>>PteU&1 == 0 ||
+		epriv == state.PrivS && pte>>PteU&1 == 1 && !(sum == 1 && access != state.AccessFetch) ||
+		access == state.AccessFetch && pte>>PteX&1 == 0 ||
+		access == state.AccessLoad && pte>>PteR&1 == 0 && !(mxr == 1 && pte>>PteX&1 == 1) ||
+		access == state.AccessStore && !(pte>>PteW&1 == 1 && pte>>PteD&1 == 1) ||
 		pte>>PteA&1 == 0 {
 
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
@@ -56,63 +57,38 @@ func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
-func loadPTEsv39(cpu *state.CPU, virtAddr int, targetPTE, shift *int) {
-	*targetPTE = 0
-	var pte int
-
-	pteAddr := cpu.CSR.Satp&^(-1<<44)<<12 | (virtAddr>>30&511)<<3
-
-	var ok bool
-	if pte, ok = cpu.Bus.Read(pteAddr, 8); !ok {
-		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
-		return
+func loadPTEsv39(cpu *state.CPU, virtAddr, access int) (targetPTE, shift int) {
+	pte := loadPTE(cpu, cpu.CSR.Satp, virtAddr, 30, access)
+	if trap.IsEntered(cpu) || pte&pteLeafMask != 0 {
+		return pte, 30
 	}
 
-	isLeaf := pte>>PteR&1 == 1 || pte>>PteX&1 == 1
+	pte = loadPTE(cpu, pte>>10, virtAddr, 21, access)
+	if trap.IsEntered(cpu) || pte&pteLeafMask != 0 {
+		return pte, 21
+	}
+
+	return loadPTE(cpu, pte>>10, virtAddr, 12, access), 12
+}
+
+func loadPTE(cpu *state.CPU, ptNum, virtAddr, shift, access int) int {
+	pteAddr := ptNum&^(-1<<44)<<12 | (virtAddr>>shift&511)<<3
+
+	pte, ok := cpu.Bus.Read(pteAddr, 8)
+	if !ok {
+		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
+		return 0
+	}
+
+	isLeaf := shift == 12 || pte&pteLeafMask != 0
 
 	if pte>>PteV&1 == 0 || // valid bit not set
 		pte>>PteR&1 == 0 && pte>>PteW&1 == 1 || // reserved
-		isLeaf && pte>>10&^(-1<<18) != 0 { // misaligned gigapage
-		return
+		isLeaf && pte>>10&^(-1<<(shift-12)) != 0 { // misaligned page
+
+		trap.Enter(cpu, trap.PageFault+access, virtAddr)
+		return 0
 	}
 
-	if isLeaf {
-		*targetPTE = pte
-		*shift = 30
-		return
-	}
-
-	pteAddr = pte>>10&^(-1<<44)<<12 | (virtAddr>>21&511)<<3
-	if pte, ok = cpu.Bus.Read(pteAddr, 8); !ok {
-		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
-		return
-	}
-
-	isLeaf = pte>>PteR&1 == 1 || pte>>PteX&1 == 1
-
-	if pte>>PteV&1 == 0 || // valid bit not set
-		pte>>PteR&1 == 0 && pte>>PteW&1 == 1 || // reserved
-		isLeaf && pte>>10&^(-1<<9) != 0 { // misaligned megapage
-		return
-	}
-
-	if isLeaf {
-		*targetPTE = pte
-		*shift = 21
-		return
-	}
-
-	pteAddr = pte>>10&^(-1<<44)<<12 | (virtAddr>>12&511)<<3
-	if pte, ok = cpu.Bus.Read(pteAddr, 8); !ok {
-		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
-		return
-	}
-
-	if pte>>PteV&1 == 0 ||
-		pte>>PteR&1 == 0 && !(pte>>PteW&1 == 0 && pte>>PteX&1 == 1) {
-		return
-	}
-
-	*targetPTE = pte
-	*shift = 12
+	return pte
 }

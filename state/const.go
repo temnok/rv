@@ -7,7 +7,7 @@ const (
 	PrivS = 1
 	PrivM = 3
 
-	AccessExecute = 0
-	AccessRead    = 1
-	AccessWrite   = 3
+	AccessFetch = 0
+	AccessLoad  = 1
+	AccessStore = 3
 )
