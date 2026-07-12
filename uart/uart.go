@@ -7,7 +7,6 @@ import (
 
 type UART struct {
 	plic        *plic.PLIC
-	baseAddr    int
 	interruptID int
 
 	input  chan byte
@@ -16,7 +15,7 @@ type UART struct {
 	rx, ip, ie int
 }
 
-func New(plic *plic.PLIC, baseAddr int, interuptID int, r io.Reader, w io.Writer) *UART {
+func New(plic *plic.PLIC, interuptID int, r io.Reader, w io.Writer) *UART {
 	input := make(chan byte)
 
 	go func() {
@@ -31,7 +30,6 @@ func New(plic *plic.PLIC, baseAddr int, interuptID int, r io.Reader, w io.Writer
 
 	return &UART{
 		plic:        plic,
-		baseAddr:    baseAddr,
 		interruptID: interuptID,
 		input:       input,
 		output:      w,
@@ -40,24 +38,24 @@ func New(plic *plic.PLIC, baseAddr int, interuptID int, r io.Reader, w io.Writer
 	}
 }
 
-func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
-	if addr = addr - uart.baseAddr; addr < 0 || addr >= 32 || width != 4 {
-		return false
-	}
+func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
+	addr &= 0xff_ffff
+
+	var val int
 
 	switch addr {
 	case 0x00: // txdata
 		if write {
-			uart.output.Write([]byte{byte(*data)})
+			uart.output.Write([]byte{byte(writeData)})
 			uart.sync()
 		}
 
 	case 0x04: // rxdata
 		if !write {
 			if uart.rx < 0 {
-				*data = 1 << 31
+				val = 1 << 31
 			} else {
-				*data = uart.rx
+				val = uart.rx
 				uart.rx = -1
 
 				uart.sync()
@@ -65,21 +63,19 @@ func (uart *UART) Access(addr int, data *int, width int, write bool) bool {
 		}
 
 	case 0x10: // ie
+		val = uart.ie
+
 		if write {
-			uart.ie = *data
+			uart.ie = writeData
 
 			uart.sync()
-		} else {
-			*data = uart.ie
 		}
 
 	case 0x14: // ip
-		if !write {
-			*data = uart.ip
-		}
+		val = uart.ip
 	}
 
-	return true
+	return val
 }
 
 func (uart *UART) Input() int {

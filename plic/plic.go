@@ -7,53 +7,49 @@ import (
 )
 
 type PLIC struct {
-	cpu      *state.CPU
-	baseAddr int
+	cpu *state.CPU
 
 	pending int
 	enable  int
 	claim   int
 }
 
-func New(cpu *state.CPU, baseAddr int) *PLIC {
+func New(cpu *state.CPU) *PLIC {
 	return &PLIC{
-		cpu:      cpu,
-		baseAddr: baseAddr,
+		cpu: cpu,
 	}
 }
 
-func (plic *PLIC) Access(addr int, data *int, width int, write bool) bool {
-	if addr = addr - plic.baseAddr; addr < 0 || addr >= 0x200004+4 {
-		return false
-	}
+func (plic *PLIC) Access(addr int, width int, write bool, writeData int) int {
+	addr &= 0xff_ffff
+
+	var val int
 
 	switch addr {
 	case 0x1000: // pending
-		if read := !write; read {
-			*data = plic.pending
-		}
+		val = plic.pending
 
 	case 0x2000: // enable
-		if write {
-			plic.enable = *data
+		val = plic.enable
 
+		if write {
+			plic.enable = writeData
 			plic.sync()
-		} else {
-			*data = plic.enable
 		}
 
 	case 0x200004: // claim
+		val = plic.claim
+
 		if write {
-			plic.claim = *data
+			plic.claim = writeData
 		} else {
-			*data = plic.claim
 			plic.pending &^= 1 << plic.claim
 		}
 
 		plic.sync()
 	}
 
-	return true
+	return val
 }
 
 func (plic *PLIC) PendInterrupt(source int, enable bool) {

@@ -40,13 +40,14 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		diskBaseAddr = 0x8800_0000
 
 		cpu   = cp.New(opensbiAddr)
-		ram   = ram.New(ramBaseAddr, 512*1024*1024)
-		clint = clint.New(cpu, 0x100_0000)
-		plic  = plic.New(cpu, 0x200_0000)
-		uart  = uart.New(plic, 0x300_0000, 1, in, out)
+		ram   = ram.New(512 * 1024 * 1024)
+		clint = clint.New(cpu)
+		plic  = plic.New(cpu)
+		uart  = uart.New(plic, 1, in, out)
 	)
 
-	cpu.Bus = state.Bus{ram.Access, clint.Access, plic.Access, uart.Access}
+	cpu.RAM = ram.Access
+	cpu.Devices = []state.Device{nil, clint.Access, plic.Access, uart.Access}
 
 	dir := "build/output/"
 

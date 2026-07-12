@@ -6,16 +6,14 @@ import (
 )
 
 type CLINT struct {
-	cpu      *state.CPU
-	baseAddr int
+	cpu *state.CPU
 
 	msip, mtimecmp int
 }
 
-func New(cpu *state.CPU, baseAddr int) *CLINT {
+func New(cpu *state.CPU) *CLINT {
 	clint := &CLINT{
-		cpu:      cpu,
-		baseAddr: baseAddr,
+		cpu: cpu,
 	}
 
 	cpu.CSR.TimerCallbacks = append(cpu.CSR.TimerCallbacks, clint.sync)
@@ -23,33 +21,32 @@ func New(cpu *state.CPU, baseAddr int) *CLINT {
 	return clint
 }
 
-func (clint *CLINT) Access(addr int, data *int, width int, write bool) bool {
-	if addr -= clint.baseAddr; addr < 0 || addr >= 0x10000 {
-		return false
-	}
+func (clint *CLINT) Access(addr int, width int, write bool, writeData int) int {
+	addr &= 0xff_ffff
 
 	switch addr {
 	case 0x0000: // msip
-		clint.accessReg(&clint.msip, data, write)
+		return clint.accessReg(&clint.msip, write, writeData)
 
 	case 0x4000: // mtimecmp
-		clint.accessReg(&clint.mtimecmp, data, write)
+		return clint.accessReg(&clint.mtimecmp, write, writeData)
 
 	case 0xBFF8: // mtime
-		clint.accessReg(&clint.cpu.CSR.Time, data, write)
+		return clint.accessReg(&clint.cpu.CSR.Time, write, writeData)
 	}
 
-	return true
+	return 0
 }
 
-func (clint *CLINT) accessReg(reg, data *int, write bool) {
-	if write {
-		*reg = *data
+func (clint *CLINT) accessReg(reg *int, write bool, writeData int) int {
+	val := *reg
 
+	if write {
+		*reg = writeData
 		clint.sync()
-	} else {
-		*data = *reg
 	}
+
+	return val
 }
 
 func (clint *CLINT) sync() {

@@ -48,7 +48,7 @@ func atomic(cpu *state.CPU, op Op, read bool, f func(cpu *state.CPU, addr int, v
 
 	var old int
 	if read {
-		if mem.Read(cpu, addr, &old, width); trap.IsEntered(cpu) {
+		if old = mem.Read(cpu, addr, width); trap.IsEntered(cpu) {
 			return
 		}
 	}
@@ -63,7 +63,7 @@ func atomic(cpu *state.CPU, op Op, read bool, f func(cpu *state.CPU, addr int, v
 			val = int(uint32(val))
 		}
 
-		if mem.Write(cpu, addr, val, width); trap.IsEntered(cpu) {
+		if mem.Write(cpu, addr, width, val); trap.IsEntered(cpu) {
 			return
 		}
 	}

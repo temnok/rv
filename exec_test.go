@@ -4,7 +4,6 @@ import (
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/debug"
 	"github.com/temnok/rv/ram"
-	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 	"os"
 	"path/filepath"
@@ -36,10 +35,10 @@ func runTest(t *testing.T, file string) {
 
 	ramBaseAddr := 0x8000_0000
 	cpu := cp.New(ramBaseAddr)
-	ram := ram.New(ramBaseAddr, 64*1024)
+	ram := ram.New(64 * 1024)
 	ram.Load(ramBaseAddr, program)
 
-	cpu.Bus = state.Bus{ram.Access}
+	cpu.RAM = ram.Access
 
 	instrCounts := make([]int, len(program))
 	trapCount := 0

@@ -16,7 +16,7 @@
 
 	memory {
 		device_type = "memory";
-		reg = <0x80000000 0x08000000>;
+		reg = <0x80000000 0x08000000>; // do not change memory base address 0x80000000
 	};
 
 	pmem {

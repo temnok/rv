@@ -16,7 +16,7 @@ func fld(cpu *state.CPU, op Op) {
 
 	imm, rd, rs1, val := imm.I(op.code()), op.rd(), op.rs1(), 0
 
-	if mem.Read(cpu, cpu.X[rs1]+imm, &val, 8); trap.IsEntered(cpu) {
+	if val = mem.Read(cpu, cpu.X[rs1]+imm, 8); trap.IsEntered(cpu) {
 		return
 	}
 

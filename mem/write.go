@@ -6,7 +6,7 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Write(cpu *state.CPU, virtAddr, data, width int) {
+func Write(cpu *state.CPU, virtAddr, width, data int) {
 	var physAddr int
 	if translate.Sv(cpu, virtAddr, &physAddr, state.AccessStore); trap.IsEntered(cpu) {
 		return
@@ -17,7 +17,10 @@ func Write(cpu *state.CPU, virtAddr, data, width int) {
 		return
 	}
 
-	if !cpu.Bus.Write(physAddr, data, width) {
-		trap.Enter(cpu, trap.StoreAMOAccessFault, virtAddr)
+	if device := cpu.DeviceAtAddress(physAddr); device != nil {
+		device(physAddr, width, true, data)
+		return
 	}
+
+	trap.Enter(cpu, trap.StoreAMOAccessFault, virtAddr)
 }

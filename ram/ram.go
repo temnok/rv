@@ -5,19 +5,19 @@ import (
 )
 
 type RAM struct {
-	baseAddr int
-	words    []int
+	words []int
 }
 
-func New(baseAddr int, size int) *RAM {
+const BaseAddr = 0x8000_0000
+
+func New(size int) *RAM {
 	return &RAM{
-		baseAddr: baseAddr,
-		words:    make([]int, size/8),
+		words: make([]int, size/8),
 	}
 }
 
 func (ram *RAM) Load(addr int, program []byte) {
-	addr = (addr - ram.baseAddr) / 8
+	addr = (addr - BaseAddr) / 8
 	words := ram.words[addr : addr+int(len(program)+7)/8]
 
 	clear(words)
@@ -27,39 +27,40 @@ func (ram *RAM) Load(addr int, program []byte) {
 	}
 }
 
-func (ram *RAM) Access(addr int, data *int, width int, write bool) bool {
-	i := (addr - ram.baseAddr) / 8
+func (ram *RAM) Access(addr int, width int, write bool, writeData int) int {
+	i := (addr - BaseAddr) / 8
 	if i < 0 || i >= len(ram.words) {
-		return false
+		return 0
 	}
 
 	if width == 8 {
+		data := ram.words[i]
+
 		if write {
-			ram.words[i] = *data
-		} else {
-			*data = ram.words[i]
+			ram.words[i] = writeData
 		}
 
-		return true
+		return data
 	}
 
-	if shift := (addr & 7) * 8; write {
-		mask := -1 << (width * 8)
-		ram.words[i] = (ram.words[i] &^ (^mask << shift)) | (*data&^mask)<<shift
-	} else {
-		*data = int(ram.words[i] >> shift)
+	shift := (addr & 7) * 8
+	mask := 1<<(width*8) - 1
+	val := ram.words[i]
+
+	if write {
+		ram.words[i] = (val &^ (mask << shift)) | (writeData&mask)<<shift
 	}
 
-	return true
+	return val >> shift & mask
 }
 
 func (ram *RAM) Dump(startAddr, byteCount int) {
-	i0 := (startAddr - ram.baseAddr) / 8
+	i0 := (startAddr - BaseAddr) / 8
 	i1 := i0 + (byteCount+7)/8
 	for i := i0; i < i1; i += 4 {
 		fmt.Printf(
 			"%016x: %016x %016x %016x %016x\r\n",
-			ram.baseAddr+i*8,
+			BaseAddr+i*8,
 			uint(ram.words[i]), uint(ram.words[i+1]),
 			uint(ram.words[i+2]), uint(ram.words[i+3]),
 		)
