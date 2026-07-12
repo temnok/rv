@@ -16,7 +16,7 @@ func New(cpu *state.CPU) *CLINT {
 		cpu: cpu,
 	}
 
-	cpu.CSR.TimerCallbacks = append(cpu.CSR.TimerCallbacks, clint.sync)
+	cpu.CSR.TimerCallbacks = append(cpu.CSR.TimerCallbacks, clint.Propagate)
 
 	return clint
 }
@@ -24,32 +24,33 @@ func New(cpu *state.CPU) *CLINT {
 func (clint *CLINT) Access(addr int, width int, write bool, writeData int) int {
 	addr &= 0xff_ffff
 
+	var reg *int
+
 	switch addr {
 	case 0x0000: // msip
-		return clint.accessReg(&clint.msip, write, writeData)
+		reg = &clint.msip
 
 	case 0x4000: // mtimecmp
-		return clint.accessReg(&clint.mtimecmp, write, writeData)
+		reg = &clint.mtimecmp
 
 	case 0xBFF8: // mtime
-		return clint.accessReg(&clint.cpu.CSR.Time, write, writeData)
+		reg = &clint.cpu.CSR.Time
+
+	default:
+		return 0
 	}
 
-	return 0
-}
-
-func (clint *CLINT) accessReg(reg *int, write bool, writeData int) int {
 	val := *reg
 
 	if write {
 		*reg = writeData
-		clint.sync()
+		clint.Propagate()
 	}
 
 	return val
 }
 
-func (clint *CLINT) sync() {
+func (clint *CLINT) Propagate() {
 	mip := clint.cpu.CSR.Mip
 
 	if clint.msip&1 == 0 {
