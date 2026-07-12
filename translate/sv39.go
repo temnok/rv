@@ -21,11 +21,11 @@ const (
 	leafMask = 1<<pteR | 1<<pteW | 1<<pteX
 )
 
-func Sv(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
-	sv39(cpu, virtAddr, physAddr, access)
+func Sv(cpu *state.CPU, va int, access int) int {
+	return sv39(cpu, va, access)
 }
 
-func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
+func sv39(cpu *state.CPU, virtAddr int, access int) int {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	epriv := cpu.Priv
 	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != state.AccessFetch {
@@ -35,20 +35,19 @@ func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#norm:satp_op_active
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#norm:satp-mode
 	if epriv == state.PrivM || cpu.CSR.Satp == 0 {
-		*physAddr = virtAddr
-		return
+		return virtAddr
 	}
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#addressing-and-memory-protection
 	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
-		return
+		return 0
 	}
 
 	pte, shift := cpu.TLB.Lookup(virtAddr)
 	if pte == 0 {
 		if pte, shift = loadPTEsv39(cpu, virtAddr, access); trap.IsEntered(cpu) {
-			return
+			return 0
 		}
 
 		cpu.TLB.Append(virtAddr, shift, pte)
@@ -64,11 +63,11 @@ func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 		pte>>pteA&1 == 0 {
 
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
-		return
+		return 0
 	}
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#sv39pte
-	*physAddr = pte>>10&^(-1<<44)<<12 | virtAddr&^(-1<<shift)
+	return pte>>10&^(-1<<44)<<12 | virtAddr&^(-1<<shift)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm

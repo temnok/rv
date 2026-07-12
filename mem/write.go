@@ -8,7 +8,7 @@ import (
 
 func Write(cpu *state.CPU, virtAddr, width, data int) {
 	var physAddr int
-	if translate.Sv(cpu, virtAddr, &physAddr, state.AccessStore); trap.IsEntered(cpu) {
+	if physAddr = translate.Sv(cpu, virtAddr, state.AccessStore); trap.IsEntered(cpu) {
 		return
 	}
 

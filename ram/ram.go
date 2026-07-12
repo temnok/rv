@@ -18,9 +18,8 @@ func New(size int) *RAM {
 
 func (ram *RAM) Load(addr int, program []byte) {
 	addr = (addr - BaseAddr) / 8
-	words := ram.words[addr : addr+int(len(program)+7)/8]
+	words := ram.words[addr:]
 
-	clear(words)
 	for i, b := range program {
 		shift := (i & 7) * 8
 		words[i/8] |= int(b) << shift
