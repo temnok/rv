@@ -9,20 +9,43 @@ type tlbEntry struct {
 	vas, pte int
 }
 
-func (tlb *TLB) Flush() {
-	tlb.entries[0].vas = 0
+const (
+	pteG = 5
+)
+
+func (tlb *TLB) Flush(leaveGlobals bool) {
+	if !leaveGlobals {
+		tlb.entries[0].vas = 0
+		return
+	}
+
+	i := 0
+	for _, entry := range tlb.entries {
+		if entry.vas == 0 {
+			break
+		}
+
+		if entry.pte&(1<<pteG) != 0 {
+			tlb.entries[i] = entry
+			i++
+		}
+	}
+
+	if i < len(tlb.entries) {
+		tlb.entries[i].vas = 0
+	}
 }
 
 func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 	tlb.LookupCount++
 
-	for i, node := range tlb.entries {
-		if node.vas == 0 {
+	for i, entry := range tlb.entries {
+		if entry.vas == 0 {
 			break
 		}
 
-		shift := node.vas & 63
-		if node.vas>>shift != virtAddr>>shift {
+		shift := entry.vas & 63
+		if entry.vas>>shift != virtAddr>>shift {
 			continue
 		}
 
@@ -30,8 +53,8 @@ func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 			tlb.entries[j] = tlb.entries[j-1]
 		}
 
-		tlb.entries[0] = node
-		return node.pte, shift
+		tlb.entries[0] = entry
+		return entry.pte, shift
 	}
 
 	tlb.MissCount++

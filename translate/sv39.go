@@ -7,8 +7,23 @@ import (
 )
 
 const (
-	pteLeafMask = 1<<PteR | 1<<PteX
+	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#sv39pte
+	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#translation
+	pteV = 0
+	pteR = 1
+	pteW = 2
+	pteX = 3
+	pteU = 4
+	pteG = 5
+	pteA = 6
+	pteD = 7
+
+	leafMask = 1<<pteR | 1<<pteW | 1<<pteX
 )
+
+func Sv(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
+	sv39(cpu, virtAddr, physAddr, access)
+}
 
 func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
@@ -41,12 +56,12 @@ func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 
 	sum, mxr := cpu.CSR.Mstatus>>csr.MstatusSUM&1, cpu.CSR.Mstatus>>csr.MstatusMXR&1
 
-	if epriv == state.PrivU && pte>>PteU&1 == 0 ||
-		epriv == state.PrivS && pte>>PteU&1 == 1 && !(sum == 1 && access != state.AccessFetch) ||
-		access == state.AccessFetch && pte>>PteX&1 == 0 ||
-		access == state.AccessLoad && pte>>PteR&1 == 0 && !(mxr == 1 && pte>>PteX&1 == 1) ||
-		access == state.AccessStore && !(pte>>PteW&1 == 1 && pte>>PteD&1 == 1) ||
-		pte>>PteA&1 == 0 {
+	if epriv == state.PrivU && pte>>pteU&1 == 0 ||
+		epriv == state.PrivS && pte>>pteU&1 == 1 && !(sum == 1 && access != state.AccessFetch) ||
+		access == state.AccessFetch && pte>>pteX&1 == 0 ||
+		access == state.AccessLoad && pte>>pteR&1 == 0 && !(mxr == 1 && pte>>pteX&1 == 1) ||
+		access == state.AccessStore && !(pte>>pteW&1 == 1 && pte>>pteD&1 == 1) ||
+		pte>>pteA&1 == 0 {
 
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
 		return
@@ -59,12 +74,12 @@ func sv39(cpu *state.CPU, virtAddr int, physAddr *int, access int) {
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
 func loadPTEsv39(cpu *state.CPU, virtAddr, access int) (targetPTE, shift int) {
 	pte := loadPTE(cpu, cpu.CSR.Satp, virtAddr, 30, access)
-	if trap.IsEntered(cpu) || pte&pteLeafMask != 0 {
+	if trap.IsEntered(cpu) || pte&leafMask != 0 {
 		return pte, 30
 	}
 
 	pte = loadPTE(cpu, pte>>10, virtAddr, 21, access)
-	if trap.IsEntered(cpu) || pte&pteLeafMask != 0 {
+	if trap.IsEntered(cpu) || pte&leafMask != 0 {
 		return pte, 21
 	}
 
@@ -80,10 +95,10 @@ func loadPTE(cpu *state.CPU, ptNum, virtAddr, shift, access int) int {
 		return 0
 	}
 
-	isLeaf := shift == 12 || pte&pteLeafMask != 0
+	isLeaf := shift == 12 || pte&leafMask != 0
 
-	if pte>>PteV&1 == 0 || // valid bit not set
-		pte>>PteR&1 == 0 && pte>>PteW&1 == 1 || // reserved
+	if pte>>pteV&1 == 0 || // valid bit not set
+		pte>>pteR&1 == 0 && pte>>pteW&1 == 1 || // reserved
 		isLeaf && pte>>10&^(-1<<(shift-12)) != 0 { // misaligned page
 
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
