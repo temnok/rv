@@ -194,7 +194,9 @@ if $BUILD_BUSYBOX || $BUILD_RAMDISK; then
   mkdir -p build/ramdisk && cp -R input/ramdisk build/ramdisk/fs
 
   cd build/ramdisk/fs
-  mkdir -p bin dev home/user proc root run sbin sys tmp usr/bin usr/local usr/sbin var/log var/run
+  mkdir -p bin dev home/user proc root run sbin sys usr/bin usr/local usr/sbin var/log var/run
+  mkdir -p -m 777 tmp
+
   cp ~/build/busybox/busybox bin/
 
   tar -C usr/local -xf ~/cache/download/go-${VERSION_GO}.tar.gz
