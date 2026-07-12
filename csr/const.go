@@ -73,6 +73,8 @@ const (
 	MstatusTVM  = 20
 	MstatusTSR  = 22
 
+	McauseI = 63
+
 	MipSSI = 1
 	MipMSI = 3
 	MipSTI = 5

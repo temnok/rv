@@ -1,7 +1,6 @@
 package extc
 
 import (
-	"github.com/temnok/rv/arch"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
 )
@@ -71,10 +70,10 @@ func Decompress(opcode int) int {
 		case 4:
 			switch opcode >> 10 & 3 {
 			case 0: // srli
-				return encode.R(0, imm.CI(opcode)&arch.XMask, ra8, 5, ra8, 4)
+				return encode.R(0, imm.CI(opcode)&63, ra8, 5, ra8, 4)
 
 			case 1: // srai
-				return encode.R(32, imm.CI(opcode)&arch.XMask, ra8, 5, ra8, 4)
+				return encode.R(32, imm.CI(opcode)&63, ra8, 5, ra8, 4)
 
 			case 2: // andi
 				return encode.I(imm.CI(opcode), ra8, 7, ra8, 4)
@@ -114,7 +113,7 @@ func Decompress(opcode int) int {
 	case 2: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#rvc-instr-table2
 		switch f3 {
 		case 0: // c.slli
-			return encode.R(0, imm.CI(opcode)&arch.XMask, ra, 1, ra, 4) // slli
+			return encode.R(0, imm.CI(opcode)&63, ra, 1, ra, 4) // slli
 
 		case 1: // c.fldsp
 			return encode.I(imm.CI3(opcode), 2, 3, ra, 1) // fld

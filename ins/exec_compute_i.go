@@ -1,7 +1,6 @@
 package ins
 
 import (
-	"github.com/temnok/rv/arch"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
@@ -33,7 +32,7 @@ func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
 func slli_illegal(cpu *state.CPU, op Op) {
 	ins := illegal
 
-	if imm.I(op.code())&^arch.XMask == 0 {
+	if imm.I(op.code())&^63 == 0 {
 		ins = slli
 	}
 
@@ -43,7 +42,7 @@ func slli_illegal(cpu *state.CPU, op Op) {
 func srli_srai(cpu *state.CPU, op Op) {
 	ins := illegal
 
-	switch imm.I(op.code()) &^ arch.XMask {
+	switch imm.I(op.code()) &^ 63 {
 	case 0:
 		ins = srli
 	case 1 << 10:
