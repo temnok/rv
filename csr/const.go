@@ -16,6 +16,7 @@ const (
 	Scause   = 0x142
 	Stval    = 0x143
 	Sip      = 0x144
+	Stimecmp = 0x14D
 
 	Satp = 0x180
 
@@ -26,6 +27,7 @@ const (
 	Mie        = 0x304
 	Mtvec      = 0x305
 	Mcounteren = 0x306
+	Menvcfg    = 0x30A
 
 	Mscratch = 0x340
 	Mepc     = 0x341
@@ -49,6 +51,11 @@ const (
 	FflagsDZ = 3
 	FflagsNV = 4
 	FcsrRM   = 5
+
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#mcounteren
+	McounterenCY = 0
+	McounterenTM = 1
+	McounterenIR = 2
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	MstatusFS   = 13
@@ -80,6 +87,9 @@ const (
 	MipSTI = 5
 	MipMTI = 7
 	MipSEI = 9
+
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
+	MenvcfgSTCE = 63
 
 	FSoff     = 0b_00
 	FSinitial = 0b_01

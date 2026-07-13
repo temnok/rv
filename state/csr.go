@@ -11,6 +11,7 @@ type CSR struct {
 	Sepc       int
 	Sip        int
 	Sscratch   int
+	Stimecmp   int
 	Stval      int
 	Stvec      int
 
@@ -18,6 +19,7 @@ type CSR struct {
 	Mcause     int
 	Mcounteren int
 	Medeleg    int
+	Menvcfg    int
 	Mepc       int
 	Mhartid    int
 	Mideleg    int
