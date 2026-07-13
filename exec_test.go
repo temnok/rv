@@ -68,7 +68,7 @@ func runTest(t *testing.T, file string) {
 			}
 		}
 
-		if cpu.CSR.Cycle == 100_000 {
+		if cpu.CSR.Mcycle == 100_000 {
 			var addresses []uint
 			for i, c := range instrCounts {
 				if c > 10_000 {
@@ -92,7 +92,7 @@ func runTest(t *testing.T, file string) {
 				cause == trap.EnvironmentCallFromMMode {
 
 				if cpu.X[3] == 1 && cpu.X[10] == 0 {
-					//fmt.Printf("cycles: %v\n", cpu.CSR.Cycle)
+					//fmt.Printf("cycles: %v\n", cpu.CSR.Mcycle)
 				} else {
 					debug.Dump(cpu)
 
@@ -101,7 +101,7 @@ func runTest(t *testing.T, file string) {
 						"mstatus=%08x, xepc=%08x\n"+
 						"xcause=%08x, xtval=%08x\n"+
 						"a0=%08x\n",
-						cpu.CSR.Cycle, lastPCs, lastTraps,
+						cpu.CSR.Mcycle, lastPCs, lastTraps,
 						cpu.Update.TrapPriv, uint(cpu.Update.TrapPC),
 						uint(cpu.Update.TrapMstatus), uint(cpu.Update.TrapXepc),
 						uint(cpu.Update.TrapXcause), uint(cpu.Update.TrapXtval),

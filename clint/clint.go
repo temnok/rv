@@ -34,7 +34,7 @@ func (clint *CLINT) Access(addr int, width int, write bool, writeData int) int {
 		reg = &clint.mtimecmp
 
 	case 0xBFF8: // mtime
-		reg = &clint.cpu.CSR.Time
+		reg = &clint.cpu.CSR.Mtime
 
 	default:
 		return 0
@@ -59,7 +59,7 @@ func (clint *CLINT) Propagate() {
 		mip |= 1 << csr.MipMSI
 	}
 
-	if uint(clint.cpu.CSR.Time) < uint(clint.mtimecmp) {
+	if uint(clint.cpu.CSR.Mtime) < uint(clint.mtimecmp) {
 		mip &^= 1 << csr.MipMTI
 	} else {
 		mip |= 1 << csr.MipMTI

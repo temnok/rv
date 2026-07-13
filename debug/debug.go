@@ -57,7 +57,7 @@ func Dump(cpu *state.CPU) {
 		fmt.Printf("%v\r\n", disassemble(isa, entry))
 	}
 
-	fmt.Printf("\r\nCycle: %v, Trap: %v\r\n", cpu.CSR.Cycle, debugTrapCount)
+	fmt.Printf("\r\nCycle: %v, Trap: %v\r\n", cpu.CSR.Mcycle, debugTrapCount)
 
 	up := &cpu.Update
 	//if cpu.Update.TrapEnter {

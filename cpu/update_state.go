@@ -6,8 +6,6 @@ import (
 )
 
 func UpdateState(cpu *state.CPU) {
-	updateTimers(cpu)
-
 	up := &cpu.Update
 
 	if up.TrapEnter || up.TrapExit {
@@ -39,8 +37,10 @@ func UpdateState(cpu *state.CPU) {
 		up.XReg = -1
 	}
 
+	creg := up.CReg
+
 	sd := csr.MstatusSD64
-	if up.FReg >= 0 || up.CReg == csr.Fflags || up.CReg == csr.Frm || up.CReg == csr.Fcsr {
+	if up.FReg >= 0 || creg == csr.Fflags || creg == csr.Frm || creg == csr.Fcsr {
 		cpu.CSR.Mstatus &^= 0b_11 << csr.MstatusFS
 		cpu.CSR.Mstatus |= csr.FSdirty << csr.MstatusFS
 		cpu.CSR.Mstatus |= 1 << sd
@@ -56,7 +56,7 @@ func UpdateState(cpu *state.CPU) {
 		up.Fflags = 0
 	}
 
-	if up.CReg >= 0 {
+	if creg >= 0 {
 		*up.CRegPtr = up.CVal
 		up.CReg = -1
 	}
@@ -64,18 +64,31 @@ func UpdateState(cpu *state.CPU) {
 	cpu.Reserved = up.Reserved
 	cpu.ReservedAddr = up.ReservedAddr
 	cpu.ICache = cpu.Update.ICache
+
+	updateCounters(cpu, creg)
 }
 
-func updateTimers(cpu *state.CPU) {
-	cpu.CSR.Cycle++
+func updateCounters(cpu *state.CPU, creg int) {
+	//if cpu.CSR.Mcountinhibit&(1<<csr.McountinhibitCY) == 0 {
+	cpu.CSR.Mcycle++
 
-	if cpu.CSR.Cycle%20_000 == 0 {
-		cpu.CSR.Time++
+	//if cpu.CSR.Mcountinhibit&(1<<csr.McountinhibitIR) == 0 {
+	cpu.CSR.Minstret++
+
+	checkStimecmp := creg == csr.Stimecmp
+
+	if cpu.CSR.Mcycle%20_000 == 0 {
+		cpu.CSR.Mtime++
+
 		for _, c := range cpu.CSR.TimerCallbacks {
 			c()
 		}
 
-		if uint(cpu.CSR.Time) >= uint(cpu.CSR.Stimecmp) {
+		checkStimecmp = true
+	}
+
+	if checkStimecmp {
+		if uint(cpu.CSR.Mtime) >= uint(cpu.CSR.Stimecmp) {
 			cpu.CSR.Mip |= 1 << csr.MipSTI
 		} else {
 			cpu.CSR.Mip &^= 1 << csr.MipSTI

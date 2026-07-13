@@ -17,7 +17,10 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 	switch i {
 	case Cycle:
 		if csr.Mcounteren>>McounterenCY&1 == 1 || cpu.Priv == state.PrivM {
-			reg = &csr.Cycle
+			reg = &csr.Mcycle
+		}
+		if write {
+			mask = 0
 		}
 
 	case Fcsr: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#fcsr
@@ -35,7 +38,10 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 
 	case Instret: // https://riscv.github.io/riscv-isa-manual/snapshot/unprivileged/#_zicntr_extension_for_base_counters_and_timers
 		if csr.Mcounteren>>McounterenIR&1 == 1 || cpu.Priv == state.PrivM {
-			reg = &csr.Cycle
+			reg = &csr.Minstret
+		}
+		if write {
+			mask = 0
 		}
 
 	case Marchid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_architecture_id_marchid_register
@@ -49,6 +55,9 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 
 	case Mcountinhibit: // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-12-machine-counter-inhibit-mcountinhibit-register
 		reg = &csr.Mcountinhibit
+
+	case Mcycle:
+		reg = &csr.Mcycle
 
 	case Medeleg: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_delegation_medeleg_and_mideleg_registers
 		reg = &csr.Medeleg
@@ -71,6 +80,9 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 
 	case Mimpid: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_implementation_id_mimpid_register
 		reg = &csr.Mimpid
+
+	case Minstret:
+		reg = &csr.Minstret
 
 	case Mip: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_interrupt_mip_and_mie_registers
 		reg = &csr.Mip
@@ -153,7 +165,10 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 
 	case Time: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_timer_mtime_and_mtimecmp_registers
 		if csr.Mcounteren>>McounterenTM&1 == 1 || cpu.Priv == state.PrivM {
-			reg = &csr.Time
+			reg = &csr.Mtime
+		}
+		if write {
+			mask = 0
 		}
 	}
 

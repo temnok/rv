@@ -10,15 +10,13 @@ const (
 	Sie        = 0x104
 	Stvec      = 0x105
 	Scounteren = 0x106
-
-	Sscratch = 0x140
-	Sepc     = 0x141
-	Scause   = 0x142
-	Stval    = 0x143
-	Sip      = 0x144
-	Stimecmp = 0x14D
-
-	Satp = 0x180
+	Sscratch   = 0x140
+	Sepc       = 0x141
+	Scause     = 0x142
+	Stval      = 0x143
+	Sip        = 0x144
+	Stimecmp   = 0x14D
+	Satp       = 0x180
 
 	Mstatus       = 0x300
 	Misa          = 0x301
@@ -29,12 +27,13 @@ const (
 	Mcounteren    = 0x306
 	Menvcfg       = 0x30A
 	Mcountinhibit = 0x320
-
-	Mscratch = 0x340
-	Mepc     = 0x341
-	Mcause   = 0x342
-	Mtval    = 0x343
-	Mip      = 0x344
+	Mscratch      = 0x340
+	Mepc          = 0x341
+	Mcause        = 0x342
+	Mtval         = 0x343
+	Mip           = 0x344
+	Mcycle        = 0xB00
+	Minstret      = 0xB02
 
 	Cycle   = 0xC00
 	Time    = 0xC01
