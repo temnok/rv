@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func updateState(cpu *state.CPU) {
+func UpdateState(cpu *state.CPU) {
 	updateTimers(cpu)
 
 	up := &cpu.Update
@@ -69,10 +69,16 @@ func updateState(cpu *state.CPU) {
 func updateTimers(cpu *state.CPU) {
 	cpu.CSR.Cycle++
 
-	if cpu.CSR.Cycle%10_000 == 0 {
+	if cpu.CSR.Cycle%20_000 == 0 {
 		cpu.CSR.Time++
 		for _, c := range cpu.CSR.TimerCallbacks {
 			c()
+		}
+
+		if uint(cpu.CSR.Time) >= uint(cpu.CSR.Stimecmp) {
+			cpu.CSR.Mip |= 1 << csr.MipSTI
+		} else {
+			cpu.CSR.Mip &^= 1 << csr.MipSTI
 		}
 	}
 }

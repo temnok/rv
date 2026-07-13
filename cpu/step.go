@@ -8,14 +8,14 @@ import (
 )
 
 func Step(cpu *state.CPU) int {
-	opcode := fetchAndExec(cpu)
+	opcode := FetchAndExec(cpu)
 
-	updateState(cpu)
+	UpdateState(cpu)
 
 	return opcode
 }
 
-func fetchAndExec(cpu *state.CPU) int {
+func FetchAndExec(cpu *state.CPU) int {
 	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
 		return -1
 	}
@@ -25,9 +25,7 @@ func fetchAndExec(cpu *state.CPU) int {
 		return -1
 	}
 
-	if ins.Exec(cpu, opcode); trap.IsEntered(cpu) {
-		return -1
-	}
+	ins.Exec(cpu, opcode)
 
 	return opcode
 }

@@ -44,15 +44,18 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 	case Mcause: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#mcause
 		reg = &csr.Mcause
 
-	case Mcounteren:
+	case Mcounteren: // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#mcounteren
 		reg = &csr.Mcounteren
+
+	case Mcountinhibit: // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-12-machine-counter-inhibit-mcountinhibit-register
+		reg = &csr.Mcountinhibit
 
 	case Medeleg: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_trap_delegation_medeleg_and_mideleg_registers
 		reg = &csr.Medeleg
 
-	//case Menvcfg: // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
-	//	reg = &csr.Menvcfg
-	//	mask = -1 << 63
+	case Menvcfg: // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
+		reg = &csr.Menvcfg
+		mask = -1 << MenvcfgSTCE
 
 	case Mepc: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_exception_program_counter_mepc_register
 		reg = &csr.Mepc
@@ -107,9 +110,6 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 	case Scause: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#scause
 		reg = &csr.Scause
 
-	//case Stimecmp: // https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#stimecmp
-	//	reg = &csr.Stimecmp
-
 	case Scounteren:
 		reg = &csr.Scounteren
 
@@ -136,6 +136,13 @@ func addr(cpu *state.CPU, i int, write bool) (reg *int, mask, shift int) {
 		mask = 1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP
 		if !write {
 			mask |= 1<<MstatusSPIE | 3<<MstatusUXL
+		}
+
+	case Stimecmp: // https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#stimecmp
+		if csr.Mcounteren>>McounterenTM&1 == 1 && csr.Menvcfg>>MenvcfgSTCE&1 == 1 ||
+			cpu.Priv == state.PrivM {
+
+			reg = &csr.Stimecmp
 		}
 
 	case Stval: // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_supervisor_trap_value_stval_register

@@ -49,6 +49,7 @@
 			status = "okay";
 			compatible = "riscv";
 			riscv,isa = "rv64imac";
+			riscv,isa-extensions = "rv64imafdc", "sstc";
 			clock-frequency = <0>;
 
 			intc: interrupt-controller {

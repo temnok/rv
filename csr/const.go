@@ -20,14 +20,15 @@ const (
 
 	Satp = 0x180
 
-	Mstatus    = 0x300
-	Misa       = 0x301
-	Medeleg    = 0x302
-	Mideleg    = 0x303
-	Mie        = 0x304
-	Mtvec      = 0x305
-	Mcounteren = 0x306
-	Menvcfg    = 0x30A
+	Mstatus       = 0x300
+	Misa          = 0x301
+	Medeleg       = 0x302
+	Mideleg       = 0x303
+	Mie           = 0x304
+	Mtvec         = 0x305
+	Mcounteren    = 0x306
+	Menvcfg       = 0x30A
+	Mcountinhibit = 0x320
 
 	Mscratch = 0x340
 	Mepc     = 0x341
@@ -56,6 +57,10 @@ const (
 	McounterenCY = 0
 	McounterenTM = 1
 	McounterenIR = 2
+
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-12-machine-counter-inhibit-mcountinhibit-register
+	McountinhibitCY = 0
+	McountinhibitIR = 2
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
 	MstatusFS   = 13

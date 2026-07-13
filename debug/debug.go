@@ -18,7 +18,7 @@ var (
 func Step(cpu *state.CPU) bool {
 	pc := cpu.PC
 
-	opcode := cp.Step(cpu)
+	opcode := cp.FetchAndExec(cpu)
 
 	entry := []int{pc, opcode}
 
@@ -37,10 +37,15 @@ func Step(cpu *state.CPU) bool {
 		debugTrace = debugTrace[:n]
 	}
 
-	//if trap.IsEntered(cpu.CPU) {
-	//	Dump(cpu)
+	//if trap.IsEntered(cpu) && cpu.Update.TrapXcause == trap.IllegalIstruction {
 	//	return false
 	//}
+
+	if uint(cpu.PC) == 0xffffffff80217efe {
+		return false
+	}
+
+	cp.UpdateState(cpu)
 
 	return true
 }
@@ -62,6 +67,8 @@ func Dump(cpu *state.CPU) {
 		uint(up.TrapXepc), uint(up.TrapXcause), uint(up.TrapXtval))
 	fmt.Printf("mtvec:%x, stvec:%x\r\n",
 		uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
+	fmt.Printf("mcounteren:%x, menvcfg:%x\r\n",
+		uint(cpu.CSR.Mcounteren), uint(cpu.CSR.Menvcfg))
 	//}
 
 	//for i := range 16 {

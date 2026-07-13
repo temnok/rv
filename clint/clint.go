@@ -60,9 +60,9 @@ func (clint *CLINT) Propagate() {
 	}
 
 	if uint(clint.cpu.CSR.Time) < uint(clint.mtimecmp) {
-		mip &^= 1<<csr.MipMTI | 1<<csr.MipSTI
+		mip &^= 1 << csr.MipMTI
 	} else {
-		mip |= 1<<csr.MipMTI | 1<<csr.MipSTI
+		mip |= 1 << csr.MipMTI
 	}
 
 	clint.cpu.CSR.Mip = mip

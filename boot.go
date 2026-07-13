@@ -66,7 +66,10 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 
 	for step := 0; uart.Input() != 'D'-'@'; step++ {
 		cp.Step(cpu)
-		//debug.Step(cpu)
+
+		//if !debug.Step(cpu) {
+		//	break
+		//}
 
 		if timeout != 0 && step > timeout {
 			break
@@ -74,6 +77,7 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	}
 
 	//debug.Dump(cpu)
+
 	return cpu
 }
 
