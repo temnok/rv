@@ -11,10 +11,12 @@ func Update(cpu *state.CPU, reg, val int) {
 		csr.Fcsr = val & 0xFF
 
 	case Fflags:
-		csr.Fcsr = csr.Fcsr&^0x1F | val&0x1F
+		mask := 0x1F
+		csr.Fcsr = csr.Fcsr&^mask | val&mask
 
 	case Frm:
-		csr.Fcsr = csr.Fcsr&^0xE0 | val&7<<5
+		mask := 0xE0
+		csr.Fcsr = csr.Fcsr&^mask | (val<<5)&mask
 
 	case Mcause:
 		csr.Mcause = val
@@ -66,7 +68,7 @@ func Update(cpu *state.CPU, reg, val int) {
 		csr.Sepc = val
 
 	case Sie:
-		mask := 1<<MipSEI | 1<<MipSTI
+		mask := 1<<MipSSI | 1<<MipSEI | 1<<MipSTI
 		csr.Mie = csr.Mie&^mask | val&mask
 
 	case Sscratch:
