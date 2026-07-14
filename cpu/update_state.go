@@ -57,7 +57,7 @@ func UpdateState(cpu *state.CPU) {
 	}
 
 	if creg >= 0 {
-		*up.CRegPtr = up.CVal
+		csr.Update(cpu, up.CReg, up.CVal)
 		up.CReg = -1
 	}
 
@@ -69,25 +69,11 @@ func UpdateState(cpu *state.CPU) {
 }
 
 func updateCounters(cpu *state.CPU, creg int) {
-	//if cpu.CSR.Mcountinhibit&(1<<csr.McountinhibitCY) == 0 {
 	cpu.CSR.Mcycle++
 
-	//if cpu.CSR.Mcountinhibit&(1<<csr.McountinhibitIR) == 0 {
-	cpu.CSR.Minstret++
-
-	checkStimecmp := creg == csr.Stimecmp
-
-	if cpu.CSR.Mcycle%20_000 == 0 {
-		cpu.CSR.Mtime++
-
-		checkStimecmp = true
-	}
-
-	if checkStimecmp {
-		if uint(cpu.CSR.Mtime) >= uint(cpu.CSR.Stimecmp) {
-			cpu.CSR.Mip |= 1 << csr.MipSTI
-		} else {
-			cpu.CSR.Mip &^= 1 << csr.MipSTI
-		}
+	if cpu.CSR.Mtime() >= uint(cpu.CSR.Stimecmp) {
+		cpu.CSR.Mip |= 1 << csr.MipSTI
+	} else {
+		cpu.CSR.Mip &^= 1 << csr.MipSTI
 	}
 }

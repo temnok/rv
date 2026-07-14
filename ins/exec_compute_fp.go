@@ -105,7 +105,7 @@ var rmToC = []C.int{
 func execComputeFP(cpu *state.CPU, op Op) {
 	f7, f5, f3, rd, rs1, rs2 := op.f7(), op.f5(), op.f3(), op.rd(), op.rs1(), op.rs2()
 
-	if f7&1 == 1 && !csr.ExtD(cpu) || csr.FpDisabled(cpu) {
+	if csr.FpDisabled(cpu) {
 		illegal(cpu, op)
 		return
 	}

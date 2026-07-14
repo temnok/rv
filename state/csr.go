@@ -1,29 +1,21 @@
 package state
 
 type CSR struct {
-	Fcsr int
+	Fcsr int // https://docs.riscv.org/reference/isa/v20260120/unpriv/f-st-ext.html#fcsr
 
-	Marchid       int
-	Mcause        int
-	Mcounteren    int
-	Mcountinhibit int
-	Mcycle        int
-	Medeleg       int
-	Menvcfg       int
-	Mepc          int
-	Mhartid       int
-	Mideleg       int
-	Mie           int
-	Mimpid        int
-	Minstret      int
-	Mip           int
-	Misa          int
-	Mscratch      int
-	Mstatus       int
-	Mtime         int
-	Mtval         int
-	Mtvec         int
-	Mvendorid     int
+	Mcause     int
+	Mcounteren int
+	Mcycle     int
+	Medeleg    int
+	Menvcfg    int // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
+	Mepc       int
+	Mideleg    int
+	Mie        int
+	Mip        int
+	Mscratch   int
+	Mstatus    int
+	Mtval      int
+	Mtvec      int
 
 	Satp       int
 	Scause     int
@@ -34,4 +26,8 @@ type CSR struct {
 	Stimecmp   int
 	Stval      int
 	Stvec      int
+}
+
+func (csr *CSR) Mtime() uint {
+	return uint(csr.Mcycle) / 20_000
 }

@@ -17,7 +17,6 @@ type UpdatedState struct {
 	Fflags     int
 
 	CReg, CVal int
-	CRegPtr    *int
 
 	Reserved     bool
 	ReservedAddr int

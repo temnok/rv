@@ -1,9 +1,15 @@
 package cpu
 
 import (
-	"github.com/temnok/rv/arch"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
+)
+
+const (
+	Misa = -1<<63 |
+		1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+		1<<('f'-'a') | ('d' - 'a') |
+		1<<('u'-'a') | 1<<('s'-'a')
 )
 
 func New(startAddr int) *state.CPU {
@@ -16,11 +22,6 @@ func New(startAddr int) *state.CPU {
 			Priv: state.PrivM,
 
 			CSR: state.CSR{
-				Misa: xl<<(arch.XLen-2) |
-					1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-					1<<('f'-'a') | ('d' - 'a') |
-					1<<('u'-'a') | 1<<('s'-'a'),
-
 				Mstatus: xl<<csr.MstatusSXL | xl<<csr.MstatusUXL,
 			},
 		},

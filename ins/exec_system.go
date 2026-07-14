@@ -60,7 +60,8 @@ func csrAccess(cpu *state.CPU, op Op, enforceRead, enforceWrite bool, f func(set
 	}
 
 	if op.rd() != 0 || enforceRead {
-		if !csr.Read(cpu, reg, &old) {
+		var ok bool
+		if old, ok = csr.Read(cpu, reg); !ok {
 			illegal(cpu, op)
 			return
 		}

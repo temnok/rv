@@ -4,16 +4,16 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func Write(cpu *state.CPU, i, val int) bool {
-	reg, mask, shift := addr(cpu, i, true)
-
-	if reg == nil {
+func Write(cpu *state.CPU, reg, val int) bool {
+	if reg>>10&3 == 3 {
 		return false
 	}
 
-	cpu.Update.CRegPtr = reg
-	cpu.Update.CReg = i
-	cpu.Update.CVal = *reg&^mask | (val<<shift)&mask
+	if _, ok := Read(cpu, reg); ok {
+		cpu.Update.CReg = reg
+		cpu.Update.CVal = val
+		return true
+	}
 
-	return true
+	return false
 }
