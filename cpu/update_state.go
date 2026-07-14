@@ -71,7 +71,7 @@ func UpdateState(cpu *state.CPU) {
 func updateCounters(cpu *state.CPU, creg int) {
 	cpu.CSR.Mcycle++
 
-	if cpu.CSR.Mtime() >= uint(cpu.CSR.Stimecmp) {
+	if uint(cpu.CSR.Mtime()) >= uint(cpu.CSR.Stimecmp) {
 		cpu.CSR.Mip |= 1 << csr.MipSTI
 	} else {
 		cpu.CSR.Mip &^= 1 << csr.MipSTI

@@ -28,6 +28,6 @@ type CSR struct {
 	Stvec      int
 }
 
-func (csr *CSR) Mtime() uint {
-	return uint(csr.Mcycle) / 20_000
+func (csr *CSR) Mtime() int {
+	return csr.Mcycle / 20_000
 }
