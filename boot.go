@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/binary"
-	"github.com/temnok/rv/clint"
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/isa"
 	"github.com/temnok/rv/plic"
@@ -39,15 +38,14 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		dynInfoAddr  = kernelAddr - 0x40
 		diskBaseAddr = 0x8800_0000
 
-		cpu   = cp.New(opensbiAddr)
-		ram   = ram.New(512 * 1024 * 1024)
-		clint = clint.New(cpu)
-		plic  = plic.New(cpu)
-		uart  = uart.New(plic, 1, in, out)
+		cpu  = cp.New(opensbiAddr)
+		ram  = ram.New(512 * 1024 * 1024)
+		plic = plic.New(cpu)
+		uart = uart.New(plic, 1, in, out)
 	)
 
 	cpu.RAM = ram.Access
-	cpu.Devices = []state.Device{nil, clint.Access, plic.Access, uart.Access}
+	cpu.Devices = []state.Device{2: plic.Access, 3: uart.Access}
 
 	dir := "build/output/"
 

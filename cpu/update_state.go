@@ -80,10 +80,6 @@ func updateCounters(cpu *state.CPU, creg int) {
 	if cpu.CSR.Mcycle%20_000 == 0 {
 		cpu.CSR.Mtime++
 
-		for _, c := range cpu.CSR.TimerCallbacks {
-			c()
-		}
-
 		checkStimecmp = true
 	}
 

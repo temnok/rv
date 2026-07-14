@@ -34,6 +34,4 @@ type CSR struct {
 	Stimecmp   int
 	Stval      int
 	Stvec      int
-
-	TimerCallbacks []func()
 }
