@@ -10,6 +10,4 @@ type StaticState struct {
 
 	Reserved     bool
 	ReservedAddr int
-
-	ICache Cache
 }

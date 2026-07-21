@@ -8,7 +8,6 @@ import (
 
 func sfence_vma(cpu *state.CPU, op Op) {
 	cpu.TLB.Flush(op.rs2() != 0)
-	cpu.Update.ICache.Clear()
 
 	if cpu.Priv == state.PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTVM) == 1 {
 		illegal(cpu, op)

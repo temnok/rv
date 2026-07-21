@@ -13,22 +13,15 @@ func Fetch(cpu *state.CPU, addr int) int {
 	virtAddr := addr &^ (xbytes - 1)
 
 	var physAddr, val int
-	if cpu.ICache.Hit(virtAddr) {
-		physAddr, val = cpu.ICache.PhysAddr, cpu.ICache.Value
-	} else {
-		if physAddr = translate.Sv(cpu, virtAddr, state.AccessFetch); trap.IsEntered(cpu) {
-			return 0
-		}
-
-		val = cpu.RAM(physAddr, xbytes, false, 0)
+	if physAddr = translate.Sv(cpu, virtAddr, state.AccessFetch); trap.IsEntered(cpu) {
+		return 0
 	}
 
+	val = cpu.RAM(physAddr, xbytes, false, 0)
 	lo := val >> (shift * 8)
 	isCompressedInstruction := lo&3 != 3
 
 	if fullyLoaded := isCompressedInstruction || shift+4 <= xbytes; fullyLoaded {
-		cpu.Update.ICache = state.Cache{VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
-
 		return lo
 	}
 
@@ -42,8 +35,6 @@ func Fetch(cpu *state.CPU, addr int) int {
 	}
 
 	val = cpu.RAM(physAddr, xbytes, false, 0)
-
-	cpu.Update.ICache = state.Cache{VirtAddr: virtAddr, PhysAddr: physAddr, Value: val}
 
 	return (val&0xffff)<<16 | lo&0xffff
 }

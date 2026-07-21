@@ -39,10 +39,10 @@ func sv39(cpu *state.CPU, virtAddr int, access int) int {
 	}
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#addressing-and-memory-protection
-	if upper := virtAddr >> 38; upper != 0 && upper != -1 {
-		trap.Enter(cpu, trap.PageFault+access, virtAddr)
-		return 0
-	}
+	//if upper := virtAddr >> 38; upper != 0 && upper != -1 {
+	//	trap.Enter(cpu, trap.PageFault+access, virtAddr)
+	//	return 0
+	//}
 
 	pte, shift := cpu.TLB.Lookup(virtAddr)
 	if pte == 0 {

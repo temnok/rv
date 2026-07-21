@@ -63,7 +63,6 @@ func UpdateState(cpu *state.CPU) {
 
 	cpu.Reserved = up.Reserved
 	cpu.ReservedAddr = up.ReservedAddr
-	cpu.ICache = cpu.Update.ICache
 
 	updateCounters(cpu, creg)
 }
