@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-BUILD_BUSYBOX=false
+BUILD_BUSYBOX=true
 BUILD_DEVTREE=true
-BUILD_KERNEL=false
-BUILD_OPENSBI=false
-BUILD_RAMDISK=false
+BUILD_KERNEL=true
+BUILD_OPENSBI=true
+BUILD_RAMDISK=true
 
 SCRIPT_START=$(date +%s)
 BM_START=${SCRIPT_START}
@@ -38,9 +38,9 @@ rm -rf build output && mkdir -p build output cache/{download,cc}
 echo -n "Downloading sources... "
 
 VERSION_BUSYBOX=1.36.1
-VERSION_KERNEL=7.1.3
+VERSION_KERNEL=7.1.4
 VERSION_OPENSBI=1.8.1
-VERSION_GO=1.26.4
+VERSION_GO=1.26.5
 
 cd cache/download
 
