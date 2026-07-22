@@ -19,10 +19,9 @@ type UpdatedState struct {
 	Priv        int
 	Reservation int
 
-	TrapEnter bool
-	Mstatus   int
-	Cause     int
-	Tval      int
+	Mstatus int
+	Cause   int
+	Tval    int
 
 	PC         int
 	Xreg, Xval int

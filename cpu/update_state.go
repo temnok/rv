@@ -64,19 +64,11 @@ func UpdateState(cpu *state.CPU) {
 
 	up.Targets = 0
 
-	if up.TrapEnter {
-		up.TrapEnter = false
-		return
-	}
-
 	creg := up.Creg
 
-	sd := csr.MstatusSD64
 	if up.Targets&state.UpdateFreg != 0 ||
 		up.Targets&state.UpdateCreg != 0 && (creg == csr.Fflags || creg == csr.Frm || creg == csr.Fcsr) {
-		cpu.CSR.Mstatus &^= 0b_11 << csr.MstatusFS
-		cpu.CSR.Mstatus |= csr.FSdirty << csr.MstatusFS
-		cpu.CSR.Mstatus |= 1 << sd
+		cpu.CSR.Mstatus |= -1<<csr.MstatusSD | 3<<csr.MstatusFS
 	}
 
 	updateCounters(cpu)

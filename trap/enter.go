@@ -7,7 +7,7 @@ import (
 )
 
 func IsEntered(cpu *state.CPU) bool {
-	return cpu.Update.TrapEnter
+	return cpu.Update.Targets&state.UpdateEpc != 0
 }
 
 func EnterWithoutTval(cpu *state.CPU, cause int) {
@@ -34,7 +34,6 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		effectivePriv = state.PrivS
 	}
 
-	cpu.Update.TrapEnter = true
 	cpu.Update.Targets = state.UpdatePriv | state.UpdateMstatus | state.UpdateEpc | state.UpdateCause | state.UpdateTval
 
 	cpu.Update.Priv = effectivePriv

@@ -62,11 +62,10 @@ const (
 	McountinhibitIR = 2
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-	MstatusFS   = 13
-	MstatusUXL  = 32
-	MstatusSXL  = 34
-	MstatusSD32 = 31
-	MstatusSD64 = 63
+	MstatusFS  = 13
+	MstatusUXL = 32
+	MstatusSXL = 34
+	MstatusSD  = 63
 
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#satp
 	SatpMODE64 = 60
