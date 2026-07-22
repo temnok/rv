@@ -19,25 +19,27 @@ func Exit(cpu *state.CPU, retPriv int) {
 
 	cpu.Update.TrapExit = true
 
+	ms := cpu.CSR.Mstatus
+
 	switch retPriv {
 	case state.PrivM:
 		cpu.Update.TrapPC = cpu.CSR.Mepc
 		cpu.Update.TrapPriv = bi.Ts(cpu.CSR.Mstatus, csr.MstatusMPP, 2)
 
-		mie := bi.T(cpu.CSR.Mstatus, csr.MstatusMPIE)
-		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(3<<csr.MstatusMPP) |
-			(1<<csr.MstatusMPIE | mie<<csr.MstatusMIE)
+		ms &^= 3 << csr.MstatusMPP
+		ms |= 1<<csr.MstatusMPIE | (ms>>csr.MstatusMPIE&1)<<csr.MstatusMIE
 
 	case state.PrivS:
 		cpu.Update.TrapPC = cpu.CSR.Sepc
 		cpu.Update.TrapPriv = bi.Ts(cpu.CSR.Mstatus, csr.MstatusSPP, 1)
 
-		sie := bi.T(cpu.CSR.Mstatus, csr.MstatusSPIE)
-		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(1<<csr.MstatusSPP) |
-			(1<<csr.MstatusSPIE | sie<<csr.MstatusSIE)
+		ms &^= 1 << csr.MstatusSPP
+		ms |= 1<<csr.MstatusSPIE | (ms>>csr.MstatusSPIE&1)<<csr.MstatusSIE
 	}
 
 	if cpu.Priv != state.PrivM {
-		cpu.Update.TrapMstatus &^= 1 << csr.MstatusMPRV
+		ms &^= 1 << csr.MstatusMPRV
 	}
+
+	cpu.Update.TrapMstatus = ms
 }
