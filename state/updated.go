@@ -1,27 +1,31 @@
 package state
 
 const (
-	UpdateReservation = 1
+	UpdatePriv        = 1 << 0
+	UpdateMstatus     = 1 << 1
+	UpdateReservation = 1 << 2
+	UpdateEpc         = 1 << 3
+	UpdateXreg        = 1 << 4
+	UpdateFreg        = 1 << 5
+	UpdateCreg        = 1 << 6
 )
 
 type UpdatedState struct {
 	Targets int
 
-	TrapEnter   bool
-	TrapExit    bool
-	TrapMstatus int
-	TrapPriv    int
-	TrapXcause  int
-	TrapXepc    int
-	TrapXtval   int
+	Priv        int
+	Reservation int
+
+	TrapEnter  bool
+	Mstatus    int
+	TrapXcause int
+	TrapXtval  int
 
 	PC         int
-	XReg, XVal int
+	Xreg, Xval int
 
-	FReg, FVal int
+	Freg, Fval int
 	Fflags     int
 
-	CReg, CVal int
-
-	Reservation int
+	Creg, Cval int
 }

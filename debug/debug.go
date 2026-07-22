@@ -22,12 +22,12 @@ func Step(cpu *state.CPU) bool {
 	entry := []int{pc, opcode}
 
 	switch {
-	case cpu.Update.XReg > 0:
-		entry = append(entry, cpu.Update.XVal)
-	case cpu.Update.FReg >= 0:
-		entry = append(entry, 0, cpu.Update.FVal)
-	case cpu.Update.CReg >= 0:
-		entry = append(entry, cpu.Update.CVal)
+	case cpu.Update.Targets&state.UpdateXreg != 0:
+		entry = append(entry, cpu.Update.Xval)
+	case cpu.Update.Targets&state.UpdateFreg != 0:
+		entry = append(entry, 0, cpu.Update.Fval)
+	case cpu.Update.Targets&state.UpdateCreg != 0:
+		entry = append(entry, cpu.Update.Cval)
 	}
 
 	debugTrace = append(debugTrace, entry)
@@ -61,9 +61,9 @@ func Dump(cpu *state.CPU) {
 	up := &cpu.Update
 	//if cpu.Update.TrapEnter {
 	fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
-		cpu.Priv, uint(up.TrapPriv), uint(up.PC), uint(up.TrapMstatus))
-	fmt.Printf("xepc:%x, xcause:%x, xtval:%x\r\n",
-		uint(up.TrapXepc), uint(up.TrapXcause), uint(up.TrapXtval))
+		cpu.Priv, uint(up.Priv), uint(up.PC), uint(up.Mstatus))
+	fmt.Printf("xcause:%x, xtval:%x\r\n",
+		uint(up.TrapXcause), uint(up.TrapXtval))
 	fmt.Printf("mtvec:%x, stvec:%x\r\n",
 		uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
 	fmt.Printf("mcounteren:%x, menvcfg:%x\r\n",

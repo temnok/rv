@@ -35,8 +35,10 @@ func Enter(cpu *state.CPU, cause, tval int) {
 	}
 
 	cpu.Update.TrapEnter = true
-	cpu.Update.TrapPriv = effectivePriv
-	cpu.Update.TrapXepc = cpu.PC
+
+	cpu.Update.Priv = effectivePriv
+	cpu.Update.Targets = state.UpdatePriv | state.UpdateMstatus | state.UpdateEpc
+
 	cpu.Update.TrapXcause = cause
 	cpu.Update.TrapXtval = tval
 
@@ -45,14 +47,14 @@ func Enter(cpu *state.CPU, cause, tval int) {
 	switch effectivePriv {
 	case state.PrivM:
 		mie := bi.T(cpu.CSR.Mstatus, csr.MstatusMIE)
-		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(3<<csr.MstatusMPP|1<<csr.MstatusMPIE|1<<csr.MstatusMIE) |
+		cpu.Update.Mstatus = cpu.CSR.Mstatus&^(3<<csr.MstatusMPP|1<<csr.MstatusMPIE|1<<csr.MstatusMIE) |
 			cpu.Priv<<csr.MstatusMPP | mie<<csr.MstatusMPIE
 
 		tvec = cpu.CSR.Mtvec
 
 	case state.PrivS:
 		sie := bi.T(cpu.CSR.Mstatus, csr.MstatusSIE)
-		cpu.Update.TrapMstatus = cpu.CSR.Mstatus&^(1<<csr.MstatusSPP|1<<csr.MstatusSPIE|1<<csr.MstatusSIE) |
+		cpu.Update.Mstatus = cpu.CSR.Mstatus&^(1<<csr.MstatusSPP|1<<csr.MstatusSPIE|1<<csr.MstatusSIE) |
 			cpu.Priv<<csr.MstatusSPP | sie<<csr.MstatusSPIE
 
 		tvec = cpu.CSR.Stvec

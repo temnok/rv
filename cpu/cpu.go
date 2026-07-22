@@ -25,11 +25,6 @@ func New(startAddr int) *state.CPU {
 				Mstatus: xl<<csr.MstatusSXL | xl<<csr.MstatusUXL,
 			},
 		},
-
-		Update: state.UpdatedState{
-			XReg: -1,
-			CReg: -1,
-		},
 	}
 
 	return cpu

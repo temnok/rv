@@ -32,6 +32,7 @@ func (cpu *CPU) DeviceAtAddress(address int) Device {
 }
 
 func (cpu *CPU) Xset(rd, val int) {
-	cpu.Update.XReg = rd
-	cpu.Update.XVal = val
+	cpu.Update.Targets |= UpdateXreg
+	cpu.Update.Xreg = rd
+	cpu.Update.Xval = val
 }

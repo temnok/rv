@@ -351,7 +351,7 @@ func execComputeFP(cpu *state.CPU, op Op) {
 		}
 	}
 
-	if cpu.Update.XReg < 0 && cpu.Update.FReg < 0 {
+	if cpu.Update.Targets&(state.UpdateXreg|state.UpdateFreg) == 0 {
 		illegal(cpu, op)
 	}
 }
@@ -387,20 +387,22 @@ func f64arg3(cpu *state.CPU, rs1, rs2, rs3, f3 int) (C.double, C.double, C.doubl
 }
 
 func f32set(cpu *state.CPU, rd int, res C.float) {
-	cpu.Update.FReg = rd
-	cpu.Update.FVal = f32boxingBits | int(math.Float32bits(float32(res)))
-	if uint(cpu.Update.FVal) == 0xffffffffffc00000 {
-		cpu.Update.FVal &^= f32signMask
+	cpu.Update.Targets |= state.UpdateFreg
+	cpu.Update.Freg = rd
+	cpu.Update.Fval = f32boxingBits | int(math.Float32bits(float32(res)))
+	if uint(cpu.Update.Fval) == 0xffffffffffc00000 {
+		cpu.Update.Fval &^= f32signMask
 	}
 
 	setUpdatedFflags(cpu)
 }
 
 func f64set(cpu *state.CPU, rd int, res C.double) {
-	cpu.Update.FReg = rd
-	cpu.Update.FVal = int(math.Float64bits(float64(res)))
-	if uint(cpu.Update.FVal) == 0xfff8000000000000 {
-		cpu.Update.FVal &^= f64signMask
+	cpu.Update.Targets |= state.UpdateFreg
+	cpu.Update.Freg = rd
+	cpu.Update.Fval = int(math.Float64bits(float64(res)))
+	if uint(cpu.Update.Fval) == 0xfff8000000000000 {
+		cpu.Update.Fval &^= f64signMask
 	}
 
 	setUpdatedFflags(cpu)
@@ -428,13 +430,15 @@ func fsetCmp(cpu *state.CPU, rd int, res, nv bool) {
 }
 
 func f32setBits(cpu *state.CPU, rd, bits int) {
-	cpu.Update.FReg = rd
-	cpu.Update.FVal = f32boxingBits | bits
+	cpu.Update.Targets |= state.UpdateFreg
+	cpu.Update.Freg = rd
+	cpu.Update.Fval = f32boxingBits | bits
 }
 
 func f64setBits(cpu *state.CPU, rd, bits int) {
-	cpu.Update.FReg = rd
-	cpu.Update.FVal = bits
+	cpu.Update.Targets |= state.UpdateFreg
+	cpu.Update.Freg = rd
+	cpu.Update.Fval = bits
 }
 
 func f32(cpu *state.CPU, i int) float32 {

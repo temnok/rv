@@ -8,46 +8,63 @@ import (
 func UpdateState(cpu *state.CPU) {
 	up := &cpu.Update
 
+	if up.Targets&state.UpdatePriv != 0 {
+		cpu.Priv = up.Priv
+	}
+
+	if up.Targets&state.UpdateMstatus != 0 {
+		cpu.CSR.Mstatus = up.Mstatus
+	}
+
+	if up.Targets&state.UpdateReservation != 0 {
+		cpu.Reservation = up.Reservation
+	}
+
+	if up.Targets&state.UpdateEpc != 0 {
+		if up.Priv == state.PrivM {
+			cpu.CSR.Mepc = cpu.PC
+		} else {
+			cpu.CSR.Sepc = cpu.PC
+		}
+	}
+
+	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
+		cpu.X[up.Xreg] = up.Xval
+	}
+
+	if up.Targets&state.UpdateFreg != 0 {
+		cpu.F[up.Freg] = up.Fval
+	}
+
+	if up.Targets&state.UpdateCreg != 0 {
+		csr.Update(cpu, up.Creg, up.Cval)
+	}
+
 	cpu.PC = up.PC
 
-	if up.TrapEnter || up.TrapExit {
-		cpu.Priv = up.TrapPriv
-		cpu.CSR.Mstatus = up.TrapMstatus
+	up.Targets = 0
 
-		if up.TrapEnter {
-			if up.TrapPriv == state.PrivM {
-				cpu.CSR.Mepc = up.TrapXepc
-				cpu.CSR.Mcause = up.TrapXcause
-				cpu.CSR.Mtval = up.TrapXtval
-			} else {
-				cpu.CSR.Sepc = up.TrapXepc
-				cpu.CSR.Scause = up.TrapXcause
-				cpu.CSR.Stval = up.TrapXtval
-			}
+	if up.TrapEnter {
+		if up.Priv == state.PrivM {
+			cpu.CSR.Mcause = up.TrapXcause
+			cpu.CSR.Mtval = up.TrapXtval
+		} else {
+			cpu.CSR.Scause = up.TrapXcause
+			cpu.CSR.Stval = up.TrapXtval
 		}
 
 		up.TrapEnter = false
-		up.TrapExit = false
 		return
 	}
 
-	if up.XReg > 0 {
-		cpu.X[up.XReg] = up.XVal
-		up.XReg = -1
-	}
-
-	creg := up.CReg
+	creg := up.Creg
 
 	sd := csr.MstatusSD64
-	if up.FReg >= 0 || creg == csr.Fflags || creg == csr.Frm || creg == csr.Fcsr {
+	if up.Targets&state.UpdateFreg != 0 ||
+		up.Targets&state.UpdateCreg != 0 && (creg == csr.Fflags || creg == csr.Frm || creg == csr.Fcsr) {
 		cpu.CSR.Mstatus &^= 0b_11 << csr.MstatusFS
 		cpu.CSR.Mstatus |= csr.FSdirty << csr.MstatusFS
 		cpu.CSR.Mstatus |= 1 << sd
-	}
-
-	if up.FReg >= 0 {
-		cpu.F[up.FReg] = up.FVal
-		up.FReg = -1
 	}
 
 	if up.Fflags != 0 {
@@ -55,18 +72,7 @@ func UpdateState(cpu *state.CPU) {
 		up.Fflags = 0
 	}
 
-	if creg >= 0 {
-		csr.Update(cpu, up.CReg, up.CVal)
-		up.CReg = -1
-	}
-
-	if up.Targets&state.UpdateReservation != 0 {
-		cpu.Reservation = up.Reservation
-	}
-
 	updateCounters(cpu)
-
-	up.Targets = 0
 }
 
 func updateCounters(cpu *state.CPU) {

@@ -10,8 +10,9 @@ func Write(cpu *state.CPU, reg, val int) bool {
 	}
 
 	if _, ok := Read(cpu, reg); ok {
-		cpu.Update.CReg = reg
-		cpu.Update.CVal = val
+		cpu.Update.Targets |= state.UpdateCreg
+		cpu.Update.Creg = reg
+		cpu.Update.Cval = val
 		return true
 	}
 

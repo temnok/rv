@@ -98,12 +98,12 @@ func runTest(t *testing.T, file string) {
 
 					t.Errorf("cycles: %v\nlast PCs: %x\nlast traps: %x\n"+
 						"priv=%v, pc=%08x\n"+
-						"mstatus=%08x, xepc=%08x\n"+
+						"mstatus=%08x\n"+
 						"xcause=%08x, xtval=%08x\n"+
 						"a0=%08x\n",
 						cpu.CSR.Mcycle, lastPCs, lastTraps,
-						cpu.Update.TrapPriv, uint(cpu.Update.PC),
-						uint(cpu.Update.TrapMstatus), uint(cpu.Update.TrapXepc),
+						cpu.Update.Priv, uint(cpu.Update.PC),
+						uint(cpu.Update.Mstatus),
 						uint(cpu.Update.TrapXcause), uint(cpu.Update.TrapXtval),
 						uint(cpu.X[10]),
 					)
