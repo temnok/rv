@@ -10,7 +10,6 @@ type UpdatedState struct {
 	TrapEnter   bool
 	TrapExit    bool
 	TrapMstatus int
-	TrapPC      int
 	TrapPriv    int
 	TrapXcause  int
 	TrapXepc    int

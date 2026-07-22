@@ -102,7 +102,7 @@ func runTest(t *testing.T, file string) {
 						"xcause=%08x, xtval=%08x\n"+
 						"a0=%08x\n",
 						cpu.CSR.Mcycle, lastPCs, lastTraps,
-						cpu.Update.TrapPriv, uint(cpu.Update.TrapPC),
+						cpu.Update.TrapPriv, uint(cpu.Update.PC),
 						uint(cpu.Update.TrapMstatus), uint(cpu.Update.TrapXepc),
 						uint(cpu.Update.TrapXcause), uint(cpu.Update.TrapXtval),
 						uint(cpu.X[10]),

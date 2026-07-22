@@ -8,9 +8,10 @@ import (
 func UpdateState(cpu *state.CPU) {
 	up := &cpu.Update
 
+	cpu.PC = up.PC
+
 	if up.TrapEnter || up.TrapExit {
 		cpu.Priv = up.TrapPriv
-		cpu.PC = up.TrapPC
 		cpu.CSR.Mstatus = up.TrapMstatus
 
 		if up.TrapEnter {
@@ -29,8 +30,6 @@ func UpdateState(cpu *state.CPU) {
 		up.TrapExit = false
 		return
 	}
-
-	cpu.PC = up.PC
 
 	if up.XReg > 0 {
 		cpu.X[up.XReg] = up.XVal

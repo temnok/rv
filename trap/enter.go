@@ -58,8 +58,8 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		tvec = cpu.CSR.Stvec
 	}
 
-	cpu.Update.TrapPC = tvec &^ 3
+	cpu.Update.PC = tvec &^ 3
 	if bi.T(tvec, 0) == 1 && isInterrupt {
-		cpu.Update.TrapPC += causeID * 4
+		cpu.Update.PC += causeID * 4
 	}
 }
