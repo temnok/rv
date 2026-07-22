@@ -1,6 +1,12 @@
 package state
 
+const (
+	UpdateReservation = 1
+)
+
 type UpdatedState struct {
+	Targets int
+
 	TrapEnter   bool
 	TrapExit    bool
 	TrapMstatus int
@@ -18,6 +24,5 @@ type UpdatedState struct {
 
 	CReg, CVal int
 
-	Reserved     bool
-	ReservedAddr int
+	Reservation int
 }

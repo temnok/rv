@@ -61,13 +61,16 @@ func UpdateState(cpu *state.CPU) {
 		up.CReg = -1
 	}
 
-	cpu.Reserved = up.Reserved
-	cpu.ReservedAddr = up.ReservedAddr
+	if up.Targets&state.UpdateReservation != 0 {
+		cpu.Reservation = up.Reservation
+	}
 
-	updateCounters(cpu, creg)
+	updateCounters(cpu)
+
+	up.Targets = 0
 }
 
-func updateCounters(cpu *state.CPU, creg int) {
+func updateCounters(cpu *state.CPU) {
 	cpu.CSR.Mcycle++
 
 	if uint(cpu.CSR.Mtime()) >= uint(cpu.CSR.Stimecmp) {

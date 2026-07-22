@@ -6,12 +6,13 @@ import (
 
 func sc(cpu *state.CPU, op Op) {
 	atomic(cpu, op, false, func(cpu *state.CPU, addr int, val, old *int) bool {
-		if !cpu.Reserved || cpu.ReservedAddr != addr {
+		if cpu.Reservation == -1 || cpu.Reservation != addr {
 			*old = 1
 			return false
 		}
 
-		cpu.Update.Reserved = false
+		cpu.Update.Targets |= state.UpdateReservation
+		cpu.Update.Reservation = -1
 
 		*old = 0
 		return true

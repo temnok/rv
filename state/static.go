@@ -8,6 +8,5 @@ type StaticState struct {
 
 	CSR CSR
 
-	Reserved     bool
-	ReservedAddr int
+	Reservation int
 }
