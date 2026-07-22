@@ -8,6 +8,7 @@ const (
 	UpdateXreg        = 1 << 4
 	UpdateFreg        = 1 << 5
 	UpdateCreg        = 1 << 6
+	UpdateFflags      = 1 << 7
 )
 
 type UpdatedState struct {

@@ -425,7 +425,8 @@ func fsetCmp(cpu *state.CPU, rd int, res, nv bool) {
 		cpu.Xset(rd, 0)
 	}
 	if nv {
-		cpu.Update.Fflags |= 1 << csr.FflagsNV
+		cpu.Update.Targets |= state.UpdateFflags
+		cpu.Update.Fflags = 1 << csr.FflagsNV
 	}
 }
 
@@ -473,23 +474,30 @@ func prepareCfenv(cpu *state.CPU, rm int) {
 func setUpdatedFflags(cpu *state.CPU) {
 	ex := C.fetestexcept(C.FE_ALL_EXCEPT)
 
+	cpu.Update.Fflags = 0
+
 	if ex&C.FE_INEXACT != 0 {
+		cpu.Update.Targets |= state.UpdateFflags
 		cpu.Update.Fflags |= 1 << csr.FflagsNX
 	}
 
 	if ex&C.FE_UNDERFLOW != 0 {
+		cpu.Update.Targets |= state.UpdateFflags
 		cpu.Update.Fflags |= 1 << csr.FflagsUF
 	}
 
 	if ex&C.FE_OVERFLOW != 0 {
+		cpu.Update.Targets |= state.UpdateFflags
 		cpu.Update.Fflags |= 1 << csr.FflagsOF
 	}
 
 	if ex&C.FE_DIVBYZERO != 0 {
+		cpu.Update.Targets |= state.UpdateFflags
 		cpu.Update.Fflags |= 1 << csr.FflagsDZ
 	}
 
 	if ex&C.FE_INVALID != 0 {
+		cpu.Update.Targets |= state.UpdateFflags
 		cpu.Update.Fflags |= 1 << csr.FflagsNV
 	}
 }

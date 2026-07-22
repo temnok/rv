@@ -40,6 +40,10 @@ func UpdateState(cpu *state.CPU) {
 		csr.Update(cpu, up.Creg, up.Cval)
 	}
 
+	if up.Targets&state.UpdateFflags != 0 {
+		cpu.CSR.Fcsr |= up.Fflags
+	}
+
 	cpu.PC = up.PC
 
 	up.Targets = 0
@@ -65,11 +69,6 @@ func UpdateState(cpu *state.CPU) {
 		cpu.CSR.Mstatus &^= 0b_11 << csr.MstatusFS
 		cpu.CSR.Mstatus |= csr.FSdirty << csr.MstatusFS
 		cpu.CSR.Mstatus |= 1 << sd
-	}
-
-	if up.Fflags != 0 {
-		cpu.CSR.Fcsr |= up.Fflags
-		up.Fflags = 0
 	}
 
 	updateCounters(cpu)
