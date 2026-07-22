@@ -28,6 +28,22 @@ func UpdateState(cpu *state.CPU) {
 		}
 	}
 
+	if up.Targets&state.UpdateCause != 0 {
+		if up.Priv == state.PrivM {
+			cpu.CSR.Mcause = up.Cause
+		} else {
+			cpu.CSR.Scause = up.Cause
+		}
+	}
+
+	if up.Targets&state.UpdateTval != 0 {
+		if up.Priv == state.PrivM {
+			cpu.CSR.Mtval = up.Tval
+		} else {
+			cpu.CSR.Stval = up.Tval
+		}
+	}
+
 	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
 		cpu.X[up.Xreg] = up.Xval
 	}
@@ -49,14 +65,6 @@ func UpdateState(cpu *state.CPU) {
 	up.Targets = 0
 
 	if up.TrapEnter {
-		if up.Priv == state.PrivM {
-			cpu.CSR.Mcause = up.TrapXcause
-			cpu.CSR.Mtval = up.TrapXtval
-		} else {
-			cpu.CSR.Scause = up.TrapXcause
-			cpu.CSR.Stval = up.TrapXtval
-		}
-
 		up.TrapEnter = false
 		return
 	}

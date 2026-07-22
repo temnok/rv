@@ -35,12 +35,11 @@ func Enter(cpu *state.CPU, cause, tval int) {
 	}
 
 	cpu.Update.TrapEnter = true
+	cpu.Update.Targets = state.UpdatePriv | state.UpdateMstatus | state.UpdateEpc | state.UpdateCause | state.UpdateTval
 
 	cpu.Update.Priv = effectivePriv
-	cpu.Update.Targets = state.UpdatePriv | state.UpdateMstatus | state.UpdateEpc
-
-	cpu.Update.TrapXcause = cause
-	cpu.Update.TrapXtval = tval
+	cpu.Update.Cause = cause
+	cpu.Update.Tval = tval
 
 	var tvec int
 
