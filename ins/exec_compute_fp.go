@@ -387,24 +387,22 @@ func f64arg3(cpu *state.CPU, rs1, rs2, rs3, f3 int) (C.double, C.double, C.doubl
 }
 
 func f32set(cpu *state.CPU, rd int, res C.float) {
-	cpu.Update.Targets |= state.UpdateFreg
-	cpu.Update.Freg = rd
-	cpu.Update.Fval = f32boxingBits | int(math.Float32bits(float32(res)))
-	if uint(cpu.Update.Fval) == 0xffffffffffc00000 {
-		cpu.Update.Fval &^= f32signMask
+	val := f32boxingBits | int(math.Float32bits(float32(res)))
+	if uint(val) == 0xffffffffffc00000 {
+		val &^= f32signMask
 	}
 
+	cpu.Fset(rd, val)
 	setUpdatedFflags(cpu)
 }
 
 func f64set(cpu *state.CPU, rd int, res C.double) {
-	cpu.Update.Targets |= state.UpdateFreg
-	cpu.Update.Freg = rd
-	cpu.Update.Fval = int(math.Float64bits(float64(res)))
-	if uint(cpu.Update.Fval) == 0xfff8000000000000 {
-		cpu.Update.Fval &^= f64signMask
+	val := int(math.Float64bits(float64(res)))
+	if uint(val) == 0xfff8000000000000 {
+		val &^= f64signMask
 	}
 
+	cpu.Fset(rd, val)
 	setUpdatedFflags(cpu)
 }
 
@@ -431,15 +429,11 @@ func fsetCmp(cpu *state.CPU, rd int, res, nv bool) {
 }
 
 func f32setBits(cpu *state.CPU, rd, bits int) {
-	cpu.Update.Targets |= state.UpdateFreg
-	cpu.Update.Freg = rd
-	cpu.Update.Fval = f32boxingBits | bits
+	cpu.Fset(rd, f32boxingBits|bits)
 }
 
 func f64setBits(cpu *state.CPU, rd, bits int) {
-	cpu.Update.Targets |= state.UpdateFreg
-	cpu.Update.Freg = rd
-	cpu.Update.Fval = bits
+	cpu.Fset(rd, bits)
 }
 
 func f32(cpu *state.CPU, i int) float32 {

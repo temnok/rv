@@ -1,6 +1,8 @@
 package state
 
-import "github.com/temnok/rv/ram"
+import (
+	"github.com/temnok/rv/ram"
+)
 
 type CPU struct {
 	StaticState
@@ -31,8 +33,15 @@ func (cpu *CPU) DeviceAtAddress(address int) Device {
 	return nil
 }
 
-func (cpu *CPU) Xset(rd, val int) {
+func (cpu *CPU) Xset(reg, val int) {
 	cpu.Update.Targets |= UpdateXreg
-	cpu.Update.Xreg = rd
+	cpu.Update.Xreg = reg
 	cpu.Update.Xval = val
+}
+
+func (cpu *CPU) Fset(reg, val int) {
+	cpu.Update.Targets |= UpdateFreg | UpdateMstatus
+	cpu.Update.Freg = reg
+	cpu.Update.Fval = val
+	cpu.Update.Mstatus = cpu.CSR.Mstatus | MstatusDirtyMask
 }

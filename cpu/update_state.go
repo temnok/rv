@@ -8,16 +8,24 @@ import (
 func UpdateState(cpu *state.CPU) {
 	up := &cpu.Update
 
+	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
+		cpu.X[up.Xreg] = up.Xval
+	}
+
+	if up.Targets&state.UpdateFreg != 0 {
+		cpu.F[up.Freg] = up.Fval
+	}
+
+	if up.Targets&state.UpdateCreg != 0 {
+		csr.Update(cpu, up.Creg, up.Cval)
+	}
+
 	if up.Targets&state.UpdatePriv != 0 {
 		cpu.Priv = up.Priv
 	}
 
 	if up.Targets&state.UpdateMstatus != 0 {
 		cpu.CSR.Mstatus = up.Mstatus
-	}
-
-	if up.Targets&state.UpdateReservation != 0 {
-		cpu.Reservation = up.Reservation
 	}
 
 	if up.Targets&state.UpdateEpc != 0 {
@@ -44,32 +52,17 @@ func UpdateState(cpu *state.CPU) {
 		}
 	}
 
-	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
-		cpu.X[up.Xreg] = up.Xval
-	}
-
-	if up.Targets&state.UpdateFreg != 0 {
-		cpu.F[up.Freg] = up.Fval
-	}
-
-	if up.Targets&state.UpdateCreg != 0 {
-		csr.Update(cpu, up.Creg, up.Cval)
-	}
-
 	if up.Targets&state.UpdateFflags != 0 {
 		cpu.CSR.Fcsr |= up.Fflags
+	}
+
+	if up.Targets&state.UpdateReservation != 0 {
+		cpu.Reservation = up.Reservation
 	}
 
 	cpu.PC = up.PC
 
 	up.Targets = 0
-
-	creg := up.Creg
-
-	if up.Targets&state.UpdateFreg != 0 ||
-		up.Targets&state.UpdateCreg != 0 && (creg == csr.Fflags || creg == csr.Frm || creg == csr.Fcsr) {
-		cpu.CSR.Mstatus |= -1<<csr.MstatusSD | 3<<csr.MstatusFS
-	}
 
 	updateCounters(cpu)
 }

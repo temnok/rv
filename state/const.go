@@ -15,4 +15,11 @@ const (
 	AccessFetch = 0
 	AccessLoad  = 1
 	AccessStore = 3
+
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-6-7-extension-context-status-in-mstatus-register
+	MstatusFS = 13
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
+	MstatusSD = 63
+
+	MstatusDirtyMask = -1<<MstatusSD | 3<<MstatusFS
 )

@@ -14,7 +14,5 @@ func flw(cpu *state.CPU, op Op) {
 		return
 	}
 
-	cpu.Update.Targets |= state.UpdateFreg
-	cpu.Update.Freg = rd
-	cpu.Update.Fval = f32boxingBits | val
+	cpu.Fset(rd, f32boxingBits|val)
 }

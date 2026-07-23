@@ -14,7 +14,5 @@ func fld(cpu *state.CPU, op Op) {
 		return
 	}
 
-	cpu.Update.Targets |= state.UpdateFreg
-	cpu.Update.Freg = rd
-	cpu.Update.Fval = val
+	cpu.Fset(rd, val)
 }
