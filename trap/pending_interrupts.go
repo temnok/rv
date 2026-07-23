@@ -23,10 +23,10 @@ func OnPendingInterrupts(cpu *state.CPU) {
 			priv = state.PrivS
 		}
 
-		if (priv == cpu.Priv && cpu.CSR.Mstatus>>priv&1 == 1) || priv > cpu.Priv {
-			EnterWithoutTval(cpu, -1<<csr.McauseI|i)
+		if priv > cpu.Priv || priv == cpu.Priv && cpu.CSR.Mstatus>>priv&1 == 1 {
+			Enter(cpu, -1<<csr.McauseI|i, 0)
 
-			return
+			break
 		}
 	}
 }

@@ -13,7 +13,7 @@ type CPU struct {
 	RAM     Device
 	Devices []Device
 
-	InstrCount, CInstrCount, TrapCount int
+	TrapCount int
 }
 
 type Device func(addr int, width int, write bool, writeData int) int

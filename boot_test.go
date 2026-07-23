@@ -25,8 +25,7 @@ func TestBoot(t *testing.T) {
 		t.Fatalf("Expected '%v' stop string, got:\n%v", outW.stopString, string(outW.output))
 	}
 
-	fmt.Printf("Instr/CInstr: %v/%v, traps: %v, TLB lookups/misses: %v/%v\n",
-		cpu.InstrCount, cpu.CInstrCount, cpu.TrapCount, cpu.TLB.LookupCount, cpu.TLB.MissCount)
+	fmt.Printf("TLB lookups/misses: %v/%v\n", cpu.TLB.LookupCount, cpu.TLB.MissCount)
 }
 
 type matchWriter struct {

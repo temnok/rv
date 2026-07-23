@@ -6,5 +6,5 @@ import (
 )
 
 func ecall(cpu *state.CPU, op Op) {
-	trap.EnterWithoutTval(cpu, trap.EnvironmentCallFromUMode+cpu.Priv)
+	trap.Enter(cpu, trap.EnvironmentCallFromUMode+cpu.Priv, 0)
 }

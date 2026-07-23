@@ -6,5 +6,5 @@ import (
 )
 
 func illegal(cpu *state.CPU, op Op) {
-	trap.EnterWithoutTval(cpu, trap.IllegalIstruction)
+	trap.Enter(cpu, trap.IllegalIstruction, 0)
 }

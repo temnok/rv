@@ -6,5 +6,5 @@ import (
 )
 
 func ebreak(cpu *state.CPU, op Op) {
-	trap.EnterWithoutTval(cpu, trap.Breakpoint)
+	trap.Enter(cpu, trap.Breakpoint, 0)
 }

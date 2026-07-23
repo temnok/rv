@@ -22,8 +22,8 @@ func FetchAndExec(cpu *state.CPU) int {
 		return -1
 	}
 
-	var opcode int
-	if opcode = mem.Fetch(cpu, cpu.PC); trap.IsEntered(cpu) {
+	opcode := mem.Fetch(cpu, cpu.PC)
+	if trap.IsEntered(cpu) {
 		return -1
 	}
 
