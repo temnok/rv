@@ -20,8 +20,8 @@ func UpdateState(cpu *state.CPU) {
 		csr.Update(cpu, up.Creg, up.Cval)
 	}
 
-	if up.Targets&state.UpdatePriv != 0 {
-		cpu.Priv = up.Priv
+	if up.Targets&state.UpdateFcsr != 0 {
+		cpu.CSR.Fcsr = up.Fcsr
 	}
 
 	if up.Targets&state.UpdateMstatus != 0 {
@@ -52,8 +52,8 @@ func UpdateState(cpu *state.CPU) {
 		}
 	}
 
-	if up.Targets&state.UpdateFflags != 0 {
-		cpu.CSR.Fcsr |= up.Fflags
+	if up.Targets&state.UpdatePriv != 0 {
+		cpu.Priv = up.Priv
 	}
 
 	if up.Targets&state.UpdateReservation != 0 {
