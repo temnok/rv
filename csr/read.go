@@ -98,10 +98,10 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 		val = csr.Sepc
 
 	case Sie:
-		val = csr.Mie & (1<<MipSSI | 1<<MipSEI | 1<<MipSTI)
+		val = csr.Mie & csr.Mideleg
 
 	case Sip:
-		val = csr.Mip & (1<<MipSSI | 1<<MipSEI | 1<<MipSTI)
+		val = csr.Mip & csr.Mideleg
 
 	case Sscratch:
 		val = csr.Sscratch

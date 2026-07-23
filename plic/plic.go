@@ -65,9 +65,9 @@ func (plic *PLIC) PendInterrupt(source int, enable bool) {
 func (plic *PLIC) sync() {
 	if active := plic.pending & plic.enable; active != 0 {
 		plic.claim = bits.TrailingZeros(uint(active))
-		plic.cpu.CSR.Mip |= 1 << csr.MipSEI
+		plic.cpu.CSR.Mip |= 1 << csr.MipSEIP
 	} else {
 		plic.claim = 0
-		plic.cpu.CSR.Mip &^= 1 << csr.MipSEI
+		plic.cpu.CSR.Mip &^= 1 << csr.MipSEIP
 	}
 }

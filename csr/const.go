@@ -86,11 +86,12 @@ const (
 
 	McauseI = 63
 
-	MipSSI = 1
-	MipMSI = 3
-	MipSTI = 5
-	MipMTI = 7
-	MipSEI = 9
+	MipSSIP = 1
+	MipMSIP = 3
+	MipSTIP = 5
+	MipMTIP = 7
+	MipSEIP = 9
+	MipMEIP = 11
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
 	MenvcfgSTCE = 63

@@ -67,8 +67,7 @@ func Update(cpu *state.CPU, reg, val int) {
 		csr.Sepc = val
 
 	case Sie:
-		mask := 1<<MipSSI | 1<<MipSEI | 1<<MipSTI
-		csr.Mie = csr.Mie&^mask | val&mask
+		csr.Mie = csr.Mie&^csr.Mideleg | val&csr.Mideleg
 
 	case Sscratch:
 		csr.Sscratch = val

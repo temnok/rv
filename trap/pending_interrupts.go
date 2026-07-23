@@ -5,27 +5,40 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
-func OnPendingInterrupts(cpu *state.CPU) {
+// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:intr_M-mode_pri
+var interruptPriorityOrder = []int{
+	csr.MipMEIP,
+	csr.MipMSIP,
+	csr.MipMTIP,
+	csr.MipSEIP,
+	csr.MipSSIP,
+	csr.MipSTIP,
+}
+
+// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mcause_exccode_enc_img
+func CheckPendingInterrupts(cpu *state.CPU) {
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-9-machine-interrupt-mip-and-mie-registers
 	mi := cpu.CSR.Mip & cpu.CSR.Mie
 
 	if mi == 0 {
 		return
 	}
 
-	for i := 9; i >= 1; i -= 2 {
+	for _, i := range interruptPriorityOrder {
 		if mi>>i&1 == 0 {
 			continue
 		}
 
 		priv := state.PrivM
-		if cpu.CSR.Mideleg>>i&1 == 1 {
+		xIE := csr.MstatusMIE
+		if delegateToSmode := cpu.CSR.Mideleg>>i&1 == 1; delegateToSmode {
 			priv = state.PrivS
+			xIE = csr.MstatusSIE
 		}
 
-		if priv > cpu.Priv || priv == cpu.Priv && cpu.CSR.Mstatus>>priv&1 == 1 {
+		// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#privstack
+		if priv > cpu.Priv || priv == cpu.Priv && cpu.CSR.Mstatus>>xIE&1 == 1 {
 			Enter(cpu, -1<<csr.McauseI|i, 0)
-
 			break
 		}
 	}

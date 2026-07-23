@@ -18,7 +18,7 @@ func Step(cpu *state.CPU) int {
 }
 
 func FetchAndExec(cpu *state.CPU) int {
-	if trap.OnPendingInterrupts(cpu); trap.IsEntered(cpu) {
+	if trap.CheckPendingInterrupts(cpu); trap.IsEntered(cpu) {
 		return -1
 	}
 
