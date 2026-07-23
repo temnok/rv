@@ -1,7 +1,10 @@
 package ram
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
+	"os"
 )
 
 type RAM struct {
@@ -16,13 +19,44 @@ func New(size int) *RAM {
 	}
 }
 
-func (ram *RAM) Load(addr int, program []byte) {
-	addr = (addr - BaseAddr) / 8
-	words := ram.words[addr:]
+func (ram *RAM) Load(addr int, data []byte) {
+	words := ram.words[(addr-BaseAddr)/8:]
 
-	for i, b := range program {
+	for i, b := range data {
 		shift := (i & 7) * 8
 		words[i/8] |= int(b) << shift
+	}
+}
+
+func (ram *RAM) LoadFile(addr int, path string) {
+	r, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+
+	defer r.Close()
+
+	ram.LoadReader(addr, r)
+}
+
+func (ram *RAM) LoadReader(addr int, r io.ReadCloser) {
+	words := ram.words[(addr-BaseAddr)/8:]
+	buf := make([]byte, 8*1024)
+
+	for {
+		n, _ := r.Read(buf)
+		for ; n%8 != 0; n++ {
+			buf[n] = 0
+		}
+
+		for i := 0; i < n; i += 8 {
+			words[0] = int(binary.LittleEndian.Uint64(buf[i:]))
+			words = words[1:]
+		}
+
+		if n < len(buf) {
+			break
+		}
 	}
 }
 

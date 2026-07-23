@@ -1,8 +1,6 @@
 package rv
 
 import (
-	"bytes"
-	"compress/gzip"
 	"encoding/binary"
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/isa"
@@ -13,7 +11,6 @@ import (
 	"golang.org/x/term"
 	"io"
 	"os"
-	"strings"
 )
 
 func BootLinux() {
@@ -49,15 +46,15 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 
 	dir := "build/output/"
 
-	ram.Load(opensbiAddr, readFile(dir+"/opensbi.gz"))
-	ram.Load(dtbAddr, readFile(dir+"/rv.dtb"))
+	ram.LoadFile(opensbiAddr, dir+"/opensbi")
+	ram.LoadFile(dtbAddr, dir+"/devtree")
 
 	buf := make([]byte, 8*6)
 	binary.Encode(buf, binary.LittleEndian, []uint64{0x4942534f, 2, uint64(kernelAddr), 1, 0, 0})
 	ram.Load(dynInfoAddr, buf)
 
-	ram.Load(kernelAddr, readFile(dir+"/kernel.gz"))
-	ram.Load(diskBaseAddr, readFile(dir+"/ramdisk.img"))
+	ram.LoadFile(kernelAddr, dir+"/kernel")
+	ram.LoadFile(diskBaseAddr, dir+"/ramdisk")
 
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr
@@ -77,25 +74,4 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	//debug.Dump(cpu)
 
 	return cpu
-}
-
-func readFile(path string) []byte {
-	content := check1(os.ReadFile(path))
-	if !strings.HasSuffix(path, ".gz") {
-		return content
-	}
-
-	r := check1(gzip.NewReader(bytes.NewReader(content)))
-	return check1(io.ReadAll(r))
-}
-
-func check1[A any](a A, err error) A {
-	check(err)
-	return a
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
 }

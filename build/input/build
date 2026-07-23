@@ -106,7 +106,7 @@ if $BUILD_DEVTREE; then
 
   dtc ${QUIET} \
     -O dtb \
-    -o ~/output/rv.dtb \
+    -o ~/output/devtree \
     ~/input/rv.dts
 
   benchmark
@@ -150,8 +150,7 @@ if $BUILD_KERNEL; then
       --jobs=${CPU_COUNT} \
       Image
 
-  mv arch/riscv/boot/Image Image
-  gzip -9 -n -c Image > ~/output/kernel.gz
+  mv arch/riscv/boot/Image ~/output/kernel
 
   cd ~
   benchmark
@@ -165,11 +164,6 @@ if $BUILD_OPENSBI; then
   tar -xf cache/download/opensbi-${VERSION_OPENSBI}.tar.gz && mv opensbi-* build/opensbi
   cd build/opensbi
 
-  dtc ${QUIET} \
-    -O dtb \
-    -o ~/output/rv.dtb \
-    ~/input/rv.dts
-
   make clean
 
   make ${QUIET} \
@@ -180,7 +174,7 @@ if $BUILD_OPENSBI; then
     --jobs=${CPU_COUNT} \
     > /dev/null 2>&1
 
-  gzip -9 -n -c build/platform/generic/firmware/fw_dynamic.bin > ~/output/opensbi.gz
+  mv build/platform/generic/firmware/fw_dynamic.bin ~/output/opensbi
 
   cd ~
   benchmark
@@ -212,7 +206,7 @@ if $BUILD_BUSYBOX || $BUILD_RAMDISK; then
     -E hash_seed="c1b9d5a2-f162-11cf-9ece-0020afc76f16" \
     ../ramdisk.img 384M
 
-  mv ../ramdisk.img ~/output/
+  mv ../ramdisk.img ~/output/ramdisk
 
   cd ~
   benchmark
