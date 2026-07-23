@@ -16,16 +16,20 @@ const (
 	UpdateTval    = 1 << 10
 )
 
-type UpdatedState struct {
-	Targets     int
-	Xreg, Xval  int
-	Freg, Fval  int
-	Creg, Cval  int
-	Fcsr        int
-	Mstatus     int
-	Cause       int
-	Tval        int
+type Update struct {
+	Targets int
+
+	PC          int
 	Priv        int
 	Reservation int
-	PC          int
+
+	Xreg, Xval int
+	Freg, Fval int
+	Creg, Cval int
+
+	Fcsr    int
+	Mstatus int
+	Epc     int
+	Cause   int
+	Tval    int
 }

@@ -35,6 +35,7 @@ func Enter(cpu *state.CPU, cause, tval int) {
 
 	cpu.Update.Priv = priv
 	cpu.Update.Mstatus = cpu.CSR.Mstatus&^clr | set
+	cpu.Update.Epc = cpu.PC
 	cpu.Update.Cause = cause
 	cpu.Update.Tval = tval
 

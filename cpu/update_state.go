@@ -8,8 +8,6 @@ import (
 func UpdateState(cpu *state.CPU) {
 	up := &cpu.Update
 
-	oldPC := cpu.PC
-
 	if up.Targets&state.UpdatePC != 0 {
 		cpu.PC = up.PC
 	}
@@ -44,9 +42,9 @@ func UpdateState(cpu *state.CPU) {
 
 	if up.Targets&state.UpdateEpc != 0 {
 		if up.Priv == state.PrivM {
-			cpu.CSR.Mepc = oldPC
+			cpu.CSR.Mepc = up.Epc
 		} else {
-			cpu.CSR.Sepc = oldPC
+			cpu.CSR.Sepc = up.Epc
 		}
 	}
 

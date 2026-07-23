@@ -6,7 +6,7 @@ import (
 
 type CPU struct {
 	StaticState
-	Update UpdatedState
+	Update Update
 
 	TLB TLB
 
