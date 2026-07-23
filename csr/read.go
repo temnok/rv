@@ -122,11 +122,15 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 		val = csr.Stvec
 
 	case Time:
-		val = csr.Mtime()
+		val = McycleToMtime(csr.Mcycle)
 
 	default:
 		return 0, false
 	}
 
 	return val, true
+}
+
+func McycleToMtime(mcycle int) int {
+	return mcycle / 20_000
 }

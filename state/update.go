@@ -14,6 +14,8 @@ const (
 	UpdateEpc     = 1 << 8
 	UpdateCause   = 1 << 9
 	UpdateTval    = 1 << 10
+	UpdateMcycle  = 1 << 11
+	UpdateMip     = 1 << 12
 )
 
 type Update struct {
@@ -32,4 +34,6 @@ type Update struct {
 	Epc     int
 	Cause   int
 	Tval    int
+	Mcycle  int
+	Mip     int
 }

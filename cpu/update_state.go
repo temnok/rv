@@ -20,18 +20,6 @@ func UpdateState(cpu *state.CPU) {
 		cpu.Reservation = up.Reservation
 	}
 
-	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
-		cpu.X[up.Xreg] = up.Xval
-	}
-
-	if up.Targets&state.UpdateFreg != 0 {
-		cpu.F[up.Freg] = up.Fval
-	}
-
-	if up.Targets&state.UpdateCreg != 0 {
-		csr.Update(cpu, up.Creg, up.Cval)
-	}
-
 	if up.Targets&state.UpdateFcsr != 0 {
 		cpu.CSR.Fcsr = up.Fcsr
 	}
@@ -64,15 +52,23 @@ func UpdateState(cpu *state.CPU) {
 		}
 	}
 
-	updateCounters(cpu)
-}
+	if up.Targets&state.UpdateMcycle != 0 {
+		cpu.CSR.Mcycle = up.Mcycle
+	}
 
-func updateCounters(cpu *state.CPU) {
-	cpu.CSR.Mcycle++
+	if up.Targets&state.UpdateMip != 0 {
+		cpu.CSR.Mip = up.Mip
+	}
 
-	if uint(cpu.CSR.Mtime()) >= uint(cpu.CSR.Stimecmp) {
-		cpu.CSR.Mip |= 1 << csr.MipSTIP
-	} else {
-		cpu.CSR.Mip &^= 1 << csr.MipSTIP
+	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
+		cpu.X[up.Xreg] = up.Xval
+	}
+
+	if up.Targets&state.UpdateFreg != 0 {
+		cpu.F[up.Freg] = up.Fval
+	}
+
+	if up.Targets&state.UpdateCreg != 0 {
+		csr.Update(cpu, up.Creg, up.Cval)
 	}
 }
