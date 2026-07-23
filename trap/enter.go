@@ -1,13 +1,12 @@
 package trap
 
 import (
-	"github.com/temnok/rv/bi"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
 )
 
 func IsEntered(cpu *state.CPU) bool {
-	return cpu.Update.Targets&state.UpdateEpc != 0
+	return cpu.Update.Targets&state.UpdateCause != 0
 }
 
 func EnterWithoutTval(cpu *state.CPU, cause int) {
@@ -29,37 +28,27 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		deleg = cpu.CSR.Mideleg
 	}
 
-	effectivePriv := state.PrivM
-	if cpu.Priv <= state.PrivS && bi.T(deleg, causeID) == 1 {
-		effectivePriv = state.PrivS
+	priv := state.PrivM
+	clearBits := 3<<csr.MstatusMPP | 1<<csr.MstatusMPIE | 1<<csr.MstatusMIE
+	setBits := cpu.Priv<<csr.MstatusMPP | (cpu.CSR.Mstatus>>csr.MstatusMIE&1)<<csr.MstatusMPIE
+	tvec := cpu.CSR.Mtvec
+
+	if privS := cpu.Priv <= state.PrivS && deleg>>causeID&1 == 1; privS {
+		priv = state.PrivS
+		clearBits = 1<<csr.MstatusSPP | 1<<csr.MstatusSPIE | 1<<csr.MstatusSIE
+		setBits = cpu.Priv<<csr.MstatusSPP | (cpu.CSR.Mstatus>>csr.MstatusSIE&1)<<csr.MstatusSPIE
+		tvec = cpu.CSR.Stvec
 	}
 
 	cpu.Update.Targets = state.UpdatePriv | state.UpdateMstatus | state.UpdateEpc | state.UpdateCause | state.UpdateTval
 
-	cpu.Update.Priv = effectivePriv
+	cpu.Update.Priv = priv
+	cpu.Update.Mstatus = cpu.CSR.Mstatus&^clearBits | setBits
 	cpu.Update.Cause = cause
 	cpu.Update.Tval = tval
 
-	var tvec int
-
-	switch effectivePriv {
-	case state.PrivM:
-		mie := bi.T(cpu.CSR.Mstatus, csr.MstatusMIE)
-		cpu.Update.Mstatus = cpu.CSR.Mstatus&^(3<<csr.MstatusMPP|1<<csr.MstatusMPIE|1<<csr.MstatusMIE) |
-			cpu.Priv<<csr.MstatusMPP | mie<<csr.MstatusMPIE
-
-		tvec = cpu.CSR.Mtvec
-
-	case state.PrivS:
-		sie := bi.T(cpu.CSR.Mstatus, csr.MstatusSIE)
-		cpu.Update.Mstatus = cpu.CSR.Mstatus&^(1<<csr.MstatusSPP|1<<csr.MstatusSPIE|1<<csr.MstatusSIE) |
-			cpu.Priv<<csr.MstatusSPP | sie<<csr.MstatusSPIE
-
-		tvec = cpu.CSR.Stvec
-	}
-
 	cpu.Update.PC = tvec &^ 3
-	if bi.T(tvec, 0) == 1 && isInterrupt {
+	if tvec&1 == 1 && isInterrupt {
 		cpu.Update.PC += causeID * 4
 	}
 }
