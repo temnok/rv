@@ -8,16 +8,16 @@ import (
 )
 
 func Step(cpu *state.CPU) int {
-	cpu.Update.Targets = state.UpdatePC
+	cpu.Update.Targets = 0
 
-	opcode := FetchAndExec(cpu)
+	opcode := EvaluateState(cpu)
 
 	UpdateState(cpu)
 
 	return opcode
 }
 
-func FetchAndExec(cpu *state.CPU) int {
+func EvaluateState(cpu *state.CPU) int {
 	if trap.CheckPendingInterrupts(cpu); trap.IsEntered(cpu) {
 		return -1
 	}

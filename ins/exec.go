@@ -57,6 +57,7 @@ func Exec(cpu *state.CPU, opcode int) {
 		opcodeSize = 2
 	}
 
+	cpu.Update.Targets |= state.UpdatePC
 	cpu.Update.PC = cpu.PC + opcodeSize
 
 	op := Op(opcode)
