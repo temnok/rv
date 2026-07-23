@@ -21,7 +21,6 @@ type CSR struct {
 	Scause     int
 	Scounteren int
 	Sepc       int
-	Sip        int
 	Sscratch   int
 	Stimecmp   int
 	Stval      int
