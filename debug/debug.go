@@ -17,7 +17,7 @@ var (
 func Step(cpu *state.CPU) bool {
 	pc := cpu.PC
 
-	opcode := cp.FetchAndExec(cpu)
+	opcode := cp.Step(cpu)
 
 	entry := []int{pc, opcode}
 
@@ -39,12 +39,6 @@ func Step(cpu *state.CPU) bool {
 	//if trap.IsEntered(cpu) && cpu.Update.Cause == trap.IllegalIstruction {
 	//	return false
 	//}
-
-	if uint(cpu.PC) == 0xffffffff80217efe {
-		return false
-	}
-
-	cp.UpdateState(cpu)
 
 	return true
 }

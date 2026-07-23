@@ -8,6 +8,8 @@ import (
 )
 
 func Step(cpu *state.CPU) int {
+	cpu.Update.Targets = 0
+
 	opcode := FetchAndExec(cpu)
 
 	UpdateState(cpu)

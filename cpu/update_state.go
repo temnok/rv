@@ -62,8 +62,6 @@ func UpdateState(cpu *state.CPU) {
 
 	cpu.PC = up.PC
 
-	up.Targets = 0
-
 	updateCounters(cpu)
 }
 
