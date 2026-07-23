@@ -6,7 +6,6 @@ func Update(cpu *state.CPU, reg, val int) {
 	csr := &cpu.CSR
 
 	switch reg {
-
 	case Fcsr:
 		csr.Fcsr = val & 0xFF
 
@@ -86,6 +85,5 @@ func Update(cpu *state.CPU, reg, val int) {
 
 	case Stvec:
 		csr.Stvec = val
-
 	}
 }

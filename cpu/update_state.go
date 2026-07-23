@@ -8,6 +8,20 @@ import (
 func UpdateState(cpu *state.CPU) {
 	up := &cpu.Update
 
+	oldPC := cpu.PC
+
+	if up.Targets&state.UpdatePC != 0 {
+		cpu.PC = up.PC
+	}
+
+	if up.Targets&state.UpdatePriv != 0 {
+		cpu.Priv = up.Priv
+	}
+
+	if up.Targets&state.UpdateReservation != 0 {
+		cpu.Reservation = up.Reservation
+	}
+
 	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
 		cpu.X[up.Xreg] = up.Xval
 	}
@@ -30,9 +44,9 @@ func UpdateState(cpu *state.CPU) {
 
 	if up.Targets&state.UpdateEpc != 0 {
 		if up.Priv == state.PrivM {
-			cpu.CSR.Mepc = cpu.PC
+			cpu.CSR.Mepc = oldPC
 		} else {
-			cpu.CSR.Sepc = cpu.PC
+			cpu.CSR.Sepc = oldPC
 		}
 	}
 
@@ -51,16 +65,6 @@ func UpdateState(cpu *state.CPU) {
 			cpu.CSR.Stval = up.Tval
 		}
 	}
-
-	if up.Targets&state.UpdatePriv != 0 {
-		cpu.Priv = up.Priv
-	}
-
-	if up.Targets&state.UpdateReservation != 0 {
-		cpu.Reservation = up.Reservation
-	}
-
-	cpu.PC = up.PC
 
 	updateCounters(cpu)
 }

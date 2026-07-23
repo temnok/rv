@@ -40,7 +40,8 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		tvec = cpu.CSR.Stvec
 	}
 
-	cpu.Update.Targets = state.UpdatePriv | state.UpdateMstatus | state.UpdateEpc | state.UpdateCause | state.UpdateTval
+	cpu.Update.Targets = state.UpdatePC | state.UpdatePriv | state.UpdateMstatus |
+		state.UpdateEpc | state.UpdateCause | state.UpdateTval
 
 	cpu.Update.Priv = priv
 	cpu.Update.Mstatus = cpu.CSR.Mstatus&^clearBits | setBits

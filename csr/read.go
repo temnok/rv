@@ -12,7 +12,6 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 	var val int
 
 	switch csr := &cpu.CSR; reg {
-
 	case Fcsr:
 		val = csr.Fcsr
 
@@ -127,7 +126,6 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 
 	default:
 		return 0, false
-
 	}
 
 	return val, true

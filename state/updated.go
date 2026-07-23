@@ -1,16 +1,19 @@
 package state
 
 const (
-	UpdateXreg        = 1 << 0
-	UpdateFreg        = 1 << 1
-	UpdateCreg        = 1 << 2
-	UpdateFcsr        = 1 << 3
-	UpdateMstatus     = 1 << 4
-	UpdateEpc         = 1 << 5
-	UpdateCause       = 1 << 6
-	UpdateTval        = 1 << 7
-	UpdatePriv        = 1 << 8
-	UpdateReservation = 1 << 9
+	UpdatePC          = 1 << 0
+	UpdatePriv        = 1 << 1
+	UpdateReservation = 1 << 2
+
+	UpdateXreg = 1 << 3
+	UpdateFreg = 1 << 4
+	UpdateCreg = 1 << 5
+
+	UpdateFcsr    = 1 << 6
+	UpdateMstatus = 1 << 7
+	UpdateEpc     = 1 << 8
+	UpdateCause   = 1 << 9
+	UpdateTval    = 1 << 10
 )
 
 type UpdatedState struct {
