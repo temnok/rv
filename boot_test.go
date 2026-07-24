@@ -17,7 +17,7 @@ func TestBoot(t *testing.T) {
 		input:      inW,
 	}
 
-	cpu := bootLinux(inR, outW, 110_000_000)
+	cpu := BootLinux(inR, outW, 110_000_000)
 
 	if !outW.success {
 		debug.Dump(cpu)

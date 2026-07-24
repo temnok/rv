@@ -2,38 +2,21 @@ package uart
 
 import (
 	"github.com/temnok/rv/plic"
-	"io"
 )
 
 type UART struct {
 	plic        *plic.PLIC
 	interruptID int
 
-	input  chan byte
-	output io.Writer
-
-	rx, ip, ie int
+	tx, rx, ie int
 }
 
-func New(plic *plic.PLIC, interuptID int, r io.Reader, w io.Writer) *UART {
-	input := make(chan byte)
-
-	go func() {
-		buf := []byte{0}
-
-		for {
-			if n, _ := r.Read(buf); n > 0 {
-				input <- buf[0]
-			}
-		}
-	}()
-
+func New(plic *plic.PLIC, interuptID int) *UART {
 	return &UART{
 		plic:        plic,
 		interruptID: interuptID,
-		input:       input,
-		output:      w,
 
+		tx: -1,
 		rx: -1,
 	}
 }
@@ -46,8 +29,13 @@ func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
 	switch addr {
 	case 0x00: // txdata
 		if write {
-			uart.output.Write([]byte{byte(writeData)})
+			uart.tx = writeData & 0xFF
+
 			uart.sync()
+		} else {
+			if uart.tx >= 0 {
+				val = 1 << 31
+			}
 		}
 
 	case 0x04: // rxdata
@@ -66,43 +54,46 @@ func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
 		val = uart.ie
 
 		if write {
-			uart.ie = writeData
+			uart.ie = writeData & 3
 
 			uart.sync()
 		}
 
 	case 0x14: // ip
-		val = uart.ip
+		val = uart.ip()
 	}
 
 	return val
 }
 
-func (uart *UART) Input() int {
-	select {
-	case char := <-uart.input:
-		uart.rx = int(char)
-		uart.sync()
+func (uart *UART) AcceptsInput() bool {
+	return uart.rx < 0
+}
 
-		return int(char)
+func (uart *UART) SetInput(b byte) {
+	uart.rx = int(b)
+	uart.sync()
+}
 
-	default:
-		return -1
-	}
+func (uart *UART) HasOutput() bool {
+	return uart.tx >= 0
+}
+
+func (uart *UART) GetOutput() byte {
+	b := byte(uart.tx)
+
+	uart.tx = -1
+	uart.sync()
+
+	return b
+}
+
+func (uart *UART) ip() int {
+	tp := -(uart.tx >> 63)
+	rp := uart.rx>>63 + 1
+	return (rp<<1 | tp) & uart.ie
 }
 
 func (uart *UART) sync() {
-	if uart.ie&1 == 1 {
-		uart.ip |= 1
-	} else {
-		uart.ip &^= 1
-	}
-
-	if uart.rx >= 0 && uart.ie&2 == 2 {
-		uart.ip |= 2
-	} else {
-		uart.ip &^= 2
-	}
-
-	uart.plic.PendInterrupt(uart.interruptID, uart.ip != 0)
+	uart.plic.PendInterrupt(uart.interruptID, uart.ip() != 0)
 }

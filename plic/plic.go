@@ -19,7 +19,7 @@ func New(cpu *state.CPU) *PLIC {
 	}
 }
 
-func (plic *PLIC) Access(addr int, width int, write bool, writeData int) int {
+func (plic *PLIC) Access(addr int, width int, write bool, writeVal int) int {
 	addr &= 0xff_ffff
 
 	var val int
@@ -32,7 +32,7 @@ func (plic *PLIC) Access(addr int, width int, write bool, writeData int) int {
 		val = plic.enable
 
 		if write {
-			plic.enable = writeData
+			plic.enable = writeVal
 			plic.sync()
 		}
 

@@ -8,25 +8,10 @@ import (
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/uart"
-	"golang.org/x/term"
 	"io"
-	"os"
 )
 
-func BootLinux() {
-	termState, err := term.MakeRaw(0)
-	if err != nil {
-		panic(err)
-	}
-
-	defer func() {
-		term.Restore(0, termState)
-	}()
-
-	bootLinux(os.Stdin, os.Stdout, 0)
-}
-
-func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
+func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	var (
 		ramBaseAddr  = 0x8000_0000
 		opensbiAddr  = ramBaseAddr
@@ -38,7 +23,7 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		cpu  = cp.New(opensbiAddr)
 		ram  = ram.New(512 * 1024 * 1024)
 		plic = plic.New(cpu)
-		uart = uart.New(plic, 1, in, out)
+		uart = uart.New(plic, 1)
 	)
 
 	cpu.RAM = ram.Access
@@ -59,16 +44,35 @@ func bootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr
 
-	for step := 0; uart.Input() != 'D'-'@'; step++ {
-		cp.Step(cpu)
-
-		//if !debug.Step(cpu) {
-		//	break
-		//}
-
-		if timeout != 0 && step > timeout {
-			break
+	inChan := make(chan byte)
+	go func() {
+		b := []byte{0}
+		for {
+			if n, _ := in.Read(b); n > 0 {
+				inChan <- b[0]
+			}
 		}
+	}()
+
+steps:
+	for step := 0; timeout == 0 || step < timeout; step++ {
+		if uart.AcceptsInput() {
+			select {
+			case b := <-inChan:
+				if b == 'D'-'@' {
+					break steps
+				}
+
+				uart.SetInput(b)
+			default:
+			}
+		}
+
+		if uart.HasOutput() {
+			out.Write([]byte{uart.GetOutput()})
+		}
+
+		cp.Step(cpu)
 	}
 
 	//debug.Dump(cpu)
