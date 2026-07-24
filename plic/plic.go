@@ -26,19 +26,17 @@ func (plic *PLIC) Access(addr int, width int, write bool, writeData int) int {
 
 	switch addr {
 	case 0x1000: // pending
-		if !write {
-			val = plic.pending
-		}
+		val = plic.pending
 
 	case 0x2000: // enable
+		val = plic.enable
+
 		if write {
 			plic.enable = writeData
 			plic.sync()
-		} else {
-			val = plic.enable
 		}
 
-	case 0x20_0000, 0x20_0004: // claim
+	case 0x20_0004: // claim
 		if !write {
 			val = bits.TrailingZeros(uint(plic.pending&plic.enable)) & 63
 			plic.pending &^= 1 << val
