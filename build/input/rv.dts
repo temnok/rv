@@ -10,8 +10,8 @@
 	};
 
 	chosen {
-		bootargs = "root=/dev/pmem0 rw no4lvl earlycon=sifive,0x02000000 console=ttySIF0";
-		stdout-path = "/soc/serial@2000000";
+		bootargs = "root=/dev/pmem0 rw no4lvl earlycon=sifive,0x10010000 console=ttySIF0";
+		stdout-path = "/soc/serial@10010000";
 	};
 
 	memory {
@@ -66,24 +66,24 @@
 		compatible = "simple-bus";
 		ranges;
 
-		uart0: serial@2000000 {
-			compatible = "sifive,uart0";
-			reg = <0x02000000 0x20>;
-			interrupt-parent = <&plic>;
-			interrupts = <1>;
-			clocks = <&hfclk>;
-			no-loopback-test;
-		};
-
-		plic: interrupt-controller@3000000 {
+		plic: interrupt-controller@C000000 {
 			#address-cells = <0>;
 			#interrupt-cells = <1>;
 			#size-cells = <1>;
 			compatible = "riscv,plic0";
-			reg = <0x03000000 0x300000>;
+			reg = <0x0C000000 0x300000>;
 			interrupts-extended = <&intc 9 &intc 0xFFFFFFFF>;
 			riscv,ndev = <32>;
 			interrupt-controller;
+		};
+
+		uart0: serial@10010000 {
+			compatible = "sifive,uart0";
+			reg = <0x10010000 0x20>;
+			interrupt-parent = <&plic>;
+			interrupts = <1>;
+			clocks = <&hfclk>;
+			no-loopback-test;
 		};
 	};
 };

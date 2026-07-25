@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-BUILD_BUSYBOX=false
+BUILD_BUSYBOX=true
 BUILD_DEVTREE=true
-BUILD_KERNEL=false
-BUILD_OPENSBI=false
-BUILD_RAMDISK=false
+BUILD_KERNEL=true
+BUILD_OPENSBI=true
+BUILD_RAMDISK=true
 
 SCRIPT_START=$(date +%s)
 BM_START=${SCRIPT_START}

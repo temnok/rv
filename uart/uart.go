@@ -21,7 +21,12 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 	var val int
 
 	switch addr {
-	case 0x0200_0000: // txdata
+	case 0x0C20_0004: // PLIC claim
+		if (cpu.CSR.Uart>>csr.UartIP)&(cpu.CSR.Uart>>csr.UartIE)&3 != 0 {
+			val = 1
+		}
+
+	case 0x1001_0000: // txdata
 		val = (^cpu.CSR.Uart >> csr.UartIP) & 1 << 31
 
 		if write {
@@ -30,7 +35,7 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			uart.sync()
 		}
 
-	case 0x0200_0004: // rxdata
+	case 0x1001_0004: // rxdata
 		val = 1 << 31
 
 		if !write && (cpu.CSR.Uart>>csr.UartIP)&2 != 0 {
@@ -40,7 +45,7 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			uart.sync()
 		}
 
-	case 0x0200_0010: // ie
+	case 0x1001_0010: // ie
 		val = cpu.CSR.Uart >> csr.UartIE & 3
 
 		if write {
@@ -49,13 +54,8 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			uart.sync()
 		}
 
-	case 0x0200_0014: // ip
+	case 0x1001_0014: // ip
 		val = cpu.CSR.Uart >> csr.UartIP & 3
-
-	case 0x0320_0004: // PLIC claim
-		if (cpu.CSR.Uart>>csr.UartIP)&(cpu.CSR.Uart>>csr.UartIE)&3 != 0 {
-			val = 1
-		}
 	}
 
 	return val
