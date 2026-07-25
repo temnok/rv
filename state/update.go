@@ -16,6 +16,7 @@ const (
 	UpdateTval    = 1 << 10
 	UpdateMcycle  = 1 << 11
 	UpdateMip     = 1 << 12
+	UpdateUart    = 1 << 13
 )
 
 type Update struct {

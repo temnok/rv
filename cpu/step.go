@@ -41,7 +41,12 @@ func updateTimer(cpu *state.CPU) {
 
 	stip := cpu.CSR.Mip >> csr.MipSTIP & 1
 	if uint(csr.McycleToMtime(cpu.Update.Mcycle)) < uint(cpu.CSR.Stimecmp) != (stip == 0) {
-		cpu.Update.Targets |= state.UpdateMip
-		cpu.Update.Mip = cpu.CSR.Mip&^(1<<csr.MipSTIP) | (1-stip)<<csr.MipSTIP
+		if cpu.Update.Targets&state.UpdateMip == 0 {
+			cpu.Update.Targets |= state.UpdateMip
+			cpu.Update.Mip = cpu.CSR.Mip
+		}
+
+		cpu.Update.Mip &^= 1 << csr.MipSTIP
+		cpu.Update.Mip |= (1 - stip) << csr.MipSTIP
 	}
 }

@@ -26,7 +26,7 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			val = 1
 		}
 
-	case 0x1001_0000: // txdata
+	case 0x1001_0000: // UART txdata
 		val = (^cpu.CSR.Uart >> csr.UartIP) & 1 << 31
 
 		if write {
@@ -35,7 +35,7 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			uart.sync()
 		}
 
-	case 0x1001_0004: // rxdata
+	case 0x1001_0004: // UART rxdata
 		val = 1 << 31
 
 		if !write && (cpu.CSR.Uart>>csr.UartIP)&2 != 0 {
@@ -45,7 +45,7 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			uart.sync()
 		}
 
-	case 0x1001_0010: // ie
+	case 0x1001_0010: // UART ie
 		val = cpu.CSR.Uart >> csr.UartIE & 3
 
 		if write {
@@ -54,7 +54,7 @@ func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 			uart.sync()
 		}
 
-	case 0x1001_0014: // ip
+	case 0x1001_0014: // UART ip
 		val = cpu.CSR.Uart >> csr.UartIP & 3
 	}
 
