@@ -100,4 +100,9 @@ const (
 	FSinitial = 0b_01
 	FSclean   = 0b_10
 	FSdirty   = 0b_11
+
+	UartTX = 0
+	UartRX = 8
+	UartIE = 16
+	UartIP = 24
 )

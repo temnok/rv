@@ -25,4 +25,6 @@ type CSR struct {
 	Stimecmp   int
 	Stval      int
 	Stvec      int
+
+	Uart int
 }
