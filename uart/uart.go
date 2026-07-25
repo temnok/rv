@@ -1,20 +1,19 @@
 package uart
 
 import (
-	"github.com/temnok/rv/plic"
+	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/state"
 )
 
 type UART struct {
-	plic        *plic.PLIC
-	interruptID int
+	cpu *state.CPU
 
 	tx, rx, ie int
 }
 
-func New(plic *plic.PLIC, interuptID int) *UART {
+func New(cpu *state.CPU) *UART {
 	return &UART{
-		plic:        plic,
-		interruptID: interuptID,
+		cpu: cpu,
 
 		tx: -1,
 		rx: -1,
@@ -22,7 +21,7 @@ func New(plic *plic.PLIC, interuptID int) *UART {
 }
 
 func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
-	addr &= 0xff_ffff
+	addr &= 0x1ff_ffff
 
 	var val int
 
@@ -61,6 +60,11 @@ func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
 
 	case 0x14: // ip
 		val = uart.ip()
+
+	case 0x120_0004: // PLIC claim
+		if uart.ipAndIE() != 0 {
+			val = 1
+		}
 	}
 
 	return val
@@ -91,9 +95,17 @@ func (uart *UART) GetOutput() byte {
 func (uart *UART) ip() int {
 	tp := -(uart.tx >> 63)
 	rp := uart.rx>>63 + 1
-	return (rp<<1 | tp) & uart.ie
+	return rp<<1 | tp
+}
+
+func (uart *UART) ipAndIE() int {
+	return uart.ip() & uart.ie
 }
 
 func (uart *UART) sync() {
-	uart.plic.PendInterrupt(uart.interruptID, uart.ip() != 0)
+	if uart.ipAndIE() != 0 {
+		uart.cpu.CSR.Mip |= 1 << csr.MipSEIP
+	} else {
+		uart.cpu.CSR.Mip &^= 1 << csr.MipSEIP
+	}
 }

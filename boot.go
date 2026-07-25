@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/isa"
-	"github.com/temnok/rv/plic"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/uart"
@@ -22,12 +21,11 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 
 		cpu  = cp.New(opensbiAddr)
 		ram  = ram.New(512 * 1024 * 1024)
-		plic = plic.New(cpu)
-		uart = uart.New(plic, 1)
+		uart = uart.New(cpu)
 	)
 
 	cpu.RAM = ram.Access
-	cpu.Devices = []state.Device{1: plic.Access, 2: uart.Access}
+	cpu.Devices = []state.Device{2: uart.Access, 3: uart.Access}
 
 	dir := "build/output/"
 

@@ -66,17 +66,6 @@
 		compatible = "simple-bus";
 		ranges;
 
-		plic: interrupt-controller@1000000 {
-			#address-cells = <0>;
-			#interrupt-cells = <1>;
-			#size-cells = <1>;
-			compatible = "riscv,plic0";
-			reg = <0x01000000 0x300000>;
-			interrupts-extended = <&intc 9 &intc 0xFFFFFFFF>;
-			riscv,ndev = <32>;
-			interrupt-controller;
-		};
-
 		uart0: serial@2000000 {
 			compatible = "sifive,uart0";
 			reg = <0x02000000 0x20>;
@@ -84,6 +73,17 @@
 			interrupts = <1>;
 			clocks = <&hfclk>;
 			no-loopback-test;
+		};
+
+		plic: interrupt-controller@3000000 {
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			#size-cells = <1>;
+			compatible = "riscv,plic0";
+			reg = <0x03000000 0x300000>;
+			interrupts-extended = <&intc 9 &intc 0xFFFFFFFF>;
+			riscv,ndev = <32>;
+			interrupt-controller;
 		};
 	};
 };
