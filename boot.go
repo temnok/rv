@@ -25,7 +25,7 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	)
 
 	cpu.RAM = ram.Access
-	cpu.Devices = []state.Device{2: uart.Access, 3: uart.Access}
+	cpu.Devices = uart.Access
 
 	dir := "build/output/"
 

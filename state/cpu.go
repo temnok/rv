@@ -11,24 +11,17 @@ type CPU struct {
 	TLB TLB
 
 	RAM     Device
-	Devices []Device
+	Devices Device
 }
 
 type Device func(addr int, width int, write bool, writeData int) int
 
 func (cpu *CPU) DeviceAtAddress(address int) Device {
-	if address >= ram.BaseAddr {
-		return cpu.RAM
+	if address < ram.BaseAddr {
+		return cpu.Devices
 	}
 
-	if address < 0x1000_0000 {
-		i := address >> 24
-		if i < len(cpu.Devices) {
-			return cpu.Devices[i]
-		}
-	}
-
-	return nil
+	return cpu.RAM
 }
 
 func (cpu *CPU) Xset(reg, val int) {
