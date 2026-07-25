@@ -8,61 +8,63 @@ import (
 type UART struct {
 	cpu *state.CPU
 
-	tx, rx, ie int
+	reg int
 }
+
+const (
+	UartTX = 0
+	UartRX = 8
+	UartIE = 16
+	UartIP = 24
+)
 
 func New(cpu *state.CPU) *UART {
 	return &UART{
 		cpu: cpu,
 
-		tx: -1,
-		rx: -1,
+		reg: 1 << UartIP,
 	}
 }
 
-func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
+func (uart *UART) Access(addr int, width int, write bool, writeVal int) int {
 	addr &= 0x1ff_ffff
 
 	var val int
 
 	switch addr {
 	case 0x00: // txdata
+		val = (^uart.reg >> UartIP) & 1 << 31
+
 		if write {
-			uart.tx = writeData & 0xFF
+			uart.reg = uart.reg&^(1<<UartIP|0xFF<<UartTX) | writeVal&0xFF<<UartTX
 
 			uart.sync()
-		} else {
-			if uart.tx >= 0 {
-				val = 1 << 31
-			}
 		}
 
 	case 0x04: // rxdata
-		if !write {
-			if uart.rx < 0 {
-				val = 1 << 31
-			} else {
-				val = uart.rx
-				uart.rx = -1
+		val = 1 << 31
 
-				uart.sync()
-			}
+		if !write && (uart.reg>>UartIP)&2 != 0 {
+			val = uart.reg >> UartRX & 0xFF
+			uart.reg &^= 2<<UartIP | 0xFF<<UartRX
+
+			uart.sync()
 		}
 
 	case 0x10: // ie
-		val = uart.ie
+		val = uart.reg >> UartIE & 3
 
 		if write {
-			uart.ie = writeData & 3
+			uart.reg = uart.reg&^(3<<UartIE) | writeVal&3<<UartIE
 
 			uart.sync()
 		}
 
 	case 0x14: // ip
-		val = uart.ip()
+		val = uart.reg >> UartIP & 3
 
 	case 0x120_0004: // PLIC claim
-		if uart.ipAndIE() != 0 {
+		if (uart.reg>>UartIP)&(uart.reg>>UartIE)&3 != 0 {
 			val = 1
 		}
 	}
@@ -70,40 +72,31 @@ func (uart *UART) Access(addr int, width int, write bool, writeData int) int {
 	return val
 }
 
-func (uart *UART) AcceptsInput() bool {
-	return uart.rx < 0
-}
-
-func (uart *UART) SetInput(b byte) {
-	uart.rx = int(b)
-	uart.sync()
-}
-
 func (uart *UART) HasOutput() bool {
-	return uart.tx >= 0
+	return uart.reg>>UartIP&1 == 0
 }
 
 func (uart *UART) GetOutput() byte {
-	b := byte(uart.tx)
+	b := byte(uart.reg >> UartTX)
 
-	uart.tx = -1
+	uart.reg = uart.reg&^(0xFF<<UartTX) | 1<<UartIP
 	uart.sync()
 
 	return b
 }
 
-func (uart *UART) ip() int {
-	tp := -(uart.tx >> 63)
-	rp := uart.rx>>63 + 1
-	return rp<<1 | tp
+func (uart *UART) AcceptsInput() bool {
+	return uart.reg>>UartIP&2 == 0
 }
 
-func (uart *UART) ipAndIE() int {
-	return uart.ip() & uart.ie
+func (uart *UART) SetInput(b byte) {
+	uart.reg = uart.reg&^(0xFF<<UartRX) | int(b)<<UartRX | 2<<UartIP
+
+	uart.sync()
 }
 
 func (uart *UART) sync() {
-	if uart.ipAndIE() != 0 {
+	if (uart.reg>>UartIP)&(uart.reg>>UartIE)&3 != 0 {
 		uart.cpu.CSR.Mip |= 1 << csr.MipSEIP
 	} else {
 		uart.cpu.CSR.Mip &^= 1 << csr.MipSEIP
