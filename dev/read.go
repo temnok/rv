@@ -23,7 +23,7 @@ func Read(cpu *state.CPU, addr int) int {
 		} else {
 			val = cpu.CSR.Uart >> csr.UartRX & 0xFF
 
-			csr.UpdateUart(cpu, cpu.CSR.Uart&^2<<csr.UartIP|0xFF<<csr.UartRX)
+			updateUart(cpu, cpu.CSR.Uart&^2<<csr.UartIP|0xFF<<csr.UartRX)
 		}
 
 	case UART_ie:
