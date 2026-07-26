@@ -1,6 +1,10 @@
 package csr
 
 const (
+	PrivU = 0
+	PrivS = 1
+	PrivM = 3
+
 	// https://github.com/riscv/riscv-isa-manual/blob/main/src/priv-csrs.adoc#user-content-mcsrnames0
 	Fflags = 0x001
 	Frm    = 0x002
@@ -61,14 +65,6 @@ const (
 	McountinhibitCY = 0
 	McountinhibitIR = 2
 
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#_machine_status_mstatus_and_mstatush_registers
-	MstatusFS = 13
-	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#xlen-control
-	MstatusUXL = 32
-	MstatusSXL = 34
-	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
-	MstatusSD = 63
-
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	MstatusSIE  = 1
 	MstatusMIE  = 3
@@ -76,11 +72,15 @@ const (
 	MstatusMPIE = 7
 	MstatusSPP  = 8
 	MstatusMPP  = 11 // Machine Previous Privilege
+	MstatusFS   = 13
 	MstatusMPRV = 17 // Modify PRiVilege
 	MstatusSUM  = 18 // permit Supervisor User Memory access
 	MstatusMXR  = 19 // Make eXecutable Readable
 	MstatusTVM  = 20
 	MstatusTSR  = 22
+	MstatusUXL  = 32 // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#xlen-control
+	MstatusSXL  = 34
+	MstatusSD   = 63 // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
 
 	McauseI = 63
 
@@ -93,11 +93,6 @@ const (
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
 	MenvcfgSTCE = 63
-
-	FSoff     = 0b_00
-	FSinitial = 0b_01
-	FSclean   = 0b_10
-	FSdirty   = 0b_11
 
 	UartTX = 0
 	UartRX = 8

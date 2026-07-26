@@ -28,14 +28,14 @@ func Sv(cpu *state.CPU, va int, access int) int {
 
 func sv39(cpu *state.CPU, virtAddr int, access int) int {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
-	epriv := cpu.Priv
+	epriv := cpu.CSR.Priv
 	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != state.AccessFetch {
 		epriv = cpu.CSR.Mstatus >> csr.MstatusMPP & 3
 	}
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#norm:satp_op_active
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#norm:satp-mode
-	if epriv == state.PrivM || cpu.CSR.Satp == 0 {
+	if epriv == csr.PrivM || cpu.CSR.Satp == 0 {
 		return virtAddr
 	}
 
@@ -56,8 +56,8 @@ func sv39(cpu *state.CPU, virtAddr int, access int) int {
 
 	sum, mxr := cpu.CSR.Mstatus>>csr.MstatusSUM&1, cpu.CSR.Mstatus>>csr.MstatusMXR&1
 
-	if epriv == state.PrivU && pte>>pteU&1 == 0 ||
-		epriv == state.PrivS && pte>>pteU&1 == 1 && !(sum == 1 && access != state.AccessFetch) ||
+	if epriv == csr.PrivU && pte>>pteU&1 == 0 ||
+		epriv == csr.PrivS && pte>>pteU&1 == 1 && !(sum == 1 && access != state.AccessFetch) ||
 		access == state.AccessFetch && pte>>pteX&1 == 0 ||
 		access == state.AccessLoad && pte>>pteR&1 == 0 && !(mxr == 1 && pte>>pteX&1 == 1) ||
 		access == state.AccessStore && !(pte>>pteW&1 == 1 && pte>>pteD&1 == 1) ||

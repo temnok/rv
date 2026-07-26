@@ -18,15 +18,15 @@ func Enter(cpu *state.CPU, cause, tval int) {
 		deleg = cpu.CSR.Mideleg
 	}
 
-	priv := state.PrivM
+	priv := csr.PrivM
 	clr := 3<<csr.MstatusMPP | 1<<csr.MstatusMPIE | 1<<csr.MstatusMIE
-	set := cpu.Priv<<csr.MstatusMPP | (cpu.CSR.Mstatus>>csr.MstatusMIE&1)<<csr.MstatusMPIE
+	set := cpu.CSR.Priv<<csr.MstatusMPP | (cpu.CSR.Mstatus>>csr.MstatusMIE&1)<<csr.MstatusMPIE
 	tvec := cpu.CSR.Mtvec
 
-	if privS := cpu.Priv <= state.PrivS && deleg>>causeID&1 == 1; privS {
-		priv = state.PrivS
+	if privS := cpu.CSR.Priv <= csr.PrivS && deleg>>causeID&1 == 1; privS {
+		priv = csr.PrivS
 		clr = 1<<csr.MstatusSPP | 1<<csr.MstatusSPIE | 1<<csr.MstatusSIE
-		set = cpu.Priv<<csr.MstatusSPP | (cpu.CSR.Mstatus>>csr.MstatusSIE&1)<<csr.MstatusSPIE
+		set = cpu.CSR.Priv<<csr.MstatusSPP | (cpu.CSR.Mstatus>>csr.MstatusSIE&1)<<csr.MstatusSPIE
 		tvec = cpu.CSR.Stvec
 	}
 

@@ -80,7 +80,7 @@ func runTest(t *testing.T, file string) {
 
 			t.Errorf("timeout: trapCount=%v, priv=%v, mcause=%08x, x31=%08x\n"+
 				"last PCs: %x\nlast traps: %x\nloop at addresses: %x\n",
-				trapCount, cpu.Priv, cpu.CSR.Mcause, uint(cpu.X[31]), lastPCs, lastTraps, addresses)
+				trapCount, cpu.CSR.Priv, cpu.CSR.Mcause, uint(cpu.X[31]), lastPCs, lastTraps, addresses)
 			break
 		}
 

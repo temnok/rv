@@ -1,12 +1,13 @@
 package state
 
+import "github.com/temnok/rv/csr"
+
 func New(ramSize int) *CPU {
 	return &CPU{
-		CSR: CSR{
-			Mstatus: 2<<MstatusSXL | 2<<MstatusUXL, // 64-bit S- and U-modes,
+		CSR: csr.Registers{
+			Priv:    csr.PrivM,
+			Mstatus: 2<<csr.MstatusSXL | 2<<csr.MstatusUXL, // 64-bit S- and U-modes,
 		},
-
-		Priv: PrivM,
 
 		RAM: make([]int, ramSize/8),
 

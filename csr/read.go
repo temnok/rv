@@ -1,17 +1,13 @@
 package csr
 
-import (
-	"github.com/temnok/rv/state"
-)
-
-func Read(cpu *state.CPU, reg int) (int, bool) {
-	if cpu.Priv < reg>>8&3 {
+func Read(csr *Registers, reg int) (int, bool) {
+	if csr.Priv < reg>>8&3 {
 		return 0, false
 	}
 
 	var val int
 
-	switch csr := &cpu.CSR; reg {
+	switch reg {
 	case Fcsr:
 		val = csr.Fcsr
 
@@ -66,7 +62,10 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 		val = csr.Mip
 
 	case Misa:
-		val = state.Misa
+		val = -1<<63 |
+			1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
+			1<<('f'-'a') | ('d' - 'a') |
+			1<<('u'-'a') | 1<<('s'-'a')
 
 	case Mscratch:
 		val = csr.Mscratch
@@ -83,7 +82,7 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 	case Mvendorid:
 
 	case Satp:
-		if cpu.Priv == state.PrivS && csr.Mstatus>>MstatusTVM&1 == 1 {
+		if csr.Priv == PrivS && csr.Mstatus>>MstatusTVM&1 == 1 {
 			return 0, false
 		}
 		val = csr.Satp
@@ -111,7 +110,7 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 		val = csr.Mstatus & mask
 
 	case Stimecmp:
-		if cpu.Priv == state.PrivS && (csr.Mcounteren>>McounterenTM&1 == 0 || csr.Menvcfg>>MenvcfgSTCE&1 == 0) {
+		if csr.Priv == PrivS && (csr.Mcounteren>>McounterenTM&1 == 0 || csr.Menvcfg>>MenvcfgSTCE&1 == 0) {
 			return 0, false
 		}
 		val = csr.Stimecmp

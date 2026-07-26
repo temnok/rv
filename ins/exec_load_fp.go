@@ -6,7 +6,7 @@ import (
 )
 
 func execLoadFP(cpu *state.CPU, op Op) {
-	if csr.FpDisabled(cpu) {
+	if fpDisabled := cpu.CSR.Mstatus>>csr.MstatusFS&3 == 0; fpDisabled {
 		illegal(cpu, op)
 		return
 	}

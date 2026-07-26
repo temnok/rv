@@ -1,10 +1,11 @@
 package state
 
+import "github.com/temnok/rv/csr"
+
 type CPU struct {
-	Priv        int
 	PC          int
 	X, F        [32]int
-	CSR         CSR
+	CSR         csr.Registers
 	Reservation int
 
 	TLB TLB
@@ -26,5 +27,5 @@ func (cpu *CPU) Fset(reg, val int) {
 	cpu.Update.Targets |= UpdateFreg | UpdateMstatus
 	cpu.Update.Freg = reg
 	cpu.Update.Fval = val
-	cpu.Update.Mstatus = cpu.CSR.Mstatus | MstatusDirtyMask
+	cpu.Update.Mstatus = cpu.CSR.Mstatus | -1<<csr.MstatusSD | 3<<csr.MstatusFS
 }

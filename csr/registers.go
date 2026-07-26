@@ -1,6 +1,8 @@
-package state
+package csr
 
-type CSR struct {
+type Registers struct {
+	Priv, Uart int // hidden
+
 	Fcsr int // https://docs.riscv.org/reference/isa/v20260120/unpriv/f-st-ext.html#fcsr
 
 	Mcause     int
@@ -25,6 +27,4 @@ type CSR struct {
 	Stimecmp   int
 	Stval      int
 	Stvec      int
-
-	Uart int
 }

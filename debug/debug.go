@@ -55,7 +55,7 @@ func Dump(cpu *state.CPU) {
 	up := &cpu.Update
 	//if cpu.Update.TrapEnter {
 	fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
-		cpu.Priv, uint(up.Priv), uint(up.PC), uint(up.Mstatus))
+		cpu.CSR.Priv, uint(up.Priv), uint(up.PC), uint(up.Mstatus))
 	fmt.Printf("xcause:%x, xepc:%x, xtval:%x\r\n",
 		uint(up.Cause), uint(up.Epc), uint(up.Tval))
 	fmt.Printf("mtvec:%x, stvec:%x\r\n",

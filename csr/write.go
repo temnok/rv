@@ -1,10 +1,6 @@
 package csr
 
-import "github.com/temnok/rv/state"
-
-func Write(cpu *state.CPU, reg, val int) {
-	csr := &cpu.CSR
-
+func Write(csr *Registers, reg, val int) {
 	switch reg {
 	case Fcsr:
 		csr.Fcsr = val & 0xFF

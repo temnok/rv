@@ -13,7 +13,7 @@ func Update(cpu *state.CPU) {
 	}
 
 	if up.Targets&state.UpdatePriv != 0 {
-		cpu.Priv = up.Priv
+		cpu.CSR.Priv = up.Priv
 	}
 
 	if up.Targets&state.UpdateReservation != 0 {
@@ -29,7 +29,7 @@ func Update(cpu *state.CPU) {
 	}
 
 	if up.Targets&state.UpdateEpc != 0 {
-		if up.Priv == state.PrivM {
+		if up.Priv == csr.PrivM {
 			cpu.CSR.Mepc = up.Epc
 		} else {
 			cpu.CSR.Sepc = up.Epc
@@ -37,7 +37,7 @@ func Update(cpu *state.CPU) {
 	}
 
 	if up.Targets&state.UpdateCause != 0 {
-		if up.Priv == state.PrivM {
+		if up.Priv == csr.PrivM {
 			cpu.CSR.Mcause = up.Cause
 		} else {
 			cpu.CSR.Scause = up.Cause
@@ -45,7 +45,7 @@ func Update(cpu *state.CPU) {
 	}
 
 	if up.Targets&state.UpdateTval != 0 {
-		if up.Priv == state.PrivM {
+		if up.Priv == csr.PrivM {
 			cpu.CSR.Mtval = up.Tval
 		} else {
 			cpu.CSR.Stval = up.Tval
@@ -73,7 +73,7 @@ func Update(cpu *state.CPU) {
 	}
 
 	if up.Targets&state.UpdateCreg != 0 {
-		csr.Write(cpu, up.Creg, up.Cval)
+		csr.Write(&cpu.CSR, up.Creg, up.Cval)
 	}
 
 	if up.Targets&state.UpdateRAM != 0 {

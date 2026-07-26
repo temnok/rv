@@ -10,9 +10,9 @@ import (
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func Exit(cpu *state.CPU, retPriv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
-	trapped := cpu.Priv == state.PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTSR) == 1
+	trapped := cpu.CSR.Priv == csr.PrivS && bi.T(cpu.CSR.Mstatus, csr.MstatusTSR) == 1
 
-	if trapped || retPriv > cpu.Priv {
+	if trapped || retPriv > cpu.CSR.Priv {
 		Enter(cpu, IllegalIstruction, 0)
 		return
 	}
@@ -20,14 +20,14 @@ func Exit(cpu *state.CPU, retPriv int) {
 	ms := cpu.CSR.Mstatus
 
 	switch retPriv {
-	case state.PrivM:
+	case csr.PrivM:
 		cpu.Update.PC = cpu.CSR.Mepc
 		cpu.Update.Priv = bi.Ts(cpu.CSR.Mstatus, csr.MstatusMPP, 2)
 
 		ms &^= 3 << csr.MstatusMPP
 		ms |= 1<<csr.MstatusMPIE | (ms>>csr.MstatusMPIE&1)<<csr.MstatusMIE
 
-	case state.PrivS:
+	case csr.PrivS:
 		cpu.Update.PC = cpu.CSR.Sepc
 		cpu.Update.Priv = bi.Ts(cpu.CSR.Mstatus, csr.MstatusSPP, 1)
 
@@ -35,7 +35,7 @@ func Exit(cpu *state.CPU, retPriv int) {
 		ms |= 1<<csr.MstatusSPIE | (ms>>csr.MstatusSPIE&1)<<csr.MstatusSIE
 	}
 
-	if cpu.Priv != state.PrivM {
+	if cpu.CSR.Priv != csr.PrivM {
 		ms &^= 1 << csr.MstatusMPRV
 	}
 

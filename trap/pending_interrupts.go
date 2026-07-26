@@ -29,15 +29,15 @@ func CheckPendingInterrupts(cpu *state.CPU) {
 			continue
 		}
 
-		priv := state.PrivM
+		priv := csr.PrivM
 		xIE := csr.MstatusMIE
 		if delegateToSmode := cpu.CSR.Mideleg>>i&1 == 1; delegateToSmode {
-			priv = state.PrivS
+			priv = csr.PrivS
 			xIE = csr.MstatusSIE
 		}
 
 		// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#privstack
-		if priv > cpu.Priv || priv == cpu.Priv && cpu.CSR.Mstatus>>xIE&1 == 1 {
+		if priv > cpu.CSR.Priv || priv == cpu.CSR.Priv && cpu.CSR.Mstatus>>xIE&1 == 1 {
 			Enter(cpu, -1<<csr.McauseI|i, 0)
 			break
 		}
