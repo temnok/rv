@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func UpdateState(cpu *state.CPU) {
+func Update(cpu *state.CPU) {
 	up := &cpu.Update
 
 	if up.Targets&state.UpdatePC != 0 {

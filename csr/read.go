@@ -107,7 +107,8 @@ func Read(cpu *state.CPU, reg int) (int, bool) {
 		val = csr.Sscratch
 
 	case Sstatus:
-		val = csr.Mstatus & (1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP | 1<<MstatusSPIE | 3<<MstatusUXL)
+		const mask = 1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP | 1<<MstatusSPIE | 3<<MstatusUXL
+		val = csr.Mstatus & mask
 
 	case Stimecmp:
 		if cpu.Priv == state.PrivS && (csr.Mcounteren>>McounterenTM&1 == 0 || csr.Menvcfg>>MenvcfgSTCE&1 == 0) {

@@ -4,6 +4,7 @@ import (
 	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/debug"
 	"github.com/temnok/rv/ram"
+	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 	"os"
 	"path/filepath"
@@ -33,9 +34,9 @@ func runTest(t *testing.T, file string) {
 		t.Fatal(err)
 	}
 
-	ramBaseAddr := 0x8000_0000
-	cpu := cp.New(64*1024, ramBaseAddr)
-	ram.Populate(cpu.RAM, ramBaseAddr, program)
+	cpu := state.New(64 * 1024)
+	cpu.PC = ram.BaseAddr
+	ram.Populate(cpu.RAM, ram.BaseAddr, program)
 
 	instrCounts := make([]int, len(program))
 	trapCount := 0
@@ -69,7 +70,7 @@ func runTest(t *testing.T, file string) {
 			var addresses []uint
 			for i, c := range instrCounts {
 				if c > 10_000 {
-					addresses = append(addresses, uint(ramBaseAddr+i))
+					addresses = append(addresses, uint(ram.BaseAddr+i))
 				}
 			}
 

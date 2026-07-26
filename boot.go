@@ -10,16 +10,16 @@ import (
 )
 
 func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
-	var (
-		ramBaseAddr  = 0x8000_0000
-		opensbiAddr  = ramBaseAddr
+	const (
+		opensbiAddr  = ram.BaseAddr
 		kernelAddr   = 0x8020_0000
 		dtbAddr      = kernelAddr - 0x2000
 		dynInfoAddr  = kernelAddr - 0x40
 		diskBaseAddr = 0x8800_0000
-
-		cpu = cp.New(512*1024*1024, opensbiAddr)
 	)
+
+	cpu := state.New(512 * 1024 * 1024)
+	cpu.PC = opensbiAddr
 
 	dir := "build/output/"
 
@@ -30,11 +30,11 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	binary.Encode(buf, binary.LittleEndian, []uint64{0x4942534f, 2, uint64(kernelAddr), 1, 0, 0})
 	ram.Populate(cpu.RAM, dynInfoAddr, buf)
 
-	ram.PopulateFromFile(cpu.RAM, kernelAddr, dir+"/kernel")
-	ram.PopulateFromFile(cpu.RAM, diskBaseAddr, dir+"/ramdisk")
-
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr
+
+	ram.PopulateFromFile(cpu.RAM, kernelAddr, dir+"/kernel")
+	ram.PopulateFromFile(cpu.RAM, diskBaseAddr, dir+"/ramdisk")
 
 	inChan := make(chan byte)
 	go func() {

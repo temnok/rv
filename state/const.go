@@ -18,8 +18,12 @@ const (
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-6-7-extension-context-status-in-mstatus-register
 	MstatusFS = 13
+	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#xlen-control
+	MstatusUXL = 32
+	MstatusSXL = 34
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
 	MstatusSD = 63
 
-	MstatusDirtyMask = -1<<MstatusSD | 3<<MstatusFS
+	MstatusInitialValue = 2<<MstatusSXL | 2<<MstatusUXL // 64-bit S- and U-modes
+	MstatusDirtyMask    = -1<<MstatusSD | 3<<MstatusFS
 )
