@@ -69,8 +69,6 @@ const (
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
 	MstatusSD = 63
 
-	MstatusDirtyMask = -1<<MstatusSD | 3<<MstatusFS
-
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	MstatusSIE  = 1
 	MstatusMIE  = 3
