@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"github.com/temnok/rv/dev"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/translate"
@@ -19,7 +20,7 @@ func Read(cpu *state.CPU, virtAddr int, width int) int {
 	}
 
 	if physAddr < ram.BaseAddr {
-		return cpu.Devices(physAddr, width, false, 0)
+		return dev.Read(cpu, physAddr)
 	} else {
 		return ram.Read(cpu.RAM, physAddr, width)
 	}

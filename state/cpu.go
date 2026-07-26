@@ -6,8 +6,7 @@ type CPU struct {
 
 	TLB TLB
 
-	RAM     []int
-	Devices Device
+	RAM []int
 }
 
 type Device func(addr int, width int, write bool, writeData int) int

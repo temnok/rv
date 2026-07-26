@@ -3,10 +3,10 @@ package rv
 import (
 	"encoding/binary"
 	cp "github.com/temnok/rv/cpu"
+	"github.com/temnok/rv/dev"
 	"github.com/temnok/rv/isa"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/uart"
 	"io"
 )
 
@@ -19,11 +19,8 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		dynInfoAddr  = kernelAddr - 0x40
 		diskBaseAddr = 0x8800_0000
 
-		cpu  = cp.New(512*1024*1024, opensbiAddr)
-		uart = uart.New(cpu)
+		cpu = cp.New(512*1024*1024, opensbiAddr)
 	)
-
-	cpu.Devices = uart.Access
 
 	dir := "build/output/"
 
@@ -52,20 +49,20 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 
 steps:
 	for step := 0; timeout == 0 || step < timeout; step++ {
-		if uart.AcceptsInput() {
+		if dev.AcceptsInput(cpu) {
 			select {
 			case b := <-inChan:
 				if b == 'D'-'@' {
 					break steps
 				}
 
-				uart.SetInput(b)
+				dev.SetInput(cpu, b)
 			default:
 			}
 		}
 
-		if uart.HasOutput() {
-			out.Write([]byte{uart.GetOutput()})
+		if dev.HasOutput(cpu) {
+			out.Write([]byte{dev.GetOutput(cpu)})
 		}
 
 		cp.Step(cpu)
