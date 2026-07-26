@@ -17,7 +17,7 @@ func Fetch(cpu *state.CPU, addr int) int {
 
 	var physAddr, val int
 	if physAddr = translateSv39(cpu, virtAddr, accessFetch); trap.IsEntered(cpu) {
-		return 0
+		return -1
 	}
 
 	val = ram.Read8(cpu, physAddr)
@@ -33,7 +33,7 @@ func Fetch(cpu *state.CPU, addr int) int {
 
 	if pageMask := pageSize - 1; virtAddr&pageMask == 0 {
 		if physAddr = translateSv39(cpu, virtAddr, accessFetch); trap.IsEntered(cpu) {
-			return 0
+			return -1
 		}
 	}
 

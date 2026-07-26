@@ -1,8 +1,7 @@
 package state
 
 type TLB struct {
-	entries                [8]tlbEntry
-	LookupCount, MissCount int
+	entries [8]tlbEntry
 }
 
 type tlbEntry struct {
@@ -37,8 +36,6 @@ func (tlb *TLB) Flush(leaveGlobals bool) {
 }
 
 func (tlb *TLB) Lookup(virtAddr int) (int, int) {
-	tlb.LookupCount++
-
 	for i, entry := range tlb.entries {
 		if entry.vas == 0 {
 			break
@@ -57,7 +54,6 @@ func (tlb *TLB) Lookup(virtAddr int) (int, int) {
 		return entry.pte, shift
 	}
 
-	tlb.MissCount++
 	return 0, 0
 }
 

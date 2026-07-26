@@ -3,7 +3,6 @@ package rv
 import (
 	"bytes"
 	"fmt"
-	"github.com/temnok/rv/debug"
 	"io"
 	"testing"
 )
@@ -20,12 +19,12 @@ func TestBoot(t *testing.T) {
 	cpu := BootLinux(inR, outW, 110_000_000)
 
 	if !outW.success {
-		debug.Dump(cpu)
+		debugDump(cpu)
 
 		t.Fatalf("Expected '%v' stop string, got:\n%v", outW.stopString, string(outW.output))
 	}
 
-	fmt.Printf("TLB lookups/misses: %v/%v\n", cpu.TLB.LookupCount, cpu.TLB.MissCount)
+	//fmt.Printf("TLB lookups/misses: %v/%v\n", cpu.TLB.LookupCount, cpu.TLB.MissCount)
 }
 
 type matchWriter struct {

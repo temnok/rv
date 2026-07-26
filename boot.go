@@ -2,7 +2,6 @@ package rv
 
 import (
 	"encoding/binary"
-	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/isa"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
@@ -67,7 +66,7 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 	}
 
 	for step := 0; !ctrlD && (timeout == 0 || step < timeout); step++ {
-		cp.Step(cpu)
+		Cycle(cpu)
 	}
 
 	//debug.Dump(cpu)

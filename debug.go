@@ -1,9 +1,8 @@
-package debug
+package rv
 
 import (
 	"fmt"
 	"github.com/deadsy/rvda"
-	cp "github.com/temnok/rv/cpu"
 	"github.com/temnok/rv/state"
 	"math"
 	"strings"
@@ -14,10 +13,10 @@ var (
 	debugTrace     [][]int
 )
 
-func Step(cpu *state.CPU) bool {
+func debugCycle(cpu *state.CPU) bool {
 	pc := cpu.PC
 
-	opcode := cp.Step(cpu)
+	opcode := Cycle(cpu)
 
 	entry := []int{pc, opcode}
 
@@ -43,7 +42,7 @@ func Step(cpu *state.CPU) bool {
 	return true
 }
 
-func Dump(cpu *state.CPU) {
+func debugDump(cpu *state.CPU) {
 	isa, _ := rvda.New(64, rvda.RV64gc)
 
 	for _, entry := range debugTrace {

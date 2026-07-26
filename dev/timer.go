@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func IncrementTimer(cpu *state.CPU) {
+func processTimer(cpu *state.CPU) {
 	cpu.Update.Targets |= state.UpdateMcycle
 	cpu.Update.Mcycle = cpu.CSR.Mcycle + 1
 
