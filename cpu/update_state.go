@@ -75,4 +75,8 @@ func UpdateState(cpu *state.CPU) {
 	if up.Targets&state.UpdateCreg != 0 {
 		csr.Write(cpu, up.Creg, up.Cval)
 	}
+
+	if up.Targets&state.UpdateRAM != 0 {
+		cpu.RAM[up.RAMPos] = up.RAMVal
+	}
 }

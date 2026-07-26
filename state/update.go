@@ -17,6 +17,8 @@ const (
 	UpdateMcycle  = 1 << 11
 	UpdateMip     = 1 << 12
 	UpdateUart    = 1 << 13
+
+	UpdateRAM = 1 << 14
 )
 
 type Update struct {
@@ -38,4 +40,6 @@ type Update struct {
 	Mcycle  int
 	Mip     int
 	Uart    int
+
+	RAMPos, RAMVal int
 }

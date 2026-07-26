@@ -22,6 +22,6 @@ func Read(cpu *state.CPU, virtAddr int, width int) int {
 	if physAddr < ram.BaseAddr {
 		return dev.Read(cpu, physAddr)
 	} else {
-		return ram.Read(cpu.RAM, physAddr, width)
+		return ram.Read(cpu, physAddr, width)
 	}
 }

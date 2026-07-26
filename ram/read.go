@@ -1,19 +1,21 @@
 package ram
 
-func Read8(ram []int, addr int) int {
-	if i := (addr - BaseAddr) >> 3; i >= 0 && i < len(ram) {
-		return ram[i]
+import "github.com/temnok/rv/state"
+
+func Read8(cpu *state.CPU, addr int) int {
+	if i := (addr - BaseAddr) >> 3; i >= 0 && i < len(cpu.RAM) {
+		return cpu.RAM[i]
 	}
 
 	return 0
 }
 
-func Read(ram []int, addr int, width int) int {
-	if i := (addr - BaseAddr) >> 3; i >= 0 && i < len(ram) {
+func Read(cpu *state.CPU, addr int, width int) int {
+	if i := (addr - BaseAddr) >> 3; i >= 0 && i < len(cpu.RAM) {
 		shift := (addr & 7) << 3
 		mask := -1 << (width << 3)
 
-		return ram[i] >> shift &^ mask
+		return cpu.RAM[i] >> shift &^ mask
 	}
 
 	return 0

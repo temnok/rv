@@ -22,6 +22,6 @@ func Write(cpu *state.CPU, virtAddr, width, val int) {
 	if physAddr < ram.BaseAddr {
 		dev.Write(cpu, physAddr, val)
 	} else {
-		ram.Write(cpu.RAM, physAddr, width, val)
+		ram.Write(cpu, physAddr, width, val)
 	}
 }

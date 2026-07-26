@@ -18,7 +18,7 @@ func Fetch(cpu *state.CPU, addr int) int {
 		return 0
 	}
 
-	val = ram.Read8(cpu.RAM, physAddr)
+	val = ram.Read8(cpu, physAddr)
 	lo := val >> (shift * 8)
 	isCompressedInstruction := lo&3 != 3
 
@@ -35,7 +35,7 @@ func Fetch(cpu *state.CPU, addr int) int {
 		}
 	}
 
-	val = ram.Read8(cpu.RAM, physAddr)
+	val = ram.Read8(cpu, physAddr)
 
 	return (val&0xffff)<<16 | lo&0xffff
 }
