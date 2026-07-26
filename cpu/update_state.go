@@ -73,6 +73,6 @@ func UpdateState(cpu *state.CPU) {
 	}
 
 	if up.Targets&state.UpdateCreg != 0 {
-		csr.Update(cpu, up.Creg, up.Cval)
+		csr.Write(cpu, up.Creg, up.Cval)
 	}
 }

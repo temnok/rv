@@ -24,14 +24,3 @@ func (cpu *CPU) Fset(reg, val int) {
 	cpu.Update.Fval = val
 	cpu.Update.Mstatus = cpu.CSR.Mstatus | MstatusDirtyMask
 }
-
-func (cpu *CPU) Cset(reg, val int) {
-	cpu.Update.Targets |= UpdateCreg
-	cpu.Update.Creg = reg
-	cpu.Update.Cval = val
-
-	if reg >= 1 && reg <= 3 { // Fflags, Frm, Fcsr
-		cpu.Update.Targets |= UpdateMstatus
-		cpu.Update.Mstatus = cpu.CSR.Mstatus | MstatusDirtyMask
-	}
-}
