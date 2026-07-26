@@ -7,14 +7,12 @@ import (
 
 func New(ramSize, startAddr int) *state.CPU {
 	return &state.CPU{
-		StaticState: state.StaticState{
-			PC: startAddr,
+		PC: startAddr,
 
-			Priv: state.PrivM,
+		Priv: state.PrivM,
 
-			CSR: state.CSR{
-				Mstatus: 2<<csr.MstatusSXL | 2<<csr.MstatusUXL,
-			},
+		CSR: state.CSR{
+			Mstatus: 2<<csr.MstatusSXL | 2<<csr.MstatusUXL,
 		},
 
 		RAM: make([]int, ramSize/8),

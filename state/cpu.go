@@ -1,15 +1,19 @@
 package state
 
 type CPU struct {
-	StaticState
-	Update Update
+	Priv        int
+	PC          int
+	X, F        [32]int
+	CSR         CSR
+	Reservation int
 
 	TLB TLB
-
 	RAM []int
 
 	UARTInput  func() (byte, bool)
 	UARTOutput func(byte) bool
+
+	Update Update
 }
 
 func (cpu *CPU) Xset(reg, val int) {
