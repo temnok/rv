@@ -1,28 +1,16 @@
 package state
 
-import (
-	"github.com/temnok/rv/ram"
-)
-
 type CPU struct {
 	StaticState
 	Update Update
 
 	TLB TLB
 
-	RAM     Device
+	RAM     []int
 	Devices Device
 }
 
 type Device func(addr int, width int, write bool, writeData int) int
-
-func (cpu *CPU) DeviceAtAddress(address int) Device {
-	if address < ram.BaseAddr {
-		return cpu.Devices
-	}
-
-	return cpu.RAM
-}
 
 func (cpu *CPU) Xset(reg, val int) {
 	cpu.Update.Targets |= UpdateXreg

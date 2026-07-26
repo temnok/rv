@@ -19,25 +19,23 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		dynInfoAddr  = kernelAddr - 0x40
 		diskBaseAddr = 0x8800_0000
 
-		cpu  = cp.New(opensbiAddr)
-		ram  = ram.New(512 * 1024 * 1024)
+		cpu  = cp.New(512*1024*1024, opensbiAddr)
 		uart = uart.New(cpu)
 	)
 
-	cpu.RAM = ram.Access
 	cpu.Devices = uart.Access
 
 	dir := "build/output/"
 
-	ram.LoadFile(opensbiAddr, dir+"/opensbi")
-	ram.LoadFile(dtbAddr, dir+"/devtree")
+	ram.PopulateFromFile(cpu.RAM, opensbiAddr, dir+"/opensbi")
+	ram.PopulateFromFile(cpu.RAM, dtbAddr, dir+"/devtree")
 
 	buf := make([]byte, 8*6)
 	binary.Encode(buf, binary.LittleEndian, []uint64{0x4942534f, 2, uint64(kernelAddr), 1, 0, 0})
-	ram.Load(dynInfoAddr, buf)
+	ram.Populate(cpu.RAM, dynInfoAddr, buf)
 
-	ram.LoadFile(kernelAddr, dir+"/kernel")
-	ram.LoadFile(diskBaseAddr, dir+"/ramdisk")
+	ram.PopulateFromFile(cpu.RAM, kernelAddr, dir+"/kernel")
+	ram.PopulateFromFile(cpu.RAM, diskBaseAddr, dir+"/ramdisk")
 
 	cpu.X[isa.A1] = dtbAddr
 	cpu.X[isa.A2] = dynInfoAddr

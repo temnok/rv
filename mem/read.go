@@ -1,6 +1,7 @@
 package mem
 
 import (
+	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/translate"
 	"github.com/temnok/rv/trap"
@@ -17,12 +18,9 @@ func Read(cpu *state.CPU, virtAddr int, width int) int {
 		return 0
 	}
 
-	device := cpu.DeviceAtAddress(physAddr)
-
-	if device == nil {
-		trap.Enter(cpu, trap.LoadAccessFault, virtAddr)
-		return 0
+	if physAddr < ram.BaseAddr {
+		return cpu.Devices(physAddr, width, false, 0)
+	} else {
+		return ram.Read(cpu.RAM, physAddr, width)
 	}
-
-	return device(physAddr, width, false, 0)
 }

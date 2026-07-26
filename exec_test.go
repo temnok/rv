@@ -34,11 +34,8 @@ func runTest(t *testing.T, file string) {
 	}
 
 	ramBaseAddr := 0x8000_0000
-	cpu := cp.New(ramBaseAddr)
-	ram := ram.New(64 * 1024)
-	ram.Load(ramBaseAddr, program)
-
-	cpu.RAM = ram.Access
+	cpu := cp.New(64*1024, ramBaseAddr)
+	ram.Populate(cpu.RAM, ramBaseAddr, program)
 
 	instrCounts := make([]int, len(program))
 	trapCount := 0

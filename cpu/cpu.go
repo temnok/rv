@@ -5,7 +5,7 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func New(startAddr int) *state.CPU {
+func New(ramSize, startAddr int) *state.CPU {
 	return &state.CPU{
 		StaticState: state.StaticState{
 			PC: startAddr,
@@ -16,5 +16,7 @@ func New(startAddr int) *state.CPU {
 				Mstatus: 2<<csr.MstatusSXL | 2<<csr.MstatusUXL,
 			},
 		},
+
+		RAM: make([]int, ramSize/8),
 	}
 }

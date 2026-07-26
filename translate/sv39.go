@@ -2,6 +2,7 @@ package translate
 
 import (
 	"github.com/temnok/rv/csr"
+	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
@@ -88,7 +89,7 @@ func loadPTEsv39(cpu *state.CPU, virtAddr, access int) (targetPTE, shift int) {
 func loadPTE(cpu *state.CPU, ptNum, virtAddr, shift, access int) int {
 	pteAddr := ptNum&^(-1<<44)<<12 | (virtAddr>>shift&511)<<3
 
-	pte := cpu.RAM(pteAddr, 8, false, 0)
+	pte := ram.Read8(cpu.RAM, pteAddr)
 
 	isLeaf := shift == 12 || pte&leafMask != 0
 
