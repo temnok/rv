@@ -37,4 +37,5 @@ type Update struct {
 	Tval    int
 	Mcycle  int
 	Mip     int
+	Uart    int
 }

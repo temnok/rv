@@ -32,6 +32,8 @@ func EvaluateState(cpu *state.CPU) int {
 
 	ins.Exec(cpu, opcode)
 
+	updateUart(cpu)
+
 	return opcode
 }
 
@@ -48,5 +50,27 @@ func updateTimer(cpu *state.CPU) {
 
 		cpu.Update.Mip &^= 1 << csr.MipSTIP
 		cpu.Update.Mip |= (1 - stip) << csr.MipSTIP
+	}
+}
+
+func updateUart(cpu *state.CPU) {
+	if acceptsInput := cpu.Update.Targets&state.UpdateUart == 0 &&
+		cpu.CSR.Uart>>csr.UartIP&2 == 0; acceptsInput {
+
+		if b, hasInput := cpu.UARTInput(); hasInput {
+			val := cpu.CSR.Uart&^(0xFF<<csr.UartRX) | int(b)<<csr.UartRX | 2<<csr.UartIP
+			csr.UpdateUart(cpu, val)
+		}
+	}
+
+	if hasOutput := cpu.Update.Targets&state.UpdateUart == 0 &&
+		cpu.CSR.Uart>>csr.UartIP&1 == 0; hasOutput {
+
+		b := byte(cpu.CSR.Uart >> csr.UartTX)
+
+		if outputAccepted := cpu.UARTOutput(b); outputAccepted {
+			val := cpu.CSR.Uart&^(0xFF<<csr.UartTX) | 1<<csr.UartIP
+			csr.UpdateUart(cpu, val)
+		}
 	}
 }

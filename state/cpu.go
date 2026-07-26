@@ -7,6 +7,9 @@ type CPU struct {
 	TLB TLB
 
 	RAM []int
+
+	UARTInput  func() (byte, bool)
+	UARTOutput func(byte) bool
 }
 
 func (cpu *CPU) Xset(reg, val int) {

@@ -3,7 +3,6 @@ package rv
 import (
 	"encoding/binary"
 	cp "github.com/temnok/rv/cpu"
-	"github.com/temnok/rv/dev"
 	"github.com/temnok/rv/isa"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
@@ -47,24 +46,27 @@ func BootLinux(in io.Reader, out io.Writer, timeout int) *state.CPU {
 		}
 	}()
 
-steps:
-	for step := 0; timeout == 0 || step < timeout; step++ {
-		if dev.AcceptsInput(cpu) {
-			select {
-			case b := <-inChan:
-				if b == 'D'-'@' {
-					break steps
-				}
+	ctrlD := false
 
-				dev.SetInput(cpu, b)
-			default:
+	cpu.UARTInput = func() (byte, bool) {
+		select {
+		case b := <-inChan:
+			if b == 'D'-'@' {
+				ctrlD = true
 			}
-		}
 
-		if dev.HasOutput(cpu) {
-			out.Write([]byte{dev.GetOutput(cpu)})
+			return b, true
+		default:
+			return 0, false
 		}
+	}
 
+	cpu.UARTOutput = func(b byte) bool {
+		out.Write([]byte{b})
+		return true
+	}
+
+	for step := 0; !ctrlD && (timeout == 0 || step < timeout); step++ {
 		cp.Step(cpu)
 	}
 

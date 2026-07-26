@@ -60,6 +60,10 @@ func UpdateState(cpu *state.CPU) {
 		cpu.CSR.Mip = up.Mip
 	}
 
+	if up.Targets&state.UpdateUart != 0 {
+		cpu.CSR.Uart = up.Uart
+	}
+
 	if up.Targets&state.UpdateXreg != 0 && up.Xreg != 0 {
 		cpu.X[up.Xreg] = up.Xval
 	}

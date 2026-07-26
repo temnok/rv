@@ -18,5 +18,13 @@ func New(ramSize, startAddr int) *state.CPU {
 		},
 
 		RAM: make([]int, ramSize/8),
+
+		UARTInput: func() (byte, bool) {
+			return 0, false
+		},
+
+		UARTOutput: func(byte) bool {
+			return true
+		},
 	}
 }
