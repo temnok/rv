@@ -4,13 +4,12 @@ import (
 	"github.com/temnok/rv/dev"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/translate"
 	"github.com/temnok/rv/trap"
 )
 
 func Write(cpu *state.CPU, virtAddr, width, val int) {
 	var physAddr int
-	if physAddr = translate.Sv(cpu, virtAddr, state.AccessStore); trap.IsEntered(cpu) {
+	if physAddr = translateSv39(cpu, virtAddr, accessStore); trap.IsEntered(cpu) {
 		return
 	}
 

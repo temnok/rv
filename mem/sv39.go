@@ -1,4 +1,4 @@
-package translate
+package mem
 
 import (
 	"github.com/temnok/rv/csr"
@@ -8,8 +8,11 @@ import (
 )
 
 const (
+	accessFetch = 0
+	accessLoad  = 1
+	accessStore = 3
+
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#sv39pte
-	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#translation
 	pteV = 0
 	pteR = 1
 	pteW = 2
@@ -22,14 +25,10 @@ const (
 	leafMask = 1<<pteR | 1<<pteW | 1<<pteX
 )
 
-func Sv(cpu *state.CPU, va int, access int) int {
-	return sv39(cpu, va, access)
-}
-
-func sv39(cpu *state.CPU, virtAddr int, access int) int {
+func translateSv39(cpu *state.CPU, virtAddr int, access int) int {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	epriv := cpu.CSR.Priv
-	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != state.AccessFetch {
+	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != accessFetch {
 		epriv = cpu.CSR.Mstatus >> csr.MstatusMPP & 3
 	}
 
@@ -57,10 +56,10 @@ func sv39(cpu *state.CPU, virtAddr int, access int) int {
 	sum, mxr := cpu.CSR.Mstatus>>csr.MstatusSUM&1, cpu.CSR.Mstatus>>csr.MstatusMXR&1
 
 	if epriv == csr.PrivU && pte>>pteU&1 == 0 ||
-		epriv == csr.PrivS && pte>>pteU&1 == 1 && !(sum == 1 && access != state.AccessFetch) ||
-		access == state.AccessFetch && pte>>pteX&1 == 0 ||
-		access == state.AccessLoad && pte>>pteR&1 == 0 && !(mxr == 1 && pte>>pteX&1 == 1) ||
-		access == state.AccessStore && !(pte>>pteW&1 == 1 && pte>>pteD&1 == 1) ||
+		epriv == csr.PrivS && pte>>pteU&1 == 1 && !(sum == 1 && access != accessFetch) ||
+		access == accessFetch && pte>>pteX&1 == 0 ||
+		access == accessLoad && pte>>pteR&1 == 0 && !(mxr == 1 && pte>>pteX&1 == 1) ||
+		access == accessStore && !(pte>>pteW&1 == 1 && pte>>pteD&1 == 1) ||
 		pte>>pteA&1 == 0 {
 
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)

@@ -3,18 +3,20 @@ package mem
 import (
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
-	"github.com/temnok/rv/translate"
 	"github.com/temnok/rv/trap"
 )
 
 func Fetch(cpu *state.CPU, addr int) int {
-	const xbytes = 8
+	const (
+		xbytes   = 8
+		pageSize = 0x1000
+	)
 
 	shift := addr & (xbytes - 1)
 	virtAddr := addr &^ (xbytes - 1)
 
 	var physAddr, val int
-	if physAddr = translate.Sv(cpu, virtAddr, state.AccessFetch); trap.IsEntered(cpu) {
+	if physAddr = translateSv39(cpu, virtAddr, accessFetch); trap.IsEntered(cpu) {
 		return 0
 	}
 
@@ -29,8 +31,8 @@ func Fetch(cpu *state.CPU, addr int) int {
 	virtAddr += xbytes
 	physAddr += xbytes
 
-	if pageMask := state.PageSize - 1; virtAddr&pageMask == 0 {
-		if physAddr = translate.Sv(cpu, virtAddr, state.AccessFetch); trap.IsEntered(cpu) {
+	if pageMask := pageSize - 1; virtAddr&pageMask == 0 {
+		if physAddr = translateSv39(cpu, virtAddr, accessFetch); trap.IsEntered(cpu) {
 			return 0
 		}
 	}
