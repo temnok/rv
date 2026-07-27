@@ -8,17 +8,12 @@ type CPU struct {
 	CSR         csr.Registers
 	Reservation int
 
-	TLB TLB
 	RAM []int
 
 	UARTInput  func() (byte, bool)
 	UARTOutput func(byte) bool
 
 	Update Updates
-}
-
-type TLB [8]struct {
-	Vas, Pte int
 }
 
 func (cpu *CPU) Xset(reg, val int) {
