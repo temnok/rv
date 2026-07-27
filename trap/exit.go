@@ -1,7 +1,6 @@
 package trap
 
 import (
-	"github.com/temnok/rv/bit"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
 )
@@ -10,7 +9,7 @@ import (
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#privstack
 func Exit(cpu *state.CPU, retPriv int) {
 	// https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#virt-control
-	trapped := cpu.CSR.Priv == csr.PrivS && bit.IsSet(cpu.CSR.Mstatus, csr.MstatusTSR)
+	trapped := cpu.CSR.Priv == csr.PrivS && cpu.CSR.Mstatus>>csr.MstatusTSR&1 == 1
 
 	if trapped || retPriv > cpu.CSR.Priv {
 		Enter(cpu, IllegalIstruction, 0)
@@ -22,14 +21,14 @@ func Exit(cpu *state.CPU, retPriv int) {
 	switch retPriv {
 	case csr.PrivM:
 		cpu.Update.PC = cpu.CSR.Mepc
-		cpu.Update.Priv = bit.GetN(cpu.CSR.Mstatus, csr.MstatusMPP, 2)
+		cpu.Update.Priv = cpu.CSR.Mstatus >> csr.MstatusMPP & 3
 
 		ms &^= 3 << csr.MstatusMPP
 		ms |= 1<<csr.MstatusMPIE | (ms>>csr.MstatusMPIE&1)<<csr.MstatusMIE
 
 	case csr.PrivS:
 		cpu.Update.PC = cpu.CSR.Sepc
-		cpu.Update.Priv = bit.GetN(cpu.CSR.Mstatus, csr.MstatusSPP, 1)
+		cpu.Update.Priv = cpu.CSR.Mstatus >> csr.MstatusSPP & 1
 
 		ms &^= 1 << csr.MstatusSPP
 		ms |= 1<<csr.MstatusSPIE | (ms>>csr.MstatusSPIE&1)<<csr.MstatusSIE

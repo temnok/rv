@@ -1,9 +1,7 @@
 package csr
 
-import "github.com/temnok/rv/bit"
-
 func Read(csr *Registers, reg int) (int, bool) {
-	if csr.Priv < bit.GetN(reg, 8, 2) {
+	if csr.Priv < reg>>8&3 {
 		return 0, false
 	}
 
@@ -14,10 +12,10 @@ func Read(csr *Registers, reg int) (int, bool) {
 		val = csr.Fcsr
 
 	case Fflags:
-		val = bit.GetN(csr.Fcsr, 0, 5)
+		val = csr.Fcsr & 0x1F
 
 	case Frm:
-		val = bit.GetN(csr.Fcsr, 5, 3)
+		val = csr.Fcsr >> 5 & 7
 
 	case Cycle:
 		val = csr.Mcycle
@@ -84,7 +82,7 @@ func Read(csr *Registers, reg int) (int, bool) {
 	case Mvendorid:
 
 	case Satp:
-		if csr.Priv == PrivS && bit.IsSet(csr.Mstatus, MstatusTVM) {
+		if csr.Priv == PrivS && csr.Mstatus>>MstatusTVM&1 == 1 {
 			return 0, false
 		}
 		val = csr.Satp
@@ -112,7 +110,7 @@ func Read(csr *Registers, reg int) (int, bool) {
 		val = csr.Mstatus & mask
 
 	case Stimecmp:
-		if csr.Priv == PrivS && (bit.IsNotSet(csr.Mcounteren, McounterenTM) || bit.IsNotSet(csr.Menvcfg, MenvcfgSTCE)) {
+		if csr.Priv == PrivS && (csr.Mcounteren>>McounterenTM&1) == 0 || (csr.Menvcfg>>MenvcfgSTCE&1) == 0 {
 			return 0, false
 		}
 		val = csr.Stimecmp

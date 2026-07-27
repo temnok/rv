@@ -11,7 +11,7 @@ func IsEntered(cpu *state.CPU) bool {
 
 func Enter(cpu *state.CPU, cause, tval int) {
 	isInterrupt := cause>>csr.McauseI&1 == 1
-	causeID := cause & 63
+	causeID := cause & 0x3F
 
 	deleg := cpu.CSR.Medeleg
 	if isInterrupt {

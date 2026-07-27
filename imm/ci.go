@@ -1,10 +1,8 @@
 package imm
 
-import "github.com/temnok/rv/bit"
-
 func CI(op int) int {
-	a := bit.Get(op, 12)
-	b := bit.GetN(op, 2, 5)
+	a := op >> 12 & 1
+	b := op >> 2 & 0x1F
 
 	return -a<<5 | b
 }

@@ -1,17 +1,16 @@
 package extc
 
 import (
-	"github.com/temnok/rv/bit"
 	"github.com/temnok/rv/encode"
 	"github.com/temnok/rv/imm"
 )
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/spec/#rvc-form
 func Decompress(opcode int) int {
-	f3 := bit.GetN(opcode, 13, 3)
+	f3 := opcode >> 13 & 7
 
-	ra := bit.GetN(opcode, 7, 5)
-	rb := bit.GetN(opcode, 2, 5)
+	ra := opcode >> 7 & 0x1F
+	rb := opcode >> 2 & 0x1F
 
 	ra8 := 8 | ra&7
 	rb8 := 8 | rb&7
@@ -69,7 +68,7 @@ func Decompress(opcode int) int {
 			}
 
 		case 4:
-			switch bit.GetN(opcode, 10, 2) {
+			switch opcode >> 10 & 3 {
 			case 0: // srli
 				return encode.R(0, imm.CI(opcode)&63, ra8, 5, ra8, 4)
 
@@ -80,7 +79,7 @@ func Decompress(opcode int) int {
 				return encode.I(imm.CI(opcode), ra8, 7, ra8, 4)
 
 			case 3:
-				switch bit.Get(opcode, 12)<<2 | bit.GetN(opcode, 5, 2) {
+				switch (opcode>>12&1)<<2 | (opcode >> 5 & 3) {
 				case 0: // c.sub
 					return encode.R(32, rb8, ra8, 0, ra8, 12)
 
@@ -130,7 +129,7 @@ func Decompress(opcode int) int {
 			}
 
 		case 4:
-			switch bit.Get(opcode, 12)<<2 | intBool(ra != 0)<<1 | intBool(rb != 0) {
+			switch (opcode>>12&1)<<2 | intBool(ra != 0)<<1 | intBool(rb != 0) {
 			case 2: // c.jr
 				return encode.I(0, ra, 0, 0, 25) // jalr
 

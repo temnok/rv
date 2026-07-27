@@ -1,7 +1,6 @@
 package dev
 
 import (
-	"github.com/temnok/rv/bit"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
 )
@@ -19,29 +18,29 @@ func Read(cpu *state.CPU, addr int) int {
 
 	switch addr {
 	case PLIC_claim:
-		if bit.GetN(cpu.CSR.Uart, csr.UartIP, 2)&bit.GetN(cpu.CSR.Uart, csr.UartIE, 2) != 0 {
+		if (cpu.CSR.Uart>>csr.UartIP&3)&(cpu.CSR.Uart>>csr.UartIE&3) != 0 {
 			val = 1
 		}
 
 	case UART_txdata:
-		if bit.IsNotSet(cpu.CSR.Uart, csr.UartIPtx) {
+		if cpu.CSR.Uart>>csr.UartIPtx&1 == 0 {
 			val = 1 << 31
 		}
 
 	case UART_rxdata:
-		if bit.IsNotSet(cpu.CSR.Uart, csr.UartIPrx) {
+		if cpu.CSR.Uart>>csr.UartIPrx&1 == 0 {
 			val = 1 << 31
 		} else {
-			val = bit.GetN(cpu.CSR.Uart, csr.UartRX, 8)
+			val = cpu.CSR.Uart >> csr.UartRX & 0xFF
 
 			updateUart(cpu, cpu.CSR.Uart&^2<<csr.UartIP|0xFF<<csr.UartRX)
 		}
 
 	case UART_ie:
-		val = bit.GetN(cpu.CSR.Uart, csr.UartIE, 2)
+		val = cpu.CSR.Uart >> csr.UartIE & 3
 
 	case UART_ip:
-		val = bit.GetN(cpu.CSR.Uart, csr.UartIP, 2)
+		val = cpu.CSR.Uart >> csr.UartIP & 3
 	}
 
 	return val

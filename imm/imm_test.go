@@ -1,7 +1,6 @@
 package imm
 
 import (
-	"github.com/temnok/rv/bit"
 	"testing"
 )
 
@@ -125,7 +124,7 @@ func testImm(t *testing.T, fnName string, fn func(int) int, w int, tests immTest
 	tests[-1] = tests[biggest] // include all-ones test case
 
 	for arg, want := range tests {
-		want = -bit.Get(want, w-1)<<w | want
+		want = -(want>>(w-1)&1)<<w | want
 
 		if got := fn(arg); want != got {
 			t.Errorf("%v(0b_%032b):\nwant 0b_%032b\n got 0b_%032b",
