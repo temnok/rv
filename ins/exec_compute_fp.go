@@ -71,7 +71,7 @@ uint64_t fcvt_lu_d(double a)   { return isnan(a)? UINT64_MAX :
 */
 import "C"
 import (
-	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/bit"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/state"
 	"math"
@@ -456,7 +456,7 @@ func f64(cpu *state.CPU, i int) float64 {
 func prepareCfenv(cpu *state.CPU, rm int) {
 	if rm >= 0 {
 		if rm == RmDYN {
-			rm = bi.Ts(cpu.CSR.Fcsr, csr.FcsrRM, 3)
+			rm = bit.GetN(cpu.CSR.Fcsr, csr.FcsrRM, 3)
 		}
 
 		C.fesetround(rmToC[rm])

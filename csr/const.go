@@ -94,8 +94,10 @@ const (
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
 	MenvcfgSTCE = 63
 
-	UartTX = 0
-	UartRX = 8
-	UartIE = 16
-	UartIP = 24
+	UartTX   = 0
+	UartRX   = 8
+	UartIE   = 16
+	UartIP   = 24
+	UartIPtx = UartIP
+	UartIPrx = UartIP + 1
 )

@@ -1,11 +1,13 @@
 package imm
 
+import "github.com/temnok/rv/bit"
+
 func CB(op int) int {
-	a := op >> 12 & 1
-	b := op >> 5 & 3
-	c := op >> 2 & 1
-	d := op >> 10 & 3
-	e := op >> 3 & 3
+	a := bit.Get(op, 12)
+	b := bit.GetN(op, 5, 2)
+	c := bit.Get(op, 2)
+	d := bit.GetN(op, 10, 2)
+	e := bit.GetN(op, 3, 2)
 
 	return -a<<8 | b<<6 | c<<5 | d<<3 | e<<1
 }

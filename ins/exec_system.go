@@ -1,7 +1,7 @@
 package ins
 
 import (
-	"github.com/temnok/rv/bi"
+	"github.com/temnok/rv/bit"
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
@@ -44,7 +44,7 @@ func systemSpecial(cpu *state.CPU, op Op) {
 	case 3<<8 | 2:
 		ins = mret
 	default:
-		if bi.Ts(imm, 5, 7) == 9 {
+		if bit.GetN(imm, 5, 7) == 9 {
 			ins = sfence_vma
 		}
 	}
@@ -53,7 +53,7 @@ func systemSpecial(cpu *state.CPU, op Op) {
 }
 
 func csrAccess(cpu *state.CPU, op Op, enforceRead, enforceWrite bool, f func(set, old int) int) {
-	reg, set, old := bi.Ts(imm.I(op.code()), 0, 12), op.rs1(), 0
+	reg, set, old := bit.GetN(imm.I(op.code()), 0, 12), op.rs1(), 0
 
 	if op.f3()&4 == 0 {
 		set = cpu.X[set]

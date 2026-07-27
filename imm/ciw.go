@@ -1,10 +1,14 @@
 package imm
 
+import (
+	"github.com/temnok/rv/bit"
+)
+
 func CIW(op int) int {
-	a := op >> 7 & 15
-	b := op >> 11 & 3
-	c := op >> 5 & 1
-	d := op >> 6 & 1
+	a := bit.GetN(op, 7, 4)
+	b := bit.GetN(op, 11, 2)
+	c := bit.Get(op, 5)
+	d := bit.Get(op, 6)
 
 	return a<<6 | b<<4 | c<<3 | d<<2
 }

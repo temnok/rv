@@ -1,8 +1,10 @@
 package imm
 
+import "github.com/temnok/rv/bit"
+
 func CSS3(op int) int {
-	a := op >> 7 & 7
-	b := op >> 10 & 7
+	a := bit.GetN(op, 7, 3)
+	b := bit.GetN(op, 10, 3)
 
 	return a<<6 | b<<3
 }
