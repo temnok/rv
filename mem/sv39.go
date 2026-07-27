@@ -25,7 +25,7 @@ const (
 	leafMask = 1<<pteR | 1<<pteW | 1<<pteX
 )
 
-func translateSv39(cpu *state.CPU, virtAddr int, access int) (int, int) {
+func translateSv39(cpu *state.CPU, virtAddr int, access int) int {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	epriv := cpu.CSR.Priv
 	if cpu.CSR.Mstatus>>csr.MstatusMPRV&1 == 1 && access != accessFetch {
@@ -35,7 +35,7 @@ func translateSv39(cpu *state.CPU, virtAddr int, access int) (int, int) {
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#norm:satp_op_active
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#norm:satp-mode
 	if epriv == csr.PrivM || cpu.CSR.Satp == 0 {
-		return virtAddr, 12
+		return virtAddr
 	}
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#addressing-and-memory-protection
@@ -46,7 +46,7 @@ func translateSv39(cpu *state.CPU, virtAddr int, access int) (int, int) {
 
 	pte, shift := loadPTEsv39(cpu, virtAddr, access)
 	if trap.IsEntered(cpu) {
-		return 0, 0
+		return 0
 	}
 
 	sum, mxr := cpu.CSR.Mstatus>>csr.MstatusSUM&1, cpu.CSR.Mstatus>>csr.MstatusMXR&1
@@ -59,11 +59,11 @@ func translateSv39(cpu *state.CPU, virtAddr int, access int) (int, int) {
 		pte>>pteA&1 == 0 {
 
 		trap.Enter(cpu, trap.PageFault+access, virtAddr)
-		return 0, 0
+		return 0
 	}
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/supervisor.html#sv39pte
-	return pte>>10&^(-1<<44)<<12 | virtAddr&^(-1<<shift), shift
+	return pte>>10&^(-1<<44)<<12 | virtAddr&^(-1<<shift)
 }
 
 // https://riscv.github.io/riscv-isa-manual/snapshot/privileged/#sv32algorithm
@@ -84,7 +84,7 @@ func loadPTEsv39(cpu *state.CPU, virtAddr, access int) (targetPTE, shift int) {
 func loadPTE(cpu *state.CPU, ptNum, virtAddr, shift, access int) int {
 	pteAddr := ptNum&^(-1<<44)<<12 | (virtAddr>>shift&511)<<3
 
-	pte := ram.ReadDword(cpu, pteAddr)
+	pte := ram.Read8(cpu, pteAddr)
 
 	isLeaf := shift == 12 || pte&leafMask != 0
 
