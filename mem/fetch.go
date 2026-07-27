@@ -7,37 +7,32 @@ import (
 )
 
 func Fetch(cpu *state.CPU, addr int) int {
-	const (
-		xbytes   = 8
-		pageSize = 0x1000
-	)
+	va := addr &^ 7
 
-	shift := addr & (xbytes - 1)
-	virtAddr := addr &^ (xbytes - 1)
-
-	var physAddr, val int
-	if physAddr = translateSv39(cpu, virtAddr, accessFetch); trap.IsEntered(cpu) {
+	pa, shift := translateSv39(cpu, va, accessFetch)
+	if trap.IsEntered(cpu) {
 		return -1
 	}
 
-	val = ram.Read8(cpu, physAddr)
-	lo := val >> (shift * 8)
-	isCompressedInstruction := lo&3 != 3
+	dword := ram.ReadDword(cpu, pa)
+	offset := addr & 7
+	opcode := dword >> (offset << 3)
+	isCompressedInstruction := opcode&3 != 3
 
-	if fullyLoaded := isCompressedInstruction || shift+4 <= xbytes; fullyLoaded {
-		return lo
+	if fullyLoaded := isCompressedInstruction || offset+4 <= 8; fullyLoaded {
+		return opcode
 	}
 
-	virtAddr += xbytes
-	physAddr += xbytes
-
-	if pageMask := pageSize - 1; virtAddr&pageMask == 0 {
-		if physAddr = translateSv39(cpu, virtAddr, accessFetch); trap.IsEntered(cpu) {
+	if va>>shift == (va+8)>>shift {
+		pa += 8
+	} else {
+		pa, _ = translateSv39(cpu, va+8, accessFetch)
+		if trap.IsEntered(cpu) {
 			return -1
 		}
 	}
 
-	val = ram.Read8(cpu, physAddr)
+	dword = ram.ReadDword(cpu, pa)
 
-	return (val&0xffff)<<16 | lo&0xffff
+	return (dword&0xffff)<<16 | opcode&0xffff
 }

@@ -7,20 +7,20 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Read(cpu *state.CPU, virtAddr int, width int) int {
-	var physAddr int
-	if physAddr = translateSv39(cpu, virtAddr, accessLoad); trap.IsEntered(cpu) {
+func Read(cpu *state.CPU, va int, width int) int {
+	pa, _ := translateSv39(cpu, va, accessLoad)
+	if trap.IsEntered(cpu) {
 		return 0
 	}
 
-	if virtAddr&(width-1) != 0 {
-		trap.Enter(cpu, trap.LoadAddressMisaligned, virtAddr)
+	if va&(width-1) != 0 {
+		trap.Enter(cpu, trap.LoadAddressMisaligned, va)
 		return 0
 	}
 
-	if physAddr < ram.BaseAddr {
-		return dev.Read(cpu, physAddr)
+	if pa < ram.BaseAddr {
+		return dev.Read(cpu, pa)
 	} else {
-		return ram.Read(cpu, physAddr, width)
+		return ram.Read(cpu, pa, width)
 	}
 }

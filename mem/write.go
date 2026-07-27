@@ -7,20 +7,20 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-func Write(cpu *state.CPU, virtAddr, width, val int) {
-	var physAddr int
-	if physAddr = translateSv39(cpu, virtAddr, accessStore); trap.IsEntered(cpu) {
+func Write(cpu *state.CPU, va, width, val int) {
+	pa, _ := translateSv39(cpu, va, accessStore)
+	if trap.IsEntered(cpu) {
 		return
 	}
 
-	if virtAddr&(width-1) != 0 {
-		trap.Enter(cpu, trap.StoreAMOAddressMisaligned, virtAddr)
+	if va&(width-1) != 0 {
+		trap.Enter(cpu, trap.StoreAMOAddressMisaligned, va)
 		return
 	}
 
-	if physAddr < ram.BaseAddr {
-		dev.Write(cpu, physAddr, val)
+	if pa < ram.BaseAddr {
+		dev.Write(cpu, pa, val)
 	} else {
-		ram.Write(cpu, physAddr, width, val)
+		ram.Write(cpu, pa, width, val)
 	}
 }

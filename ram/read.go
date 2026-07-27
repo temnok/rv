@@ -2,7 +2,7 @@ package ram
 
 import "github.com/temnok/rv/state"
 
-func Read8(cpu *state.CPU, addr int) int {
+func ReadDword(cpu *state.CPU, addr int) int {
 	if i := (addr - BaseAddr) >> 3; i >= 0 && i < len(cpu.RAM) {
 		return cpu.RAM[i]
 	}
