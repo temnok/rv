@@ -21,6 +21,7 @@ const (
 	UpdateUart    = 1 << 13
 
 	UpdateRAM = 1 << 14
+	UpdateTLB = 1 << 15
 )
 
 type Updates struct {
@@ -44,6 +45,7 @@ type Updates struct {
 	Uart    int
 
 	RAMPos, RAMVal int
+	TLB            TLB
 }
 
 func Update(cpu *CPU) {
@@ -119,5 +121,9 @@ func Update(cpu *CPU) {
 
 	if up.Targets&UpdateRAM != 0 {
 		cpu.RAM[up.RAMPos] = up.RAMVal
+	}
+
+	if up.Targets&UpdateTLB != 0 {
+		cpu.TLB = up.TLB
 	}
 }

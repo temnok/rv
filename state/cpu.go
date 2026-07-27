@@ -17,6 +17,10 @@ type CPU struct {
 	Update Updates
 }
 
+type TLB [8]struct {
+	Vas, Pte int
+}
+
 func (cpu *CPU) Xset(reg, val int) {
 	cpu.Update.Targets |= UpdateXreg
 	cpu.Update.Xreg = reg

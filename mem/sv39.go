@@ -4,6 +4,7 @@ import (
 	"github.com/temnok/rv/csr"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
+	"github.com/temnok/rv/tlb"
 	"github.com/temnok/rv/trap"
 )
 
@@ -44,13 +45,13 @@ func translateSv39(cpu *state.CPU, virtAddr int, access int) int {
 	//	return 0
 	//}
 
-	pte, shift := cpu.TLB.Lookup(virtAddr)
+	pte, shift := tlb.Lookup(cpu, virtAddr)
 	if pte == 0 {
 		if pte, shift = loadPTEsv39(cpu, virtAddr, access); trap.IsEntered(cpu) {
 			return 0
 		}
 
-		cpu.TLB.Append(virtAddr, shift, pte)
+		tlb.Append(cpu, virtAddr, shift, pte)
 	}
 
 	sum, mxr := cpu.CSR.Mstatus>>csr.MstatusSUM&1, cpu.CSR.Mstatus>>csr.MstatusMXR&1
