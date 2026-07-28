@@ -55,10 +55,6 @@ const (
 
 	FcsrRM = 5 // Rounding Mode: https://docs.riscv.org/reference/isa/v20260120/unpriv/f-st-ext.html#norm:dyn_round_enc
 
-	McounterenCY = 0 // CYcle    https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#mcounteren
-	McounterenTM = 1 // TiMe     https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#mcounteren
-	McounterenIR = 2 // InstRet  https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#mcounteren
-
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
 	MstatusSIE  = 1
 	MstatusMIE  = 3
@@ -84,9 +80,6 @@ const (
 	MipMTIP = 7
 	MipSEIP = 9
 	MipMEIP = 11
-
-	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#sec:menvcfg
-	MenvcfgSTCE = 63
 
 	UartTD = 0
 	UartTE = 8

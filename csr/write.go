@@ -63,7 +63,8 @@ func Write(csr *Registers, reg, val int) {
 		csr.Sepc = val
 
 	case Sie:
-		csr.Mie = csr.Mie&^csr.Mideleg | val&csr.Mideleg
+		mask := csr.Mideleg
+		csr.Mie = csr.Mie&^mask | val&mask
 
 	case Sscratch:
 		csr.Sscratch = val

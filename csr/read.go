@@ -8,6 +8,9 @@ func Read(csr *Registers, reg int) (int, bool) {
 	var val int
 
 	switch reg {
+	case Cycle:
+		val = csr.Mcycle
+
 	case Fcsr:
 		val = csr.Fcsr
 
@@ -16,9 +19,6 @@ func Read(csr *Registers, reg int) (int, bool) {
 
 	case Frm:
 		val = csr.Fcsr >> 5 & 7
-
-	case Cycle:
-		val = csr.Mcycle
 
 	case Instret:
 		val = csr.Mcycle
@@ -64,8 +64,7 @@ func Read(csr *Registers, reg int) (int, bool) {
 	case Misa:
 		val = -1<<63 |
 			1<<('i'-'a') | 1<<('m'-'a') | 1<<('a'-'a') | 1<<('c'-'a') |
-			1<<('f'-'a') | ('d' - 'a') |
-			1<<('u'-'a') | 1<<('s'-'a')
+			1<<('f'-'a') | 1<<('d'-'a') | 1<<('u'-'a') | 1<<('s'-'a')
 
 	case Mscratch:
 		val = csr.Mscratch
@@ -106,13 +105,10 @@ func Read(csr *Registers, reg int) (int, bool) {
 		val = csr.Sscratch
 
 	case Sstatus:
-		const mask = 1<<MstatusSIE | 1<<MstatusSUM | 1<<MstatusMXR | 1<<MstatusSPP | 1<<MstatusSPIE | 3<<MstatusUXL
+		mask := 1<<MstatusSIE | 1<<MstatusSPIE | 1<<MstatusSPP | 1<<MstatusSUM | 1<<MstatusMXR | 3<<MstatusUXL
 		val = csr.Mstatus & mask
 
 	case Stimecmp:
-		if csr.Priv == PrivS && (csr.Mcounteren>>McounterenTM&1) == 0 || (csr.Menvcfg>>MenvcfgSTCE&1) == 0 {
-			return 0, false
-		}
 		val = csr.Stimecmp
 
 	case Stval:
