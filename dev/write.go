@@ -8,9 +8,14 @@ import (
 func Write(cpu *state.CPU, addr int, val int) {
 	switch addr {
 	case UART_txdata:
-		updateUart(cpu, cpu.CSR.Uart&^(1<<csr.UartIP|0xFF<<csr.UartTX)|val&0xFF<<csr.UartTX)
+		mask := 1<<csr.UartTP | 0xFF<<csr.UartTD
+		val &= 0xFF
+		updateUart(cpu, cpu.CSR.Uart&^mask|val<<csr.UartTD)
 
 	case UART_ie:
-		updateUart(cpu, cpu.CSR.Uart&^(3<<csr.UartIE)|val&3<<csr.UartIE)
+		mask := 1<<csr.UartTE | 1<<csr.UartRE
+		te := val & 1
+		re := val >> 1 & 1
+		updateUart(cpu, cpu.CSR.Uart&^mask|te<<csr.UartTE|re<<csr.UartRE)
 	}
 }

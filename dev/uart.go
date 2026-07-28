@@ -9,8 +9,9 @@ func updateUart(cpu *state.CPU, val int) {
 	cpu.Update.Targets |= state.UpdateUart
 	cpu.Update.Uart = val
 
+	pend := (val>>csr.UartTP)&(val>>csr.UartTE)&1 | (val>>csr.UartRP)&(val>>csr.UartRE)&1
 	seip := cpu.CSR.Mip >> csr.MipSEIP & 1
-	if pend := (val>>csr.UartIP&3)&(val>>csr.UartIE&3) != 0; pend != (seip == 1) {
+	if pend != seip {
 		if cpu.Update.Targets&state.UpdateMip == 0 {
 			cpu.Update.Targets |= state.UpdateMip
 			cpu.Update.Mip = cpu.CSR.Mip

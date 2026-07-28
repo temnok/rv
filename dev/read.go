@@ -18,29 +18,30 @@ func Read(cpu *state.CPU, addr int) int {
 
 	switch addr {
 	case PLIC_claim:
-		if (cpu.CSR.Uart>>csr.UartIP&3)&(cpu.CSR.Uart>>csr.UartIE&3) != 0 {
+		if (cpu.CSR.Uart>>csr.UartTP&1)&(cpu.CSR.Uart>>csr.UartTE&1) != 0 ||
+			(cpu.CSR.Uart>>csr.UartRP&1)&(cpu.CSR.Uart>>csr.UartRE&1) != 0 {
 			val = 1
 		}
 
 	case UART_txdata:
-		if cpu.CSR.Uart>>csr.UartIPtx&1 == 0 {
+		if cpu.CSR.Uart>>csr.UartTP&1 == 0 {
 			val = 1 << 31
 		}
 
 	case UART_rxdata:
-		if cpu.CSR.Uart>>csr.UartIPrx&1 == 0 {
+		if cpu.CSR.Uart>>csr.UartRP&1 == 0 {
 			val = 1 << 31
 		} else {
-			val = cpu.CSR.Uart >> csr.UartRX & 0xFF
+			val = cpu.CSR.Uart >> csr.UartRD & 0xFF
 
-			updateUart(cpu, cpu.CSR.Uart&^2<<csr.UartIP|0xFF<<csr.UartRX)
+			updateUart(cpu, cpu.CSR.Uart&^(1<<csr.UartRP)|0xFF<<csr.UartRD)
 		}
 
 	case UART_ie:
-		val = cpu.CSR.Uart >> csr.UartIE & 3
+		val = (cpu.CSR.Uart>>csr.UartRE&1)<<1 | (cpu.CSR.Uart >> csr.UartTE & 1)
 
 	case UART_ip:
-		val = cpu.CSR.Uart >> csr.UartIP & 3
+		val = (cpu.CSR.Uart>>csr.UartRP&1)<<1 | (cpu.CSR.Uart >> csr.UartTP & 1)
 	}
 
 	return val
