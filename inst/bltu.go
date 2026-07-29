@@ -1,0 +1,11 @@
+package inst
+
+import (
+	"github.com/temnok/rv/state"
+)
+
+func bltu(cpu *state.CPU, op Op) {
+	branch(cpu, op, func(a, b int) bool {
+		return uint(a) < uint(b)
+	})
+}

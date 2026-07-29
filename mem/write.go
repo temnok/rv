@@ -1,7 +1,7 @@
 package mem
 
 import (
-	"github.com/temnok/rv/dev"
+	"github.com/temnok/rv/device"
 	"github.com/temnok/rv/ram"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -19,7 +19,7 @@ func Write(cpu *state.CPU, virtAddr, width, val int) {
 	}
 
 	if physAddr < ram.BaseAddr {
-		dev.Write(cpu, physAddr, val)
+		device.Write(cpu, physAddr, val)
 	} else {
 		ram.Write(cpu, physAddr, width, val)
 	}

@@ -1,8 +1,8 @@
 package rv
 
 import (
-	"github.com/temnok/rv/dev"
-	"github.com/temnok/rv/ins"
+	"github.com/temnok/rv/device"
+	"github.com/temnok/rv/inst"
 	"github.com/temnok/rv/mem"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
@@ -16,13 +16,13 @@ func Cycle(cpu *state.CPU) int {
 
 		if opcode = mem.Fetch(cpu, cpu.PC); !trap.IsEntered(cpu) {
 
-			ins.Exec(cpu, opcode)
+			inst.Exec(cpu, opcode)
 
 		}
 
 	}
 
-	dev.Process(cpu)
+	device.Sync(cpu)
 
 	state.Update(cpu)
 

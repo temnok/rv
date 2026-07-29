@@ -31,7 +31,7 @@ func CheckPendingInterrupts(cpu *state.CPU) {
 
 		priv := csr.PrivM
 		xIE := csr.MstatusMIE
-		if delegateToSmode := cpu.CSR.Mideleg>>i&1 == 1; delegateToSmode {
+		if delegateToSupervisor := cpu.CSR.Mideleg>>i&1 == 1; delegateToSupervisor {
 			priv = csr.PrivS
 			xIE = csr.MstatusSIE
 		}
