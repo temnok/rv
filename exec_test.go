@@ -57,7 +57,7 @@ func runTest(t *testing.T, file string) {
 		if isTrap {
 			trapCount++
 
-			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Update.Cause)})
+			lastTraps = append(lastTraps, [2]uint{uint(cpu.PC), uint(cpu.Update.Xcause)})
 			if n := 10; len(lastTraps) == n+1 {
 				copy(lastTraps[:n], lastTraps[1:])
 				lastTraps = lastTraps[:n]
@@ -83,7 +83,7 @@ func runTest(t *testing.T, file string) {
 		}
 
 		if isTrap {
-			if cause := cpu.Update.Cause; cause == trap.EnvironmentCallFromUMode ||
+			if cause := cpu.Update.Xcause; cause == trap.EnvironmentCallFromUMode ||
 				cause == trap.EnvironmentCallFromSMode ||
 				cause == trap.EnvironmentCallFromMMode {
 
@@ -100,7 +100,7 @@ func runTest(t *testing.T, file string) {
 						cpu.CSR.Mcycle, lastPCs, lastTraps,
 						cpu.Update.Priv, uint(cpu.Update.PC),
 						uint(cpu.Update.Mstatus),
-						uint(cpu.Update.Cause), uint(cpu.Update.Tval),
+						uint(cpu.Update.Xcause), uint(cpu.Update.Xtval),
 						uint(cpu.X[10]),
 					)
 				}

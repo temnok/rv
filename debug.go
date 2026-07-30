@@ -56,7 +56,7 @@ func debugDump(cpu *state.CPU) {
 	fmt.Printf("\r\nold priv:%x, priv:%x, pc:%x, mstatus:%x\r\n",
 		cpu.CSR.Priv, uint(up.Priv), uint(up.PC), uint(up.Mstatus))
 	fmt.Printf("xcause:%x, xepc:%x, xtval:%x\r\n",
-		uint(up.Cause), uint(up.Epc), uint(up.Tval))
+		uint(up.Xcause), uint(up.Xepc), uint(up.Xtval))
 	fmt.Printf("mtvec:%x, stvec:%x\r\n",
 		uint(cpu.CSR.Mtvec), uint(cpu.CSR.Stvec))
 	fmt.Printf("mcounteren:%x, menvcfg:%x\r\n",

@@ -13,14 +13,17 @@ const (
 
 	UpdateFcsr    = 1 << 6
 	UpdateMstatus = 1 << 7
-	UpdateEpc     = 1 << 8
-	UpdateCause   = 1 << 9
-	UpdateTval    = 1 << 10
-	UpdateMcycle  = 1 << 11
-	UpdateMip     = 1 << 12
-	UpdateUart    = 1 << 13
+	UpdateMepc    = 1 << 8
+	UpdateSepc    = 1 << 9
+	UpdateMcause  = 1 << 10
+	UpdateScause  = 1 << 11
+	UpdateMtval   = 1 << 12
+	UpdateStval   = 1 << 13
+	UpdateMcycle  = 1 << 14
+	UpdateMip     = 1 << 15
+	UpdateUart    = 1 << 16
 
-	UpdateRAM = 1 << 14
+	UpdateRAM = 1 << 17
 )
 
 type Updates struct {
@@ -36,9 +39,9 @@ type Updates struct {
 
 	Fcsr    int
 	Mstatus int
-	Epc     int
-	Cause   int
-	Tval    int
+	Xepc    int
+	Xcause  int
+	Xtval   int
 	Mcycle  int
 	Mip     int
 	Uart    int
@@ -69,28 +72,28 @@ func Update(cpu *CPU) {
 		cpu.CSR.Mstatus = up.Mstatus
 	}
 
-	if up.Targets&UpdateEpc != 0 {
-		if up.Priv == csr.PrivM {
-			cpu.CSR.Mepc = up.Epc
-		} else {
-			cpu.CSR.Sepc = up.Epc
-		}
+	if up.Targets&UpdateMepc != 0 {
+		cpu.CSR.Mepc = up.Xepc
 	}
 
-	if up.Targets&UpdateCause != 0 {
-		if up.Priv == csr.PrivM {
-			cpu.CSR.Mcause = up.Cause
-		} else {
-			cpu.CSR.Scause = up.Cause
-		}
+	if up.Targets&UpdateSepc != 0 {
+		cpu.CSR.Sepc = up.Xepc
 	}
 
-	if up.Targets&UpdateTval != 0 {
-		if up.Priv == csr.PrivM {
-			cpu.CSR.Mtval = up.Tval
-		} else {
-			cpu.CSR.Stval = up.Tval
-		}
+	if up.Targets&UpdateMcause != 0 {
+		cpu.CSR.Mcause = up.Xcause
+	}
+
+	if up.Targets&UpdateScause != 0 {
+		cpu.CSR.Scause = up.Xcause
+	}
+
+	if up.Targets&UpdateMtval != 0 {
+		cpu.CSR.Mtval = up.Xtval
+	}
+
+	if up.Targets&UpdateStval != 0 {
+		cpu.CSR.Stval = up.Xtval
 	}
 
 	if up.Targets&UpdateMcycle != 0 {
