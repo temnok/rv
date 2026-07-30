@@ -38,8 +38,8 @@ rm -rf build output && mkdir -p build output cache/{download,cc}
 echo -n "Downloading sources... "
 
 VERSION_BUSYBOX=1.36.1
-VERSION_KERNEL=7.1.4
-VERSION_OPENSBI=1.8.1
+VERSION_KERNEL=7.1.5
+VERSION_OPENSBI=1.9
 VERSION_GO=1.26.5
 
 cd cache/download
