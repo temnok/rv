@@ -66,8 +66,8 @@ const (
 	MstatusMPRV = 17 // Modify PRiVilege
 	MstatusSUM  = 18 // permit Supervisor User Memory access
 	MstatusMXR  = 19 // Make eXecutable Readable
-	MstatusTVM  = 20
-	MstatusTSR  = 22
+	MstatusTVM  = 20 // Trap Virtual Memory
+	MstatusTSR  = 22 // Trap SRet
 	MstatusUXL  = 32 // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#xlen-control
 	MstatusSXL  = 34
 	MstatusSD   = 63 // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
