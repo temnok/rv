@@ -6,41 +6,45 @@ import (
 )
 
 func IsEntered(cpu *state.CPU) bool {
-	return cpu.Update.Targets&(state.UpdateMcause|state.UpdateScause) != 0
+	return cpu.Update.Targets&(state.UpdateMepc|state.UpdateSepc) != 0
 }
 
 func Enter(cpu *state.CPU, cause, tval int) {
 	isInterrupt := cause>>csr.McauseI&1 == 1
 	causeID := cause & 0x3F
 
-	deleg := cpu.CSR.Medeleg
+	var deleg int
 	if isInterrupt {
 		deleg = cpu.CSR.Mideleg
+	} else {
+		deleg = cpu.CSR.Medeleg
 	}
 
-	priv := csr.PrivM
-	clr := 3<<csr.MstatusMPP | 1<<csr.MstatusMPIE | 1<<csr.MstatusMIE
-	set := cpu.CSR.Priv<<csr.MstatusMPP | (cpu.CSR.Mstatus>>csr.MstatusMIE&1)<<csr.MstatusMPIE
-	tvec := cpu.CSR.Mtvec
-	cpu.Update.Targets = state.UpdateMepc | state.UpdateMcause | state.UpdateMtval
+	targets := state.UpdatePriv | state.UpdateMstatus | state.UpdatePC
 
-	if privS := cpu.CSR.Priv <= csr.PrivS && deleg>>causeID&1 == 1; privS {
-		priv = csr.PrivS
-		clr = 1<<csr.MstatusSPP | 1<<csr.MstatusSPIE | 1<<csr.MstatusSIE
-		set = cpu.CSR.Priv<<csr.MstatusSPP | (cpu.CSR.Mstatus>>csr.MstatusSIE&1)<<csr.MstatusSPIE
+	var tvec int
+	if cpu.CSR.Priv == csr.PrivM || deleg>>causeID&1 == 0 {
+		cpu.Update.Priv = csr.PrivM
+		cpu.Update.Targets = targets | state.UpdateMepc | state.UpdateMcause | state.UpdateMtval
+		cpu.Update.Mstatus = cpu.CSR.Mstatus&^(3<<csr.MstatusMPP|1<<csr.MstatusMPIE|1<<csr.MstatusMIE) |
+			cpu.CSR.Priv<<csr.MstatusMPP | (cpu.CSR.Mstatus>>csr.MstatusMIE&1)<<csr.MstatusMPIE
+		tvec = cpu.CSR.Mtvec
+	} else {
+		cpu.Update.Priv = csr.PrivS
+		cpu.Update.Targets = targets | state.UpdateSepc | state.UpdateScause | state.UpdateStval
+		cpu.Update.Mstatus = cpu.CSR.Mstatus&^(1<<csr.MstatusSPP|1<<csr.MstatusSPIE|1<<csr.MstatusSIE) |
+			cpu.CSR.Priv<<csr.MstatusSPP | (cpu.CSR.Mstatus>>csr.MstatusSIE&1)<<csr.MstatusSPIE
 		tvec = cpu.CSR.Stvec
-		cpu.Update.Targets = state.UpdateSepc | state.UpdateScause | state.UpdateStval
 	}
 
-	cpu.Update.Targets |= state.UpdatePC | state.UpdatePriv | state.UpdateMstatus
-	cpu.Update.Priv = priv
-	cpu.Update.Mstatus = cpu.CSR.Mstatus&^clr | set
+	base := tvec &^ 3
+	if tvec&1 == 1 && isInterrupt {
+		cpu.Update.PC = base + causeID*4
+	} else {
+		cpu.Update.PC = base
+	}
+
 	cpu.Update.Xepc = cpu.PC
 	cpu.Update.Xcause = cause
 	cpu.Update.Xtval = tval
-
-	cpu.Update.PC = tvec &^ 3
-	if tvec&1 == 1 && isInterrupt {
-		cpu.Update.PC += causeID * 4
-	}
 }
