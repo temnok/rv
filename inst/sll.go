@@ -4,10 +4,9 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func sll(cpu *state.CPU, op Op) {
-	computeR(cpu, op, func(a, b int) int {
-		b &= 63
+func (ctx *context) SLL(rd, rs1, rs2 int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return a << b
-	})
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = ctx.X[rs1] << (ctx.X[rs2] & 0x3F)
 }

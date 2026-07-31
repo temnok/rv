@@ -1,9 +1,12 @@
 package inst
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/state"
+)
 
-func mulw(cpu *state.CPU, op Op) {
-	computeR32(cpu, op, func(a, b int32) int32 {
-		return a * b
-	})
+func (ctx *context) MULW(rd, rs1, rs2 int) {
+	ctx.Update.Targets = state.UpdateXreg
+
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = int(int32(ctx.X[rs1]) * int32(ctx.X[rs2]))
 }

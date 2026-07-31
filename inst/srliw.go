@@ -4,8 +4,13 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func srliw(cpu *state.CPU, op Op) {
-	computeI32(cpu, op, func(a, b int32) int32 {
-		return int32(uint32(a) >> uint32(b))
-	})
+func (ctx *context) SRLIW(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
+
+	ctx.Update.Xreg = rd
+
+	a := uint32(ctx.X[rs1])
+	b := uint32(imm) & 0x1F
+
+	ctx.Update.Xval = int(int32(a >> b))
 }

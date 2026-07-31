@@ -1,12 +1,12 @@
 package inst
 
 import (
-	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
 
-func lui(cpu *state.CPU, op Op) {
-	imm := imm.U(op.code())
+func (ctx *context) LUI(rd, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-	cpu.Xset(op.rd(), imm)
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = imm
 }

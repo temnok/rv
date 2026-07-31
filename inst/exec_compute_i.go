@@ -5,49 +5,31 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-var computeIIns = []func(*state.CPU, Op){
-	0: addi,
-	1: slli_illegal,
-	2: slti,
-	3: sltiu,
-	4: xori,
-	5: srli_srai,
-	6: ori,
-	7: andi,
-}
-
 func execComputeI(cpu *state.CPU, op Op) {
-	computeIIns[op.f3()](cpu, op)
-}
+	ctx := (*context)(cpu)
+	rd, rs1, imm := op.rd(), op.rs1(), imm.I(op.code())
 
-func computeI(cpu *state.CPU, op Op, f func(a, b int) int) {
-	a := cpu.X[op.rs1()]
-	b := imm.I(op.code())
-
-	c := f(a, b)
-
-	cpu.Xset(op.rd(), c)
-}
-
-func slli_illegal(cpu *state.CPU, op Op) {
-	ins := illegal
-
-	if imm.I(op.code())&^63 == 0 {
-		ins = slli
-	}
-
-	ins(cpu, op)
-}
-
-func srli_srai(cpu *state.CPU, op Op) {
-	ins := illegal
-
-	switch imm.I(op.code()) &^ 63 {
+	switch op.f3() {
 	case 0:
-		ins = srli
-	case 1 << 10:
-		ins = srai
+		ctx.ADDI(rd, rs1, imm)
+	case 1:
+		ctx.SLLI(rd, rs1, imm)
+	case 2:
+		ctx.SLTI(rd, rs1, imm)
+	case 3:
+		ctx.SLTIU(rd, rs1, imm)
+	case 4:
+		ctx.XORI(rd, rs1, imm)
+	case 5:
+		switch imm &^ 0x3F {
+		case 0:
+			ctx.SRLI(rd, rs1, imm)
+		case 0x400:
+			ctx.SRAI(rd, rs1, imm)
+		}
+	case 6:
+		ctx.ORI(rd, rs1, imm)
+	case 7:
+		ctx.ANDI(rd, rs1, imm)
 	}
-
-	ins(cpu, op)
 }

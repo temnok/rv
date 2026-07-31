@@ -4,12 +4,14 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func sltiu(cpu *state.CPU, op Op) {
-	computeI(cpu, op, func(a, b int) int {
-		if uint(a) < uint(b) {
-			return 1
-		}
+func (ctx *context) SLTIU(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return 0
-	})
+	ctx.Update.Xreg = rd
+
+	if uint(ctx.X[rs1]) < uint(imm) {
+		ctx.Update.Xval = 1
+	} else {
+		ctx.Update.Xval = 0
+	}
 }

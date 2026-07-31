@@ -4,8 +4,13 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func srli(cpu *state.CPU, op Op) {
-	computeI(cpu, op, func(a, b int) int {
-		return int(uint(a) >> uint(b))
-	})
+func (ctx *context) SRLI(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
+
+	ctx.Update.Xreg = rd
+
+	a := uint(ctx.X[rs1])
+	b := uint(imm) & 0x3F
+
+	ctx.Update.Xval = int(a >> b)
 }

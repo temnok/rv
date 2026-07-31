@@ -2,10 +2,9 @@ package inst
 
 import "github.com/temnok/rv/state"
 
-func srlw(cpu *state.CPU, op Op) {
-	computeR32(cpu, op, func(a, b int32) int32 {
-		b &= 31
+func (ctx *context) SRLW(rd, rs1, rs2 int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return int32(uint32(a) >> uint32(b))
-	})
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = int(int32(uint32(ctx.X[rs1]) >> uint32(ctx.X[rs2]&0x1F)))
 }

@@ -2,12 +2,16 @@ package inst
 
 import "github.com/temnok/rv/state"
 
-func divw(cpu *state.CPU, op Op) {
-	computeR32(cpu, op, func(a, b int32) int32 {
-		if b == 0 {
-			return -1
-		}
+func (ctx *context) DIVW(rd, rs1, rs2 int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return a / b
-	})
+	ctx.Update.Xreg = rd
+
+	a, b := int32(ctx.X[rs1]), int32(ctx.X[rs2])
+
+	if b != 0 {
+		ctx.Update.Xval = int(a / b)
+	} else {
+		ctx.Update.Xval = -1
+	}
 }

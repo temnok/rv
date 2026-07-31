@@ -5,39 +5,40 @@ import (
 )
 
 func execComputeR32(cpu *state.CPU, op Op) {
-	f3, f7 := op.f3(), op.f7()
+	ctx := (*context)(cpu)
+	rd, rs1, rs2 := op.rd(), op.rs1(), op.rs2()
 
-	ins := illegal
-
-	switch f7 {
+	switch f3 := op.f3(); op.f7() {
 	case 0:
 		switch f3 {
 		case 0:
-			ins = addw
+			ctx.ADDW(rd, rs1, rs2)
 		case 1:
-			ins = sllw
+			ctx.SLLW(rd, rs1, rs2)
 		case 5:
-			ins = srlw
+			ctx.SRLW(rd, rs1, rs2)
 		}
+
 	case 1:
-		ins = computeM32
-	case 1 << 5:
 		switch f3 {
 		case 0:
-			ins = subw
+			ctx.MULW(rd, rs1, rs2)
+		case 4:
+			ctx.DIVW(rd, rs1, rs2)
 		case 5:
-			ins = sraw
+			ctx.DIVUW(rd, rs1, rs2)
+		case 6:
+			ctx.REMW(rd, rs1, rs2)
+		case 7:
+			ctx.REMUW(rd, rs1, rs2)
+		}
+
+	case 0x20:
+		switch f3 {
+		case 0:
+			ctx.SUBW(rd, rs1, rs2)
+		case 5:
+			ctx.SRAW(rd, rs1, rs2)
 		}
 	}
-
-	ins(cpu, op)
-}
-
-func computeR32(cpu *state.CPU, op Op, f func(a, b int32) int32) {
-	a := int32(cpu.X[op.rs1()])
-	b := int32(cpu.X[op.rs2()])
-
-	c := int(f(a, b))
-
-	cpu.Xset(op.rd(), c)
 }

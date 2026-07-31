@@ -8,3 +8,7 @@ import (
 func illegal(cpu *state.CPU, op Op) {
 	trap.Enter(cpu, trap.IllegalIstruction, 0)
 }
+
+func illegal1(cpu *state.CPU) {
+	trap.Enter(cpu, trap.IllegalIstruction, 0)
+}

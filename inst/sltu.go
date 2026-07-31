@@ -2,12 +2,13 @@ package inst
 
 import "github.com/temnok/rv/state"
 
-func sltu(cpu *state.CPU, op Op) {
-	computeR(cpu, op, func(a, b int) int {
-		if uint(a) < uint(b) {
-			return 1
-		}
+func (ctx *context) SLTU(rd, rs1, rs2 int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return 0
-	})
+	ctx.Update.Xreg = rd
+	if uint(ctx.X[rs1]) < uint(ctx.X[rs2]) {
+		ctx.Update.Xval = 1
+	} else {
+		ctx.Update.Xval = 0
+	}
 }

@@ -2,9 +2,12 @@ package inst
 
 import (
 	"github.com/temnok/rv/extc"
+	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 	"github.com/temnok/rv/trap"
 )
+
+type context state.CPU
 
 var (
 	groups = []func(*state.CPU, Op){
@@ -13,7 +16,6 @@ var (
 		2:  illegal,
 		3:  execFence,
 		4:  execComputeI,
-		5:  auipc,
 		6:  execComputeI32,
 		7:  illegal,
 		8:  execStore,
@@ -21,7 +23,6 @@ var (
 		10: illegal,
 		11: execAtomic,
 		12: execComputeR,
-		13: lui,
 		14: execComputeR32,
 		15: illegal,
 		16: execComputeFP,
@@ -59,10 +60,18 @@ func Exec(cpu *state.CPU, opcode int) {
 
 	cpu.Update.FollowPC = cpu.PC + opcodeSize
 
+	ctx := (*context)(cpu)
 	op := Op(opcode)
-	f5 := op.f5()
+	f5, rd := op.f5(), op.rd()
 
-	groups[f5](cpu, op)
+	switch f5 {
+	case 5:
+		ctx.AUIPC(rd, imm.U(opcode))
+	case 13:
+		ctx.LUI(rd, imm.U(opcode))
+	default:
+		groups[f5](cpu, op)
+	}
 
 	if cpu.Update.Targets&state.UpdatePC == 0 {
 		cpu.Update.Targets |= state.UpdatePC

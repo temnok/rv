@@ -15,7 +15,7 @@ type baseComputationalInstructions interface {
 	ADDW(rd, rs1, rs2 int)  // ADD, Word
 	AND(rd, rs1, rs2 int)   // AND
 	ANDI(rd, rs1, imm int)  // AND with Immediate
-	AUIPC(rd, imm int)      // Add Upper Immediate with PC
+	AUIPC(rd, imm int)      // Add Upper Immediate to PC
 	LUI(rd, imm int)        // Load Upper Immediate
 	OR(rd, rs1, rs2 int)    // OR
 	ORI(rd, rs1, imm int)   // OR with Immediate

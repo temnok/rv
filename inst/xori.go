@@ -4,8 +4,9 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func xori(cpu *state.CPU, op Op) {
-	computeI(cpu, op, func(a, b int) int {
-		return a ^ b
-	})
+func (ctx *context) XORI(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
+
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = ctx.X[rs1] ^ imm
 }

@@ -4,10 +4,9 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func sraiw(cpu *state.CPU, op Op) {
-	computeI32(cpu, op, func(a, b int32) int32 {
-		b &= 31
+func (ctx *context) SRAIW(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return a >> b
-	})
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = int(int32(ctx.X[rs1]) >> int32(imm&0x1F))
 }

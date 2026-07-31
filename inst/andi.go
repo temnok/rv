@@ -1,9 +1,12 @@
 package inst
 
-import "github.com/temnok/rv/state"
+import (
+	"github.com/temnok/rv/state"
+)
 
-func andi(cpu *state.CPU, op Op) {
-	computeI(cpu, op, func(a, b int) int {
-		return a & b
-	})
+func (ctx *context) ANDI(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
+
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = ctx.X[rs1] & imm
 }

@@ -4,10 +4,9 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func srai(cpu *state.CPU, op Op) {
-	computeI(cpu, op, func(a, b int) int {
-		b &= 63
+func (ctx *context) SRAI(rd, rs1, imm int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return a >> b
-	})
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = ctx.X[rs1] >> (imm & 0x3F)
 }

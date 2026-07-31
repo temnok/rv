@@ -6,33 +6,20 @@ import (
 )
 
 func execComputeI32(cpu *state.CPU, op Op) {
-	imm := imm.I(op.code())
-
-	ins := illegal
+	ctx := (*context)(cpu)
+	rd, rs1, imm := op.rd(), op.rs1(), imm.I(op.code())
 
 	switch op.f3() {
 	case 0:
-		ins = addiw
+		ctx.ADDIW(rd, rs1, imm)
 	case 1:
-		if imm < 32 {
-			ins = slliw
-		}
+		ctx.SLLIW(rd, rs1, imm)
 	case 5:
-		if imm < 32 {
-			ins = srliw
-		} else if imm&^0b0100000_00000 < 32 {
-			ins = sraiw
+		switch imm &^ 0x1F {
+		case 0:
+			ctx.SRLIW(rd, rs1, imm)
+		case 0x400:
+			ctx.SRAIW(rd, rs1, imm)
 		}
 	}
-
-	ins(cpu, op)
-}
-
-func computeI32(cpu *state.CPU, op Op, f func(a, b int32) int32) {
-	a := int32(cpu.X[op.rs1()])
-	b := int32(imm.I(op.code()))
-
-	c := int(f(a, b))
-
-	cpu.Xset(op.rd(), c)
 }

@@ -4,12 +4,14 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func rem(cpu *state.CPU, op Op) {
-	computeR(cpu, op, func(a, b int) int {
-		if b == 0 {
-			return a
-		}
+func (ctx *context) REM(rd, rs1, rs2 int) {
+	ctx.Update.Targets = state.UpdateXreg
 
-		return a % b
-	})
+	ctx.Update.Xreg = rd
+
+	if ctx.X[rs2] != 0 {
+		ctx.Update.Xval = ctx.X[rs1] % ctx.X[rs2]
+	} else {
+		ctx.Update.Xval = ctx.X[rs1]
+	}
 }
