@@ -34,9 +34,7 @@ var (
 		22: illegal,
 		23: illegal,
 		24: execBranch,
-		25: jalr,
 		26: illegal,
-		27: jal,
 		28: execSystem,
 		29: illegal,
 		30: illegal,
@@ -62,13 +60,17 @@ func Exec(cpu *state.CPU, opcode int) {
 
 	ctx := (*context)(cpu)
 	op := Op(opcode)
-	f5, rd := op.f5(), op.rd()
+	f5, rd, rs1 := op.f5(), op.rd(), op.rs1()
 
 	switch f5 {
 	case 5:
 		ctx.AUIPC(rd, imm.U(opcode))
 	case 13:
 		ctx.LUI(rd, imm.U(opcode))
+	case 25:
+		ctx.JALR(rd, rs1, imm.I(opcode))
+	case 27:
+		ctx.JAL(rd, imm.J(opcode))
 	default:
 		groups[f5](cpu, op)
 	}

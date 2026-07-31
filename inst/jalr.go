@@ -1,15 +1,14 @@
 package inst
 
 import (
-	"github.com/temnok/rv/imm"
 	"github.com/temnok/rv/state"
 )
 
-func jalr(cpu *state.CPU, op Op) {
-	cpu.Update.Targets = state.UpdateXreg | state.UpdatePC
+func (ctx *context) JALR(rd, rs1, offset int) {
+	ctx.Update.Targets = state.UpdateXreg | state.UpdatePC
 
-	cpu.Update.Xreg = op.rd()
-	cpu.Update.Xval = cpu.Update.FollowPC
+	ctx.Update.Xreg = rd
+	ctx.Update.Xval = ctx.Update.FollowPC
 
-	cpu.Update.PC = (cpu.X[op.rs1()] + imm.I(op.code())) &^ 1
+	ctx.Update.PC = (ctx.X[rs1] + offset) &^ 1
 }
