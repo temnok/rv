@@ -57,11 +57,15 @@ func Exec(cpu *state.CPU, opcode int) {
 		opcodeSize = 2
 	}
 
-	cpu.Update.Targets |= state.UpdatePC
-	cpu.Update.PC = cpu.PC + opcodeSize
+	cpu.Update.FollowPC = cpu.PC + opcodeSize
 
 	op := Op(opcode)
 	f5 := op.f5()
 
 	groups[f5](cpu, op)
+
+	if cpu.Update.Targets&state.UpdatePC == 0 {
+		cpu.Update.Targets |= state.UpdatePC
+		cpu.Update.PC = cpu.Update.FollowPC
+	}
 }

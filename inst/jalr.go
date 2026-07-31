@@ -6,11 +6,10 @@ import (
 )
 
 func jalr(cpu *state.CPU, op Op) {
-	imm := imm.I(op.code())
+	cpu.Update.Targets = state.UpdateXreg | state.UpdatePC
 
-	savedPC := cpu.Update.PC
-	newPC := (cpu.X[op.rs1()] + imm) &^ 1
+	cpu.Update.Xreg = op.rd()
+	cpu.Update.Xval = cpu.Update.FollowPC
 
-	cpu.Xset(op.rd(), savedPC)
-	cpu.Update.PC = newPC
+	cpu.Update.PC = (cpu.X[op.rs1()] + imm.I(op.code())) &^ 1
 }

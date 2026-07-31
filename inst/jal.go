@@ -6,11 +6,10 @@ import (
 )
 
 func jal(cpu *state.CPU, op Op) {
-	imm := imm.J(op.code())
+	cpu.Update.Targets = state.UpdateXreg | state.UpdatePC
 
-	savedPC := cpu.Update.PC
-	newPC := cpu.PC + imm
+	cpu.Update.Xreg = op.rd()
+	cpu.Update.Xval = cpu.Update.FollowPC
 
-	cpu.Xset(op.rd(), savedPC)
-	cpu.Update.PC = newPC
+	cpu.Update.PC = cpu.PC + imm.J(op.code())
 }

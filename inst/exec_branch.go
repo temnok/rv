@@ -25,6 +25,7 @@ func branch(cpu *state.CPU, op Op, f func(a, b int) bool) {
 	b := cpu.X[op.rs2()]
 
 	if f(a, b) {
+		cpu.Update.Targets = state.UpdatePC
 		cpu.Update.PC = cpu.PC + imm.B(op.code())
 	}
 }

@@ -29,9 +29,9 @@ const (
 type Updates struct {
 	Targets int
 
-	PC          int
-	Priv        int
-	Reservation int
+	PC, FollowPC int
+	Priv         int
+	Reservation  int
 
 	Xreg, Xval int
 	Freg, Fval int

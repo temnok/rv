@@ -12,9 +12,9 @@ func Cycle(cpu *state.CPU) int {
 	cpu.Update.Targets = 0
 	opcode := -1
 
-	if trap.CheckPendingInterrupts(cpu); !trap.IsEntered(cpu) {
+	if trap.CheckPendingInterrupts(cpu); cpu.Update.Targets == 0 {
 
-		if opcode = mem.Fetch(cpu, cpu.PC); !trap.IsEntered(cpu) {
+		if opcode = mem.Fetch(cpu, cpu.PC); cpu.Update.Targets == 0 {
 
 			inst.Exec(cpu, opcode)
 

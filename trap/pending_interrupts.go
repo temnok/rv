@@ -29,15 +29,17 @@ func CheckPendingInterrupts(cpu *state.CPU) {
 			continue
 		}
 
-		priv := csr.PrivM
-		xIE := csr.MstatusMIE
+		var priv, xie int
 		if delegateToSupervisor := cpu.CSR.Mideleg>>i&1 == 1; delegateToSupervisor {
 			priv = csr.PrivS
-			xIE = csr.MstatusSIE
+			xie = csr.MstatusSIE
+		} else {
+			priv = csr.PrivM
+			xie = csr.MstatusMIE
 		}
 
 		// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#privstack
-		if priv > cpu.CSR.Priv || priv == cpu.CSR.Priv && cpu.CSR.Mstatus>>xIE&1 == 1 {
+		if priv > cpu.CSR.Priv || priv == cpu.CSR.Priv && cpu.CSR.Mstatus>>xie&1 == 1 {
 			Enter(cpu, -1<<csr.McauseI|i, 0)
 			break
 		}

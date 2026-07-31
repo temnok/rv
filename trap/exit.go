@@ -14,7 +14,7 @@ func Exit(cpu *state.CPU, retPriv int) {
 		return
 	}
 
-	cpu.Update.Targets |= state.UpdatePriv | state.UpdateMstatus
+	cpu.Update.Targets = state.UpdatePC | state.UpdatePriv | state.UpdateMstatus
 
 	status := cpu.CSR.Mstatus
 	var nextStatus int
