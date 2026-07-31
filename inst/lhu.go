@@ -4,8 +4,11 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func lhu(cpu *state.CPU, op Op) {
-	load(cpu, op, 2, func(val int) int {
-		return int(uint16(val))
-	})
+func (ctx *context) LHU(rd, rs1, offset int) {
+	if val, ok := memRead(ctx, ctx.X[rs1]+offset, 2); ok {
+		ctx.Update.Targets = state.UpdateXreg
+
+		ctx.Update.Xreg = rd
+		ctx.Update.Xval = int(uint16(val))
+	}
 }

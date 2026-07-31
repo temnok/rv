@@ -4,8 +4,11 @@ import (
 	"github.com/temnok/rv/state"
 )
 
-func lw(cpu *state.CPU, op Op) {
-	load(cpu, op, 4, func(val int) int {
-		return int(int32(val))
-	})
+func (ctx *context) LW(rd, rs1, offset int) {
+	if val, ok := memRead(ctx, ctx.X[rs1]+offset, 4); ok {
+		ctx.Update.Targets |= state.UpdateXreg // device read can set other targets
+
+		ctx.Update.Xreg = rd
+		ctx.Update.Xval = int(int32(val))
+	}
 }

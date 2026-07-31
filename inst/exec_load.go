@@ -7,29 +7,34 @@ import (
 	"github.com/temnok/rv/trap"
 )
 
-var loadIns = []func(*state.CPU, Op){
-	0: lb,
-	1: lh,
-	2: lw,
-	3: ld,
-	4: lbu,
-	5: lhu,
-	6: lwu,
-	7: illegal,
-}
-
 func execLoad(cpu *state.CPU, op Op) {
-	loadIns[op.f3()](cpu, op)
+	ctx := (*context)(cpu)
+	rd, rs1, offset := op.rd(), op.rs1(), imm.I(op.code())
+
+	switch op.f3() {
+	case 0:
+		ctx.LB(rd, rs1, offset)
+	case 1:
+		ctx.LH(rd, rs1, offset)
+	case 2:
+		ctx.LW(rd, rs1, offset)
+	case 3:
+		ctx.LD(rd, rs1, offset)
+	case 4:
+		ctx.LBU(rd, rs1, offset)
+	case 5:
+		ctx.LHU(rd, rs1, offset)
+	case 6:
+		ctx.LWU(rd, rs1, offset)
+	}
 }
 
-func load(cpu *state.CPU, op Op, n int, wrap func(val int) int) {
-	imm, rd, rs1 := imm.I(op.code()), op.rd(), op.rs1()
+func memRead(ctx *context, address, width int) (int, bool) {
+	val := mem.Read((*state.CPU)(ctx), address, width)
 
-	val := mem.Read(cpu, cpu.X[rs1]+imm, n)
-
-	if trap.IsEntered(cpu) {
-		return
+	if trap.IsEntered((*state.CPU)(ctx)) {
+		return 0, false
 	}
 
-	cpu.Xset(rd, wrap(val))
+	return val, true
 }
