@@ -6,5 +6,9 @@ import (
 )
 
 func ecall(cpu *state.CPU, op Op) {
-	trap.Enter(cpu, trap.EnvironmentCallFromUMode+cpu.CSR.Priv, 0)
+	(*context)(cpu).ECALL()
+}
+
+func (ctx *context) ECALL() {
+	trap.Enter((*state.CPU)(ctx), trap.EnvironmentCallFromUMode+ctx.CSR.Priv, 0)
 }

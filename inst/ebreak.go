@@ -6,5 +6,9 @@ import (
 )
 
 func ebreak(cpu *state.CPU, op Op) {
-	trap.Enter(cpu, trap.Breakpoint, 0)
+	(*context)(cpu).EBREAK()
+}
+
+func (ctx *context) EBREAK() {
+	trap.Enter((*state.CPU)(ctx), trap.Breakpoint, 0)
 }
