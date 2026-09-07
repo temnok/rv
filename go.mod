@@ -1,6 +1,6 @@
 module github.com/temnok/rv
 
-go 1.24
+go 1.27
 
 require (
 	github.com/deadsy/rvda v0.0.0-20230629010427-83726ee22ad9

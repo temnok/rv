@@ -34,9 +34,9 @@ const (
 	Mcycle        = 0xB00 // Machine CYCLE                      https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-10-hardware-performance-monitor
 	Minstret      = 0xB02 // Machine INSTructions RETired       https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-10-hardware-performance-monitor
 
-	Cycle   = 0xC00 // https://docs.riscv.org/reference/isa/v20260120/unpriv/counters.html#6-1-1-zicntr-extension-for-base-counters-and-timers
-	Time    = 0xC01 // https://docs.riscv.org/reference/isa/v20260120/unpriv/counters.html#6-1-1-zicntr-extension-for-base-counters-and-timers
-	Instret = 0xC02 // https://docs.riscv.org/reference/isa/v20260120/unpriv/counters.html#6-1-1-zicntr-extension-for-base-counters-and-timers
+	Cycle   = 0xC00 // CYCLE counter        https://docs.riscv.org/reference/isa/v20260120/unpriv/counters.html#6-1-1-zicntr-extension-for-base-counters-and-timers
+	Time    = 0xC01 // current TIME         https://docs.riscv.org/reference/isa/v20260120/unpriv/counters.html#6-1-1-zicntr-extension-for-base-counters-and-timers
+	Instret = 0xC02 // INSTructions RETired https://docs.riscv.org/reference/isa/v20260120/unpriv/counters.html#6-1-1-zicntr-extension-for-base-counters-and-timers
 
 	Mvendorid = 0xF11 // Machine VENDOR ID          https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-2-machine-vendor-id-mvendorid-register
 	Marchid   = 0xF12 // Machine ARCHitecture ID    https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#2-1-1-3-machine-architecture-id-marchid-register
@@ -56,35 +56,35 @@ const (
 	FcsrRM = 5 // Rounding Mode: https://docs.riscv.org/reference/isa/v20260120/unpriv/f-st-ext.html#norm:dyn_round_enc
 
 	// https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#3-1-1-6-4-memory-privilege-in-mstatus-register
-	MstatusSIE  = 1
-	MstatusMIE  = 3
-	MstatusSPIE = 5
-	MstatusMPIE = 7
-	MstatusSPP  = 8
+	MstatusSIE  = 1  // Supervisor Interrupts Enabled
+	MstatusMIE  = 3  // Machine Interrupts Enabled
+	MstatusSPIE = 5  // Supervisor Previous Interrupts Enabled
+	MstatusMPIE = 7  // Machine Previous Interrupts Enabled
+	MstatusSPP  = 8  // Supervisor Previous Privilege
 	MstatusMPP  = 11 // Machine Previous Privilege
-	MstatusFS   = 13
+	MstatusFS   = 13 // Floating-point Status
 	MstatusMPRV = 17 // Modify PRiVilege
 	MstatusSUM  = 18 // permit Supervisor User Memory access
 	MstatusMXR  = 19 // Make eXecutable Readable
 	MstatusTVM  = 20 // Trap Virtual Memory
 	MstatusTSR  = 22 // Trap SRet
-	MstatusUXL  = 32 // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#xlen-control
-	MstatusSXL  = 34
-	MstatusSD   = 63 // https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
+	MstatusUXL  = 32 // User X-Length https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#xlen-control
+	MstatusSXL  = 34 // Supervisor X-Length
+	MstatusSD   = 63 // State Dirty https://docs.riscv.org/reference/isa/v20260120/priv/machine.html#norm:mstatus_sd_acc
 
-	McauseI = 63
+	McauseI = 63 // Interrupt
 
-	MipSSIP = 1
-	MipMSIP = 3
-	MipSTIP = 5
-	MipMTIP = 7
-	MipSEIP = 9
-	MipMEIP = 11
+	MipSSIP = 1  // Supervisor Software Interrupt Pending
+	MipMSIP = 3  // Machine Software Interrupt Pending
+	MipSTIP = 5  // Supervisor Timer Interrupt Pending
+	MipMTIP = 7  // Machine Timer Interrupt Pending
+	MipSEIP = 9  // Supervisor External Interrupt Pending
+	MipMEIP = 11 // Machine External Interrupt Pending
 
-	UartTD = 0
-	UartTE = 8
-	UartTP = 12
-	UartRD = 16
-	UartRE = 24
-	UartRP = 28
+	UartTD = 0  // Transmit Data
+	UartTE = 8  // Transmit Enabled
+	UartTP = 12 // Transmit Pending
+	UartRD = 16 // Receive Data
+	UartRE = 24 // Receive Enabled
+	UartRP = 28 // Receive Pending
 )

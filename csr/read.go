@@ -1,7 +1,7 @@
 package csr
 
 func Read(csr *Registers, reg int) (int, bool) {
-	if csr.Priv < reg>>8&3 {
+	if regPriv := reg >> 8 & 3; regPriv > csr.Priv {
 		return 0, false
 	}
 

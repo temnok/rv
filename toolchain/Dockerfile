@@ -10,7 +10,6 @@ RUN apt update && \
         bzip2 \
         ccache \
         cmake \
-
         cpio \
         curl \
         device-tree-compiler \
